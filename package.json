@@ -1,0 +1,9 @@
+{
+  "name": "typescript",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "https:": "*",
+    "rxjs": "7.5.2"
+  }
+}
