@@ -1,41 +1,27 @@
 // Import stylesheets
 import './style.css';
 
-import {
-  createButterflyTexture,
-  downloadImage,
-  makeBatterflyTree,
-  makeButterfly,
-  testButterfly,
-} from './fft2';
 import { testDft, testFft } from './fft.test';
-import { testFft2 } from './fft2.test';
+import { testdft2, testFft2 } from './fft2.test';
+import { makeBatterflyTree, makeButterfly } from './butterfly';
+import { createButterflyTexture, createImage } from './image';
+import { testButterfly } from './butterfly.test';
 
-const n = 512;
-const indices = [...Array(n).keys()];
-const tree = makeBatterflyTree(indices);
+document.getElementById('butterfly').addEventListener('click', () => {
+  const n = 512;
+  const indices = [...Array(n).keys()];
+  const tree = makeBatterflyTree(indices);
+  const butterfly = makeButterfly(tree);
+  const texture = createButterflyTexture(butterfly);
 
-const butterfly = makeButterfly(tree);
+  createImage(texture, Math.log2(n), n);
+});
 
-// console.log(butterfly);
-
-const texture = createButterflyTexture(butterfly);
-
-// for (let p = 1; p < 16; p++) {
-//   testButterfly(1 << p);
-// }
-
-document
-  .getElementById('butterfly')
-  .addEventListener('click', () => downloadImage(texture, Math.log2(n), n));
-
-// const signal = Float32Array.from(
-//   [...Array(16).keys()].map(() => Math.random() * 2.0 - 1.0)
-// );
-
-// const fourier = dft(signal);
-// console.log(idft(dft(signal)).map(c => re(c)), signal);
-
-// testDft();
-// testFft();
+testDft();
+testFft();
+testdft2();
 testFft2();
+
+for (let p = 1; p < 16; p++) {
+  testButterfly(1 << p);
+}

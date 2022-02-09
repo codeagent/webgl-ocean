@@ -20,6 +20,8 @@ export const dft = (signal: Complex[]): Complex[] => {
 
 /**
  * Inverse discrete fourier transform
+ * @param fourier Fourier coefficients to restore signal from
+ * @return Sourse signal as complex samples (Actualy signal will be stored in real part of samples)
  */
 export const idft = (fourier: Complex[]): Complex[] => {
   const n = fourier.length;
@@ -36,7 +38,9 @@ export const idft = (fourier: Complex[]): Complex[] => {
 };
 
 /**
- * Fast Fourier Transform
+ * Fast fourier transform. nlog(n) implementaion if discrete transform.
+ * @param signal Signal to transform into fourier complex coefficients. Should be power of 2
+ * @return Fourier coefficients
  */
 export const fft = (signal: Complex[]): Complex[] => {
   if (signal.length <= 2) {
@@ -66,7 +70,9 @@ export const fft = (signal: Complex[]): Complex[] => {
 };
 
 /**
- * Inverse Fast Fourier Transform
+ * Inverse fast fourier transform.
+ * @param fourier Fourier coefficients to restore signal from
+ * @return Sourse signal as complex samples (Actualy signal will be stored in real part of samples)
  */
 export const ifft = (fourier: Complex[]): Complex[] => {
   if (fourier.length <= 2) {
