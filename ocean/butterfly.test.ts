@@ -1,6 +1,6 @@
 import { makeBatterflyTree, makeButterfly } from './butterfly';
-import { abs, add, complex, Complex, mult, sub } from './complex';
-import { fft } from './fft';
+import { abs, add, complex, Complex, mult, sub } from '../complex';
+import { fft } from '../fft';
 
 export const testButterfly = (size: number) => {
   const signal = [...Array(size).keys()]
