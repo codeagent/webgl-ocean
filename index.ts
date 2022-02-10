@@ -1,20 +1,19 @@
-// Import stylesheets
 import './style.css';
 
 import { testDft, testFft } from './fft.test';
 import { testdft2, testFft2 } from './fft2.test';
-import { makeBatterflyTree, makeButterfly } from './butterfly';
-import { createButterflyTexture, createImage } from './image';
-import { testButterfly } from './butterfly.test';
+import { createButterflyTexture } from './ocean/butterfly';
+import { createImage, floatToUint8Clamped } from './image';
+import { testButterfly } from './ocean/butterfly.test';
 
-document.getElementById('butterfly').addEventListener('click', () => {
+import './ocean/sandbox';
+
+document.getElementById('butterfly').addEventListener('click', async () => {
   const n = 512;
-  const indices = [...Array(n).keys()];
-  const tree = makeBatterflyTree(indices);
-  const butterfly = makeButterfly(tree);
-  const texture = createButterflyTexture(butterfly);
-
-  createImage(texture, Math.log2(n), n);
+  const texture = createButterflyTexture(n);
+  const img = await createImage(floatToUint8Clamped(texture), Math.log2(n), n);
+  document.body.appendChild(img);
+  img.width = n;
 });
 
 testDft();

@@ -1,5 +1,3 @@
-import { ButterflyTier } from './butterfly';
-
 export const toImage = (canvas: HTMLCanvasElement): Promise<Blob> =>
   new Promise((r, j) => canvas.toBlob((b) => r(b), 'image/png', 1));
 
@@ -28,27 +26,10 @@ export const createImage = async (
 
   const img = new Image();
   img.src = URL.createObjectURL(blob);
-  img.width = height;
+  img.width = width;
   img.height = height;
-  document.body.appendChild(img);
+  return img;
 };
 
-export const createButterflyTexture = (
-  butterfly: ButterflyTier[]
-): Uint8ClampedArray => {
-  const width = butterfly.length;
-  const height = butterfly[0].length;
-  const texture = new Uint8ClampedArray(width * height * 4);
-
-  for (let i = 0; i < height; i++) {
-    for (let j = 0; j < width; j++) {
-      const [b, a, [r, g]] = butterfly[j][i];
-      texture[(width * i + j) * 4] = toClamped(r);
-      texture[(width * i + j) * 4 + 1] = toClamped(g);
-      texture[(width * i + j) * 4 + 2] = b;
-      texture[(width * i + j) * 4 + 3] = a;
-    }
-  }
-
-  return texture;
-};
+export const floatToUint8Clamped = (data: Float32Array) =>
+  Uint8ClampedArray.from([...data].map((v) => toClamped(v)));

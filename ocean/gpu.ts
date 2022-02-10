@@ -325,6 +325,8 @@ export class Gpu {
       0
     );
 
+    this._gl.drawBuffers([WebGL2RenderingContext.COLOR_ATTACHMENT0]);
+
     const status = this._gl.checkFramebufferStatus(
       WebGL2RenderingContext.FRAMEBUFFER
     );
@@ -361,16 +363,19 @@ export class Gpu {
     this._gl.deleteFramebuffer(target);
   }
 
-  readValues(values: Float32Array, width: number, height: number) {
-    this._gl.readPixels(
-      0,
-      0,
-      width,
-      height,
-      WebGL2RenderingContext.RED,
-      WebGL2RenderingContext.FLOAT,
-      values
+  readValues(
+    target: RenderTarget,
+    values: Float32Array,
+    width: number,
+    height: number,
+    format: GLenum,
+    type: GLenum
+  ) {
+    this._gl.bindFramebuffer(
+      WebGL2RenderingContext.READ_FRAMEBUFFER,
+      target ?? null
     );
+    this._gl.readPixels(0, 0, width, height, format, type, values);
   }
 
   private createVertexBuffer(data: ArrayBufferView): VertexBuffer {

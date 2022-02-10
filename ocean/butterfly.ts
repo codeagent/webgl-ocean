@@ -63,3 +63,25 @@ export const makeButterfly = (root: BatterflyNode): ButterflyTier[] => {
 
   return tiers;
 };
+
+export const createButterflyTexture = (size: number): Float32Array => {
+  const indices = [...Array(size).keys()];
+  const tree = makeBatterflyTree(indices);
+  const butterfly = makeButterfly(tree);
+
+  const width = butterfly.length;
+  const height = butterfly[0].length;
+  const texture = new Float32Array(width * height * 4);
+
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      const [b, a, [r, g]] = butterfly[j][i];
+      texture[(width * i + j) * 4] = r;
+      texture[(width * i + j) * 4 + 1] = g;
+      texture[(width * i + j) * 4 + 2] = b;
+      texture[(width * i + j) * 4 + 3] = a;
+    }
+  }
+
+  return texture;
+};

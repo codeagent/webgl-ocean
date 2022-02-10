@@ -1,8 +1,10 @@
 import { vec2 } from 'gl-matrix';
 
+import { createButterflyTexture } from './butterfly';
 import { Gpu, RenderTarget, ShaderProgram, Texture2d, Geometry } from './gpu';
 import { HeightField } from './height-field';
 import quad from './quad';
+import { vs as h0vs, fs as h0fs } from './programs/h0';
 
 export interface HeightFieldBuildParams {
   /**
@@ -47,11 +49,16 @@ export class HeightFieldFactory {
     this.gpu = new Gpu(canvas.getContext('webgl2'));
     this.quad = this.gpu.createGeometry(quad);
     this.frameBuffer = this.gpu.createRenderTarget();
-    this.h0Program = this.gpu.createShaderProgram('', '');
+    this.h0Program = this.gpu.createShaderProgram(h0vs, h0fs);
   }
 
   build(params: HeightFieldBuildParams): HeightField {
-    return null;
+    return new HeightField(
+      this.gpu,
+      this.getH0Texture(params),
+      this.getButterflyTexture(params.subdivisions),
+      params
+    );
   }
 
   private getNoiseTexture(size: number): Texture2d {
@@ -72,14 +79,21 @@ export class HeightFieldFactory {
   }
 
   private getH0Texture(params: HeightFieldBuildParams): Texture2d {
-    const texture = this.gpu.createFloat4Texture(params.size, params.size);
+    const texture = this.gpu.createFloat4Texture(
+      params.subdivisions,
+      params.subdivisions
+    );
+
     this.gpu.attachTexture(this.frameBuffer, texture, 0);
     this.gpu.setRenderTarget(this.frameBuffer);
+    this.gpu.setDimensions(params.subdivisions, params.subdivisions);
+    this.gpu.clearRenderTarget();
+
     this.gpu.setProgram(this.h0Program);
     this.gpu.setProgramTexture(
       this.h0Program,
       'noise',
-      this.getNoiseTexture(params.size),
+      this.getNoiseTexture(params.subdivisions),
       0
     );
     this.gpu.setProgramVariable(
@@ -96,13 +110,27 @@ export class HeightFieldFactory {
       'float',
       (0.81 / (params.size * params.size)) * params.strength
     );
+
     this.gpu.drawGeometry(this.quad);
     this.gpu.setRenderTarget(null);
+
     return texture;
   }
 
   private getButterflyTexture(size: number) {
-    
+    if (!this.butterflyTexture.has(size)) {
+      const texture = this.gpu.createFloat4Texture(Math.log2(size), size);
+      this.gpu.updateTexture(
+        texture,
+        Math.log2(size),
+        size,
+        WebGL2RenderingContext.RGBA,
+        WebGL2RenderingContext.FLOAT,
+        createButterflyTexture(size)
+      );
+      this.butterflyTexture.set(size, texture);
+    }
+    return this.butterflyTexture.get(size);
   }
 
   private getNoise2d(size: number) {
