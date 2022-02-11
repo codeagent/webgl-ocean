@@ -16,11 +16,11 @@ document.getElementById('butterfly').addEventListener('click', async () => {
   img.width = n;
 });
 
-testDft();
-testFft();
-testdft2();
-testFft2();
+// testDft();
+// testFft();
+// testdft2();
+// testFft2();
 
-for (let p = 1; p < 16; p++) {
-  testButterfly(1 << p);
-}
+// for (let p = 1; p < 16; p++) {
+//   testButterfly(1 << p);
+// }

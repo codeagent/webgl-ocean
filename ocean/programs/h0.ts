@@ -6,17 +6,56 @@ void main() {
 `;
 
 export const fs = `#version 300 es
+#define PI 3.141592653f
+#define g 9.81f;
+
 precision highp float;
 
 out vec4 outColor; 
 
 uniform sampler2D noise;
-uniform uint subdivisions;
-uniform float size;
+uniform uint subdivisions;  // N
+uniform float size;         // L
 uniform float A;
+uniform vec2 wind;
+
+
+
+vec4 gauss() {
+  vec2 uv = vec2(gl_FragCoord.xy) / float(subdivisions);
+  vec4 noise4 = texture(noise, uv).rgba;
+  float u0 = 2.0f * PI * noise4.x;
+  float v0 = sqrt(-2.0f * log(noise4.y));
+  float u1 = 2.0f * PI * noise4.z;
+  float v1 = sqrt(-2.0f * log(noise4.w));
+  return  vec4(v0 * cos(u0), v0 * sin(u0), v1 * cos(u1),  v1 * sin(u1));
+}
 
 void main() {
-  // ivec2 uv = ivec2(gl_FragCoord.xy);
-  outColor =  vec4(1.0, -1.0, -1.0, -0.5);
+  vec2 x = vec2(gl_FragCoord.xy) - float(subdivisions) * 0.5; //  [-N/2, N/2]
+  vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
+  float L = dot(wind, wind) / g;
+  float L2 = L * L;
+  float k2 = dot(k, k);
+
+  float h0k = sqrt(
+    (A / k2 / k2) * 
+    exp(-1.0 / (k2 * L2) - (k2 * size * size * 1.0e-6)) * 
+    pow(dot(normalize(wind), normalize(k)), 2.0f) * 
+    0.5
+  );
+
+  float h0mk = sqrt(
+    (A / k2 / k2) * 
+    exp(-1.0 / (k2 * L2) - (k2 * L2 * 1.0e-6)) * 
+    pow(dot(normalize(wind), normalize(-k)), 2.0f) * 
+    0.5
+  );
+
+  vec4 rnd = gauss();
+
+  outColor =  vec4(rnd.x * h0k, 0.0f, 0.0f, 1.0f);
+  // outColor =  vec4(rnd.x * h0k, 0.0f, 0.0f, 1.0f);
+  
 }
 `;

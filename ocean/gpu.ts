@@ -106,14 +106,19 @@ export class Gpu {
             WebGL2RenderingContext.COMPILE_STATUS
           )
         ) {
+          const source = shader.sourceCode
+            .split(/\n/)
+            .map((line, no) => `${no + 1}:\t${line}`)
+            .join('\n');
+
           throw new Error(
             `${
               shader.type === WebGL2RenderingContext.VERTEX_SHADER
                 ? 'Vertex'
                 : 'Fragment'
-            } shader compile error: '${gl.getShaderInfoLog(shaderObject)}' \n${
-              shader.sourceCode
-            }\n`
+            } shader compile error: '${gl.getShaderInfoLog(
+              shaderObject
+            )}' \n${source}\n`
           );
         }
         gl.attachShader(program, shaderObject);

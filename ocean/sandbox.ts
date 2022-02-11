@@ -6,9 +6,9 @@ import { HeightFieldFactory } from './height-field-factory';
 const factory = HeightFieldFactory.instance;
 
 const heightField = factory.build({
-  size: 1.0,
+  size: 100.0,
   subdivisions: 128,
-  wind: vec2.fromValues(1.0, 10.0),
+  wind: vec2.fromValues(10.0, 10.0),
   strength: 1.0,
 });
 
@@ -33,6 +33,8 @@ gpu.readValues(
   WebGL2RenderingContext.FLOAT
 );
 gpu.flush();
+
+console.log(values)
 
 createImage(
   floatToUint8Clamped(values),
