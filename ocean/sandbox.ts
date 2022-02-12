@@ -6,10 +6,10 @@ import { HeightFieldFactory } from './height-field-factory';
 const factory = HeightFieldFactory.instance;
 
 const heightField = factory.build({
-  size: 100.0,
-  subdivisions: 128,
-  wind: vec2.fromValues(10.0, 10.0),
-  strength: 1.0,
+  size: 1000,
+  subdivisions: 256,
+  wind: vec2.fromValues(28.0, 28.0),
+  strength: 4.0,
 });
 
 const noise = factory['noiseTexture'].get(heightField.params.subdivisions);

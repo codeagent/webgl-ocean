@@ -20,7 +20,6 @@ uniform float A;
 uniform vec2 wind;
 
 
-
 vec4 gauss() {
   vec2 uv = vec2(gl_FragCoord.xy) / float(subdivisions);
   vec4 noise4 = texture(noise, uv).rgba;
@@ -34,28 +33,28 @@ vec4 gauss() {
 void main() {
   vec2 x = vec2(gl_FragCoord.xy) - float(subdivisions) * 0.5; //  [-N/2, N/2]
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
+  float k2 = dot(k, k);
   float L = dot(wind, wind) / g;
   float L2 = L * L;
-  float k2 = dot(k, k);
-
+  float l2 = size * size * 1.0e-6;
+  
   float h0k = sqrt(
     (A / k2 / k2) * 
-    exp(-1.0 / (k2 * L2) - (k2 * size * size * 1.0e-6)) * 
+    exp(-1.0 / (k2 * L2) - (k2 * l2)) * 
     pow(dot(normalize(wind), normalize(k)), 2.0f) * 
     0.5
   );
 
   float h0mk = sqrt(
     (A / k2 / k2) * 
-    exp(-1.0 / (k2 * L2) - (k2 * L2 * 1.0e-6)) * 
-    pow(dot(normalize(wind), normalize(-k)), 2.0f) * 
+    exp(-1.0 / (k2 * L2) - (k2 * l2)) *
+    pow(dot(normalize(wind), normalize(-k)), 6.0f) * 
     0.5
   );
 
   vec4 rnd = gauss();
 
-  outColor =  vec4(rnd.x * h0k, 0.0f, 0.0f, 1.0f);
-  // outColor =  vec4(rnd.x * h0k, 0.0f, 0.0f, 1.0f);
-  
+  // outColor =  vec4(h0k * rnd.x, h0k * rnd.y, 0, 1);
+  outColor =  vec4(h0k * rnd.x, h0k * rnd.y, h0mk * rnd.z, h0mk * rnd.w);
 }
 `;

@@ -2,7 +2,7 @@ export const toImage = (canvas: HTMLCanvasElement): Promise<Blob> =>
   new Promise((r, j) => canvas.toBlob((b) => r(b), 'image/png', 1));
 
 export const toClamped = (float: number) =>
-  Math.floor((float * 0.5 + 0.5) * 255);
+  Math.floor((float ) * 255);
 
 export const createImage = async (
   data: Uint8ClampedArray,

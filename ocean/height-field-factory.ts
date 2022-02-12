@@ -108,7 +108,7 @@ export class HeightFieldFactory {
       this.h0Program,
       'A',
       'float',
-      (0.81 / (params.size * params.size)) * params.strength
+      params.strength /* 0.081 * / (params.size * params.size)  */
     );
 
     this.gpu.drawGeometry(this.quad);
