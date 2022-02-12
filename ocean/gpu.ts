@@ -213,7 +213,6 @@ export class Gpu {
 
   flush() {
     this._gl.flush();
-    // this._gl.finish();
   }
 
   createFloatTexture(width: number, height: number): WebGLTexture {
@@ -227,6 +226,45 @@ export class Gpu {
       height,
       0,
       WebGL2RenderingContext.RED,
+      WebGL2RenderingContext.FLOAT,
+      null
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_MIN_FILTER,
+      WebGL2RenderingContext.NEAREST
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_MAG_FILTER,
+      WebGL2RenderingContext.NEAREST
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_WRAP_S,
+      WebGL2RenderingContext.CLAMP_TO_EDGE
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_WRAP_T,
+      WebGL2RenderingContext.CLAMP_TO_EDGE
+    );
+    this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
+
+    return texture;
+  }
+
+  createFloat2Texture(width: number, height: number): WebGLTexture {
+    const texture = this._gl.createTexture();
+    this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+    this._gl.texImage2D(
+      WebGL2RenderingContext.TEXTURE_2D,
+      0,
+      WebGL2RenderingContext.RG32F,
+      width,
+      height,
+      0,
+      WebGL2RenderingContext.RG,
       WebGL2RenderingContext.FLOAT,
       null
     );

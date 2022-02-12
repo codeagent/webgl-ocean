@@ -1,4 +1,3 @@
-import { ButterflyTier } from './butterfly';
 import { Complex } from './complex';
 import { dft, fft, idft, ifft } from './fft';
 
@@ -110,4 +109,3 @@ export const ifft2 = (fourier: Complex[][]): Complex[][] => {
 
   return signal;
 };
-

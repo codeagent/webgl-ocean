@@ -1,5 +1,9 @@
 import { vec2 } from 'gl-matrix';
-import { createImage, floatToUint8Clamped } from '../image';
+import {
+  createImage,
+  float2ToUint8Clamped,
+  float4ToUint8Clamped,
+} from '../image';
 
 import { HeightFieldFactory } from './height-field-factory';
 
@@ -13,31 +17,30 @@ const heightField = factory.build({
 });
 
 const noise = factory['noiseTexture'].get(heightField.params.subdivisions);
-const h0 = heightField['h0Texture'];
 const butterfly = heightField['butterflyTexture'];
 const gpu = factory['gpu'];
 const framebuffer = factory['frameBuffer'];
 
-gpu.setRenderTarget(framebuffer);
-gpu.attachTexture(framebuffer, h0, 0);
+// h0 texture
+{
+  const h0 = heightField['h0Texture'];
+  gpu.attachTexture(framebuffer, h0, 0);
+  const values = new Float32Array(
+    heightField.params.subdivisions * heightField.params.subdivisions * 4
+  );
+  gpu.readValues(
+    framebuffer,
+    values,
+    heightField.params.subdivisions,
+    heightField.params.subdivisions,
+    WebGL2RenderingContext.RGBA,
+    WebGL2RenderingContext.FLOAT
+  );
+  gpu.flush();
 
-const values = new Float32Array(
-  heightField.params.subdivisions * heightField.params.subdivisions * 4
-);
-gpu.readValues(
-  framebuffer,
-  values,
-  heightField.params.subdivisions,
-  heightField.params.subdivisions,
-  WebGL2RenderingContext.RGBA,
-  WebGL2RenderingContext.FLOAT
-);
-gpu.flush();
-
-console.log(values)
-
-createImage(
-  floatToUint8Clamped(values),
-  heightField.params.subdivisions,
-  heightField.params.subdivisions
-).then((img) => document.body.appendChild(img));
+  createImage(
+    float4ToUint8Clamped(values),
+    heightField.params.subdivisions,
+    heightField.params.subdivisions
+  ).then((img) => document.body.appendChild(img));
+}

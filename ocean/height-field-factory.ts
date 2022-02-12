@@ -57,6 +57,7 @@ export class HeightFieldFactory {
       this.gpu,
       this.getH0Texture(params),
       this.getButterflyTexture(params.subdivisions),
+      this.quad,
       params
     );
   }
