@@ -42,6 +42,7 @@ export class Gpu {
     _gl.disable(WebGL2RenderingContext.CULL_FACE);
     _gl.disable(WebGL2RenderingContext.BLEND);
     _gl.pixelStorei(WebGL2RenderingContext.UNPACK_ALIGNMENT, 1);
+    _gl.pixelStorei(WebGL2RenderingContext.PACK_ALIGNMENT, 1);
     _gl.viewport(0, 0, _gl.canvas.width, _gl.canvas.height);
     _gl.getExtension('EXT_color_buffer_float');
   }
@@ -183,6 +184,7 @@ export class Gpu {
       name
     );
     if (!loc) {
+      console.warn('Failed to find loc');
       return;
     }
 
@@ -213,6 +215,10 @@ export class Gpu {
 
   flush() {
     this._gl.flush();
+  }
+
+  finish() {
+    this._gl.finish();
   }
 
   createFloatTexture(width: number, height: number): WebGLTexture {

@@ -51,9 +51,10 @@ export class HeightField {
     return data;
   }
 
-  private fft2(fourierTexture: Texture2d) {
+  private async fft2(fourierTexture: Texture2d): Promise<Texture2d> {
     const phases = Math.log(this.params.subdivisions);
 
+    const wait = (t) => new Promise((r) => setTimeout(r, t));
     const pingPong = [fourierTexture, this.ppTexture];
 
     // horizontal fft
@@ -74,9 +75,13 @@ export class HeightField {
       this.gpu.setProgramVariable(this.fft2Program, 'phase', 'uint', phase);
       this.gpu.setProgramTexture(this.fft2Program, 'source', pingPong[ping], 1);
       this.gpu.drawGeometry(this.quad);
+      // this.gpu.flush();
       ping = pong;
       pong = (pong + 1) % 2;
+      // await wait(1000);
     }
+
+    return pingPong[ping];
 
     // vertical
     // @todo:
