@@ -22,15 +22,16 @@ const framebuffer = factory['frameBuffer'];
 const h0texture = heightField['h0Texture'];
 
 export const testHeightFieldFactoryButterflyTexture = () => {
-  const h0 = heightField['h0Texture'];
-  gpu.attachTexture(framebuffer, h0, 0);
+  gpu.attachTexture(framebuffer, butterfly, 0);
   const values = new Float32Array(
-    heightField.params.subdivisions * heightField.params.subdivisions * 4
+    heightField.params.subdivisions *
+      Math.log2(heightField.params.subdivisions) *
+      4
   );
   gpu.readValues(
     framebuffer,
     values,
-    heightField.params.subdivisions,
+    Math.log2(heightField.params.subdivisions),
     heightField.params.subdivisions,
     WebGL2RenderingContext.RGBA,
     WebGL2RenderingContext.FLOAT
@@ -39,7 +40,7 @@ export const testHeightFieldFactoryButterflyTexture = () => {
 
   createImage(
     float4ToUint8Clamped(values),
-    heightField.params.subdivisions,
+    Math.log2(heightField.params.subdivisions),
     heightField.params.subdivisions
   ).then((img) => document.body.appendChild(img));
 };

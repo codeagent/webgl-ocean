@@ -1,13 +1,15 @@
 import { Geometry, Gpu, RenderTarget, ShaderProgram, Texture2d } from './gpu';
 import { HeightFieldBuildParams } from './height-field-factory';
 
-import { vs as fft2vs, fs as fft2fs } from './programs/fft2';
+import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
+import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
 
 export class HeightField {
   private readonly ppTexture: Texture2d;
   private readonly hkTexture: Texture2d;
   private readonly framebuffer: RenderTarget;
-  private readonly fft2Program: ShaderProgram;
+  private readonly fft2hProgram: ShaderProgram;
+  private readonly fft2vProgram: ShaderProgram;
 
   constructor(
     private readonly gpu: Gpu,
@@ -25,7 +27,8 @@ export class HeightField {
       params.subdivisions,
       params.subdivisions
     );
-    this.fft2Program = this.gpu.createShaderProgram(fft2vs, fft2fs);
+    this.fft2hProgram = this.gpu.createShaderProgram(fft2hvs, fft2hfs);
+    this.fft2vProgram = this.gpu.createShaderProgram(fft2vvs, fft2vfs);
   }
 
   update(time: number): void {}
@@ -59,9 +62,9 @@ export class HeightField {
     let ping = 0;
     let pong = 1;
     this.gpu.setDimensions(this.params.subdivisions, this.params.subdivisions);
-    this.gpu.setProgram(this.fft2Program);
+    this.gpu.setProgram(this.fft2hProgram);
     this.gpu.setProgramTexture(
-      this.fft2Program,
+      this.fft2hProgram,
       'butterfly',
       this.butterflyTexture,
       0
@@ -70,17 +73,43 @@ export class HeightField {
     for (let phase = 0; phase < phases; phase++) {
       this.gpu.attachTexture(this.framebuffer, pingPong[pong], 0);
       this.gpu.setRenderTarget(this.framebuffer);
-      this.gpu.setProgramVariable(this.fft2Program, 'phase', 'uint', phase);
-      this.gpu.setProgramTexture(this.fft2Program, 'source', pingPong[ping], 1);
+      this.gpu.setProgramVariable(this.fft2hProgram, 'phase', 'uint', phase);
+      this.gpu.setProgramTexture(
+        this.fft2hProgram,
+        'source',
+        pingPong[ping],
+        1
+      );
+      this.gpu.drawGeometry(this.quad);
+      ping = pong;
+      pong = (pong + 1) % 2;
+    }
+
+    // vertical fft
+    this.gpu.setProgram(this.fft2vProgram);
+    this.gpu.setProgramTexture(
+      this.fft2vProgram,
+      'butterfly',
+      this.butterflyTexture,
+      0
+    );
+
+    for (let phase = 0; phase < phases; phase++) {
+      this.gpu.attachTexture(this.framebuffer, pingPong[pong], 0);
+      this.gpu.setRenderTarget(this.framebuffer);
+      this.gpu.setProgramVariable(this.fft2vProgram, 'phase', 'uint', phase);
+      this.gpu.setProgramTexture(
+        this.fft2vProgram,
+        'source',
+        pingPong[ping],
+        1
+      );
       this.gpu.drawGeometry(this.quad);
       ping = pong;
       pong = (pong + 1) % 2;
     }
 
     return pingPong[ping];
-
-    // vertical
-    // @todo:
 
     // normalize
     // @todo:

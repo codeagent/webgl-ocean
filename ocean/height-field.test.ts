@@ -1,6 +1,7 @@
 import { vec2 } from 'gl-matrix';
 import { complex, Complex } from '../complex';
 import { dft, fft } from '../fft';
+import { dft2, fft2 } from '../fft2';
 import { createImage, float2ToUint8Clamped } from '../image';
 import { HeightFieldFactory } from './height-field-factory';
 
@@ -24,6 +25,9 @@ export const testHeightFieldFft2 = () => {
       .map(() => Math.random() * 2.0 - 1.0)
       .map((v) => complex(v, 0.0))
   );
+  let cpuBench = performance.now();
+  const expected = fft2(signal).flat(2);
+  cpuBench = performance.now() - cpuBench;
 
   gpu.updateTexture(
     hkTexture,
@@ -35,6 +39,7 @@ export const testHeightFieldFft2 = () => {
   );
 
   // Act
+  let gpuBench = performance.now();
   const result = heightField['fft2'](hkTexture);
   gpu.attachTexture(framebuffer, result, 0);
   const actual = new Float32Array(
@@ -48,30 +53,28 @@ export const testHeightFieldFft2 = () => {
     WebGL2RenderingContext.RG,
     WebGL2RenderingContext.FLOAT
   );
-  gpu.flush();
-
-  const expected = signal.map((row) => fft(row)).flat(2);
+  gpuBench = performance.now() - gpuBench;
 
   // Assert
   const diff = [...actual]
     .map((a, i) => [i, a, expected[i], Math.abs(a - expected[i])])
-    .filter((v) => v[3] >= 1.0e-5);
+    .filter((v) => v[3] >= 1.0e-4);
 
   if (diff.length) {
-    console.warn("Test don't passed: ", diff);
+    console.warn("testHeightFieldFft2 don't passed: ", diff);
   } else {
-    console.log('Test passed!');
+    console.log('testHeightFieldFft2 passed!', cpuBench, gpuBench);
   }
 
-  // createImage(
-  //   float2ToUint8Clamped(Float32Array.from(expected)),
-  //   heightField.params.subdivisions,
-  //   heightField.params.subdivisions
-  // ).then((img) => document.body.appendChild(img));
+  createImage(
+    float2ToUint8Clamped(Float32Array.from(expected)),
+    heightField.params.subdivisions,
+    heightField.params.subdivisions
+  ).then((img) => document.body.appendChild(img));
 
-  // createImage(
-  //   float2ToUint8Clamped(Float32Array.from(actual)),
-  //   heightField.params.subdivisions,
-  //   heightField.params.subdivisions
-  // ).then((img) => document.body.appendChild(img));
+  createImage(
+    float2ToUint8Clamped(Float32Array.from(actual)),
+    heightField.params.subdivisions,
+    heightField.params.subdivisions
+  ).then((img) => document.body.appendChild(img));
 };

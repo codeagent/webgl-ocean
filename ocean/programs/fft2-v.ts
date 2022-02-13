@@ -28,10 +28,9 @@ complex mult(complex a, complex b) {
 }
 
 void main() {
-  vec4 texelButt = texelFetch(butterfly, ivec2(phase,  gl_FragCoord.x), 0).rgba;
-  
-  vec2 texelA = texelFetch(source, ivec2(texelButt.b, gl_FragCoord.y), 0).xy;
-  vec2 texelB = texelFetch(source, ivec2(texelButt.a, gl_FragCoord.y), 0).xy;
+  vec4 texelButt = texelFetch(butterfly, ivec2(phase,  gl_FragCoord.y), 0).rgba;
+  vec2 texelA = texelFetch(source, ivec2(gl_FragCoord.x, texelButt.b), 0).xy;
+  vec2 texelB = texelFetch(source, ivec2(gl_FragCoord.x, texelButt.a), 0).xy;
 
   complex a = complex(texelA.x, texelA.y);
   complex b = complex(texelB.x, texelB.y);
