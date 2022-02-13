@@ -6,7 +6,7 @@ import { createButterflyTexture } from './ocean/butterfly';
 import { createImage, float4ToUint8Clamped } from './image';
 import { testButterfly } from './ocean/butterfly.test';
 
-import './ocean/sandbox';
+// import './ocean/sandbox';
 import { testHeightFieldFft2 } from './ocean/height-field.test';
 
 document.getElementById('butterfly').addEventListener('click', async () => {
@@ -22,7 +22,7 @@ document.getElementById('butterfly').addEventListener('click', async () => {
 // testdft2();
 // testFft2();
 testHeightFieldFft2();
-  testButterfly(8);
+
 // for (let p = 1; p < 16; p++) {
 //   testButterfly(1 << p);
 // }
