@@ -12,12 +12,11 @@ import { testButterfly } from './ocean/butterfly.test';
 // for (let p = 1; p < 16; p++) {
 //   testButterfly(1 << p);
 // }
-
 // testDft();
 // testFft();
 // testdft2();
 // testFft2();
 // testHeightFieldFactoryButterflyTexture();
 // testHeightFieldFactoryH0texture();
+// testHeightHkTexture();
 testHeightFieldIfft2();
-testHeightHkTexture();

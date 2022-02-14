@@ -6,12 +6,17 @@ import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
 
 export class HeightField {
+  get heightTexture(): Texture2d {
+    return this._heightTexture;
+  }
+
   private readonly ppTexture: Texture2d;
   private readonly hkTexture: Texture2d;
   private readonly framebuffer: RenderTarget;
   private readonly hkProgram: ShaderProgram;
   private readonly fft2hProgram: ShaderProgram;
   private readonly fft2vProgram: ShaderProgram;
+  private _heightTexture: Texture2d;
 
   constructor(
     private readonly gpu: Gpu,
@@ -25,7 +30,7 @@ export class HeightField {
       params.subdivisions,
       params.subdivisions
     );
-    this.ppTexture = this.gpu.createFloat2Texture(
+    this._heightTexture = this.ppTexture = this.gpu.createFloat2Texture(
       params.subdivisions,
       params.subdivisions
     );
@@ -34,9 +39,21 @@ export class HeightField {
     this.hkProgram = this.gpu.createShaderProgram(hkvs, hkfs);
   }
 
-  update(time: number): void {}
+  update(time: number): void {
+    this._heightTexture = this.ifft2(this.generateHkTexture(time));
+  }
 
-  download(data: Float32Array): void {}
+  download(data: Float32Array): void {
+    this.gpu.attachTexture(this.framebuffer, this._heightTexture, 0);
+    this.gpu.readValues(
+      this.framebuffer,
+      data,
+      this.params.subdivisions,
+      this.params.subdivisions,
+      WebGL2RenderingContext.RG,
+      WebGL2RenderingContext.FLOAT
+    );
+  }
 
   private generateHkTexture(time: number): Texture2d {
     this.gpu.setDimensions(this.params.subdivisions, this.params.subdivisions);
@@ -111,7 +128,7 @@ export class HeightField {
         this.fft2vProgram,
         'N2',
         'uint',
-        this.params.subdivisions ** 2
+        this.params.subdivisions * this.params.subdivisions
       );
       this.gpu.setProgramTexture(
         this.fft2vProgram,
@@ -125,8 +142,5 @@ export class HeightField {
     }
 
     return pingPong[ping];
-
-    // normalize
-    // @todo:
   }
 }

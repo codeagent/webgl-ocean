@@ -45,10 +45,10 @@ void main() {
   complex result = add(a, mult(b, w));
 
   if(phase == phases - 1u) {
-    float signs[2] = { 1.0f, -1.0f };
-    float sign = signs[mod(gl_FragCoord.x + gl_FragCoord.y, 2)];
-    result = scale(result, pow(-1.0f, gl_FragCoord.x + gl_FragCoord.y) / float(N2));
-  }
+    float sign[] = float[2](1.0f, -1.0f);
+    float p = float(int(gl_FragCoord.x) + int(gl_FragCoord.y));
+    result = scale(result, sign[int(mod(p, 2.0f))] / float(N2));
+  } 
 
   outColor = vec2(result.re, result.im);
 }
