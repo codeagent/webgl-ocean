@@ -8,7 +8,7 @@ import { HeightFieldFactory } from './height-field-factory';
 const heightField = HeightFieldFactory.instance.build({
   size: 1000,
   subdivisions: 128,
-  wind: vec2.fromValues(28.0, 28.0),
+  wind: vec2.fromValues(0.0, 28.0),
   strength: 4.0,
 });
 
@@ -18,7 +18,8 @@ const framebuffer = heightField['framebuffer'];
 
 export const testHeightHkTexture = () => {
   // Arrange
-  const result = heightField['generateHkTexture'](0);
+  heightField['generateHkTexture'](0);
+  const result = heightField['ifft2'](hkTexture);
   gpu.attachTexture(framebuffer, result, 0);
   const actual = new Float32Array(
     heightField.params.subdivisions * heightField.params.subdivisions * 2

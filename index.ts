@@ -19,5 +19,5 @@ import { testButterfly } from './ocean/butterfly.test';
 // testFft2();
 // testHeightFieldFactoryButterflyTexture();
 // testHeightFieldFactoryH0texture();
-// testHeightFieldIfft2();
+testHeightFieldIfft2();
 testHeightHkTexture();
