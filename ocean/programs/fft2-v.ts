@@ -13,6 +13,8 @@ out vec2 outColor;
 uniform sampler2D source;
 uniform sampler2D butterfly;
 uniform uint phase;
+uniform uint phases;
+uniform uint N2;
 
 struct complex {
   float re;
@@ -27,6 +29,10 @@ complex mult(complex a, complex b) {
   return complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
 }
 
+complex scale(complex a, float v) {
+  return complex(a.re * v, a.im * v);
+}
+
 void main() {
   vec4 texelButt = texelFetch(butterfly, ivec2(phase,  gl_FragCoord.y), 0).rgba;
   vec2 texelA = texelFetch(source, ivec2(gl_FragCoord.x, texelButt.b), 0).xy;
@@ -37,6 +43,10 @@ void main() {
   complex w = complex(texelButt.r, texelButt.g);
 
   complex result = add(a, mult(b, w));
+
+  if(phase == phases - 1u) {
+    result = scale(result, 1.0f / float(N2));
+  }
 
   outColor = vec2(result.re, result.im);
 }

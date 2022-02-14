@@ -2,7 +2,7 @@ import './style.css';
 
 import { testDft, testFft } from './fft.test';
 import { testdft2, testFft2 } from './fft2.test';
-import { testHeightFieldFft2 } from './ocean/height-field.test';
+import { testHeightFieldIfft2, testHeightHkTexture } from './ocean/height-field.test';
 import {
   testHeightFieldFactoryButterflyTexture,
   testHeightFieldFactoryH0texture,
@@ -19,4 +19,5 @@ import { testButterfly } from './ocean/butterfly.test';
 // testFft2();
 // testHeightFieldFactoryButterflyTexture();
 // testHeightFieldFactoryH0texture();
-testHeightFieldFft2();
+// testHeightFieldIfft2();
+testHeightHkTexture();

@@ -3,11 +3,13 @@ import { HeightFieldBuildParams } from './height-field-factory';
 
 import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
 import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
+import { vs as hkvs, fs as hkfs } from './programs/hk';
 
 export class HeightField {
   private readonly ppTexture: Texture2d;
   private readonly hkTexture: Texture2d;
   private readonly framebuffer: RenderTarget;
+  private readonly hkProgram: ShaderProgram;
   private readonly fft2hProgram: ShaderProgram;
   private readonly fft2vProgram: ShaderProgram;
 
@@ -29,32 +31,38 @@ export class HeightField {
     );
     this.fft2hProgram = this.gpu.createShaderProgram(fft2hvs, fft2hfs);
     this.fft2vProgram = this.gpu.createShaderProgram(fft2vvs, fft2vfs);
+    this.hkProgram = this.gpu.createShaderProgram(hkvs, hkfs);
   }
 
   update(time: number): void {}
 
   download(data: Float32Array): void {}
 
-  private generateHkTexture(time: number): Float32Array {
-    // @todo:
-    const data = new Float32Array(
-      this.params.subdivisions * this.params.subdivisions * 2
+  private generateHkTexture(time: number): Texture2d {
+    this.gpu.setDimensions(this.params.subdivisions, this.params.subdivisions);
+    this.gpu.setProgram(this.hkProgram);
+    this.gpu.setProgramTexture(this.hkProgram, 'h0Texture', this.h0Texture, 0);
+    this.gpu.setProgramVariable(
+      this.hkProgram,
+      'subdivisions',
+      'uint',
+      this.params.subdivisions
     );
-    data.forEach((_, i, arr) => (arr[i] = Math.random() * 2.0 - 1.0));
-
-    this.gpu.updateTexture(
-      this.hkTexture,
-      this.params.subdivisions,
-      this.params.subdivisions,
-      WebGL2RenderingContext.RG,
-      WebGL2RenderingContext.FLOAT,
-      data
+    this.gpu.setProgramVariable(
+      this.hkProgram,
+      'size',
+      'float',
+      this.params.size
     );
+    this.gpu.setProgramVariable(this.hkProgram, 't', 'float', time);
+    this.gpu.attachTexture(this.framebuffer, this.hkTexture, 0);
+    this.gpu.setRenderTarget(this.framebuffer);
+    this.gpu.drawGeometry(this.quad);
 
-    return data;
+    return this.hkTexture;
   }
 
-  private fft2(fourierTexture: Texture2d): Texture2d {
+  private ifft2(fourierTexture: Texture2d): Texture2d {
     const phases = Math.log2(this.params.subdivisions);
     const pingPong = [fourierTexture, this.ppTexture];
 
@@ -98,6 +106,13 @@ export class HeightField {
       this.gpu.attachTexture(this.framebuffer, pingPong[pong], 0);
       this.gpu.setRenderTarget(this.framebuffer);
       this.gpu.setProgramVariable(this.fft2vProgram, 'phase', 'uint', phase);
+      this.gpu.setProgramVariable(this.fft2vProgram, 'phases', 'uint', phases);
+      this.gpu.setProgramVariable(
+        this.fft2vProgram,
+        'N2',
+        'uint',
+        this.params.subdivisions ** 2
+      );
       this.gpu.setProgramTexture(
         this.fft2vProgram,
         'source',

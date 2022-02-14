@@ -7,7 +7,7 @@ void main() {
 
 export const fs = `#version 300 es
 #define PI 3.141592653f
-#define g 9.81f;
+#define g 9.81f
 
 precision highp float;
 
