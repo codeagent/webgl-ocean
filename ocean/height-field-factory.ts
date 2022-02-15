@@ -37,7 +37,7 @@ export class HeightFieldFactory {
   }
 
   private static _instance: HeightFieldFactory = null;
-  private readonly gpu: Gpu;
+  private readonly gpu: Gpu = Gpu.instance;
   private readonly quad: Geometry;
   private readonly frameBuffer: RenderTarget;
   private readonly noiseTexture = new Map<number, Texture2d>();
@@ -45,8 +45,6 @@ export class HeightFieldFactory {
   private readonly h0Program: ShaderProgram;
 
   private constructor() {
-    const canvas = document.createElement('canvas') as HTMLCanvasElement;
-    this.gpu = new Gpu(canvas.getContext('webgl2'));
     this.quad = this.gpu.createGeometry(quad);
     this.frameBuffer = this.gpu.createRenderTarget();
     this.h0Program = this.gpu.createShaderProgram(h0vs, h0fs);

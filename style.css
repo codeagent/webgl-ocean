@@ -7,4 +7,5 @@ canvas {
   height: 600px;
   box-sizing: content-box;
   min-width: 800px;
+  background-color: black;
 }

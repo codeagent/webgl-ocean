@@ -116,7 +116,6 @@ export class ArcRotationCameraController {
 
   private scroll(e: WheelEvent) {
     this.distance += this.moveSpeed * e.deltaY * 1.0e-2;
-    this.distance = Math.min(25.0, Math.max(0.25, this.distance));
     this.updateTransform();
   }
 

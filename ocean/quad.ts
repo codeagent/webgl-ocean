@@ -10,5 +10,5 @@ export default {
     },
   ],
   vertexData: Float32Array.from([-1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1]),
-  indexData: Uint16Array.from([0, 1, 2, 0, 2, 3]),
+  indexData: Uint32Array.from([0, 1, 2, 0, 2, 3]),
 };

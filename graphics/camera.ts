@@ -3,7 +3,7 @@ import { Transform } from './transform';
 
 export class Camera extends Transform {
   get view() {
-    mat4.invert(this._view, this.transform);
+    mat4.invert(this._view, mat4.clone(this.transform));
     return this._view;
   }
 
@@ -32,7 +32,8 @@ export class Camera extends Transform {
 
   lookAt(eye: vec3, at: vec3) {
     mat4.targetTo(this._view, eye, at, [0.0, 1.0, 0.0]);
-    mat4.getTranslation(this.position, this._view);
-    mat4.getRotation(this.rotation, this._view);
+    mat4.getTranslation(this._position, this._view);
+    mat4.getRotation(this._rotation, this._view);
+    this._dirty = true;
   }
 }

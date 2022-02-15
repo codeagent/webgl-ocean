@@ -35,15 +35,25 @@ export interface Geometry {
 export interface Mesh {
   vertexFormat: VertexAttribute[];
   vertexData: ArrayBufferView;
-  indexData: Uint16Array;
+  indexData: Uint32Array;
 }
 
 export class Gpu {
+  static get instance() {
+    return Gpu._instance;
+  }
+
+  static init(canvas: HTMLCanvasElement) {
+    Gpu._instance = new Gpu(canvas.getContext('webgl2'));
+  }
+
   get context() {
     return this._gl;
   }
 
-  constructor(private readonly _gl: WebGL2RenderingContext) {
+  private static _instance: Gpu = null;
+
+  private constructor(private readonly _gl: WebGL2RenderingContext) {
     // _gl.disable(WebGL2RenderingContext.DEPTH_TEST);
     // _gl.disable(WebGL2RenderingContext.CULL_FACE);
     _gl.disable(WebGL2RenderingContext.BLEND);
@@ -51,6 +61,7 @@ export class Gpu {
     _gl.pixelStorei(WebGL2RenderingContext.PACK_ALIGNMENT, 1);
     _gl.viewport(0, 0, _gl.canvas.width, _gl.canvas.height);
     _gl.getExtension('EXT_color_buffer_float');
+    _gl.clearColor(0.0, 0.0, 0.0, 1.0);
   }
 
   createGeometry(
@@ -219,7 +230,7 @@ export class Gpu {
     this._gl.drawElements(
       geometry.type ?? WebGL2RenderingContext.TRIANGLES,
       geometry.length,
-      WebGL2RenderingContext.UNSIGNED_SHORT,
+      WebGL2RenderingContext.UNSIGNED_INT,
       0
     );
   }

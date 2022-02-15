@@ -1,7 +1,10 @@
 import './style.css';
-
+import { Gpu } from './ocean/gpu';
 import { testDft, testFft } from './fft.test';
 import { testdft2, testFft2 } from './fft2.test';
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+Gpu.init(canvas);
+
 import {
   testHeightFieldIfft2,
   testHeightHkTexture,
@@ -29,12 +32,11 @@ import { ArcRotationCameraController } from './graphics/camera-controller';
 // testHeightHkTexture();
 // testHeightFieldIfft2();
 
-const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const heightField = HeightFieldFactory.instance.build({
   size: 100,
   subdivisions: 128,
-  wind: vec2.fromValues(28.0, 28.0),
-  strength: 4,
+  wind: vec2.fromValues(31.0, 31.0),
+  strength: 100 * 100 ,
 });
 const camera = new Camera(
   45.0,
@@ -50,14 +52,15 @@ camera.position = vec3.fromValues(
 const controller = new ArcRotationCameraController(
   canvas,
   camera,
-  vec3.fromValues(0.0, 0.0, 0.0)
+  vec3.fromValues(1.0, 0.0, 0.0),
+  1.0e-2,
+  heightField.params.size * 0.25
 );
 const viewport = new Viewport(canvas, camera, heightField);
 
 const step = () => {
-  heightField.update(Date.now() / 1000.0);
+  heightField.update(performance.now() / 1000);
   controller.update();
-  console.log(camera.position);
   viewport.render();
   requestAnimationFrame(() => step());
 };
