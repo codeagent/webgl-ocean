@@ -20,7 +20,7 @@ export class Viewport {
 
   render() {
     this.gpu.setDimensions(this.canvas.width, this.canvas.height);
-    this.gpu.setRenderTarget(null)
+    this.gpu.setRenderTarget(null);
     this.gpu.clearRenderTarget();
     this.gpu.setProgram(this.waterShader);
     this.gpu.setProgramTexture(
@@ -46,6 +46,12 @@ export class Viewport {
       'pos',
       'vec3',
       this.camera.position
+    );
+    this.gpu.setProgramVariable(
+      this.waterShader,
+      'delta',
+      'float',
+      this.heightField.params.size / (this.heightField.params.subdivisions - 1)
     );
 
     this.gpu.drawGeometry(this.water);
@@ -106,7 +112,7 @@ export class Viewport {
       indexData: Uint32Array.from(indices),
     };
 
-    console.log(mesh.indexData.length)
+    console.log(mesh.indexData.length);
 
     return this.gpu.createGeometry(mesh);
   }

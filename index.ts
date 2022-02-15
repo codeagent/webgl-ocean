@@ -33,26 +33,26 @@ import { ArcRotationCameraController } from './graphics/camera-controller';
 // testHeightFieldIfft2();
 
 const heightField = HeightFieldFactory.instance.build({
-  size: 100,
-  subdivisions: 128,
+  size: 1000,
+  subdivisions: 256,
   wind: vec2.fromValues(31.0, 31.0),
-  strength: 100 * 100 ,
+  strength: 1000,
 });
 const camera = new Camera(
   45.0,
   canvas.width / canvas.height,
   heightField.params.size * 1.0e-2,
-  heightField.params.size * 1.0e1
+  heightField.params.size * 1.0e3
 );
-camera.position = vec3.fromValues(
-  heightField.params.size,
-  heightField.params.size,
-  heightField.params.size
-);
+camera.position = vec3.fromValues(-100, 500, -100);
 const controller = new ArcRotationCameraController(
   canvas,
   camera,
-  vec3.fromValues(1.0, 0.0, 0.0),
+  vec3.fromValues(
+    heightField.params.size * 0.5,
+    0.0,
+    heightField.params.size * 0.5
+  ),
   1.0e-2,
   heightField.params.size * 0.25
 );
