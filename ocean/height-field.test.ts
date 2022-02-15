@@ -1,7 +1,5 @@
 import { vec2 } from 'gl-matrix';
-import { complex, Complex } from '../complex';
-import { dft, fft } from '../fft';
-import { dft2, fft2, ifft2 } from '../fft2';
+
 import { createImage, float2ToUint8Clamped } from '../image';
 import { HeightFieldFactory } from './height-field-factory';
 

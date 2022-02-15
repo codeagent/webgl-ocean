@@ -1,3 +1,10 @@
 * {
   font-family: Calibri;
 }
+
+canvas {
+  width: 800px;
+  height: 600px;
+  box-sizing: content-box;
+  min-width: 800px;
+}

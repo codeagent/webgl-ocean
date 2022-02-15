@@ -1,4 +1,4 @@
-import { vec2 } from 'gl-matrix';
+import { mat4, vec2, vec3 } from 'gl-matrix';
 
 export type ShaderProgram = WebGLProgram;
 export type Cubemap = WebGLTexture;
@@ -7,7 +7,13 @@ export type VertexBuffer = WebGLBuffer;
 export type IndexBuffer = WebGLBuffer;
 export type RenderTarget = WebGLFramebuffer;
 
-export type ShaderProgramVariableType = 'uint' | 'int' | 'float' | 'vec2';
+export type ShaderProgramVariableType =
+  | 'uint'
+  | 'int'
+  | 'float'
+  | 'vec2'
+  | 'vec3'
+  | 'mat4';
 
 export interface VertexAttribute {
   semantics: string;
@@ -38,8 +44,8 @@ export class Gpu {
   }
 
   constructor(private readonly _gl: WebGL2RenderingContext) {
-    _gl.disable(WebGL2RenderingContext.DEPTH_TEST);
-    _gl.disable(WebGL2RenderingContext.CULL_FACE);
+    // _gl.disable(WebGL2RenderingContext.DEPTH_TEST);
+    // _gl.disable(WebGL2RenderingContext.CULL_FACE);
     _gl.disable(WebGL2RenderingContext.BLEND);
     _gl.pixelStorei(WebGL2RenderingContext.UNPACK_ALIGNMENT, 1);
     _gl.pixelStorei(WebGL2RenderingContext.PACK_ALIGNMENT, 1);
@@ -153,13 +159,14 @@ export class Gpu {
     program: ShaderProgram,
     name: string,
     type: ShaderProgramVariableType,
-    value: number | vec2
+    value: number | vec2 | vec3 | mat4
   ) {
     const loc: WebGLUniformLocation = this._gl.getUniformLocation(
       program,
       name
     );
     if (!loc) {
+      console.warn('Failed to find loc: ', name);
       return;
     }
     if (type === 'uint') {
@@ -170,6 +177,10 @@ export class Gpu {
       this._gl.uniform1f(loc, value as number);
     } else if (type === 'vec2') {
       this._gl.uniform2fv(loc, value as vec2);
+    } else if (type === 'vec3') {
+      this._gl.uniform3fv(loc, value as vec3);
+    } else if (type === 'mat4') {
+      this._gl.uniformMatrix4fv(loc, false, value as mat4);
     }
   }
 
@@ -184,7 +195,7 @@ export class Gpu {
       name
     );
     if (!loc) {
-      console.warn('Failed to find loc');
+      console.warn('Failed to find loc: ', name);
       return;
     }
 
