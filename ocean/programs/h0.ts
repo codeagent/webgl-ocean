@@ -41,14 +41,14 @@ void main() {
   float h0k = sqrt(
     (A / k2 / k2) * 
     exp(-1.0 / (k2 * L2) - (k2 * l2)) * 
-    pow(dot(normalize(wind), normalize(k)), 6.0f) * 
+    pow(dot(normalize(wind), normalize(k)), 2.0f) * 
     0.5
   );
 
   float h0mk = sqrt(
     (A / k2 / k2) * 
     exp(-1.0 / (k2 * L2) - (k2 * l2)) *
-    pow(dot(normalize(wind), normalize(-k)), 6.0f) * 
+    pow(dot(normalize(wind), normalize(-k)), 2.0f) * 
     0.5
   );
 
