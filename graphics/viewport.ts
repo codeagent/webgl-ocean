@@ -64,16 +64,21 @@ export class Viewport {
     const N = this.heightField.params.subdivisions;
     const L = this.heightField.params.size;
     const delta = L / (N - 1);
+    const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
 
     for (let i = 0; i < N - 1; i++) {
       for (let j = 0; j < N - 1; j++) {
         let v0 = vec3.fromValues(j * delta, 0.0, i * delta);
+        vec3.add(v0, v0, offset);
         let id0 = vec2.fromValues(j, i);
         let v1 = vec3.fromValues((j + 1) * delta, 0.0, i * delta);
+        vec3.add(v1, v1, offset);
         let id1 = vec2.fromValues(j + 1, i);
         let v2 = vec3.fromValues((j + 1) * delta, 0.0, (i + 1) * delta);
+        vec3.add(v2, v2, offset);
         let id2 = vec2.fromValues(j + 1, i + 1);
         let v3 = vec3.fromValues(j * delta, 0.0, (i + 1) * delta);
+        vec3.add(v3, v3, offset);
         let id3 = vec2.fromValues(j, i + 1);
 
         indices.push(vertices.length, vertices.length + 1, vertices.length + 2);

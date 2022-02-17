@@ -41,7 +41,7 @@ export const makeButterfly = (root: BatterflyNode): ButterflyTier[] => {
     const size = node.indices.length;
     const tierId = Math.log2(size) - 1;
 
-    const w = (2 * Math.PI) / size;
+    const w = (-2 * Math.PI) / size;
     const tier = (tiers[tierId] = tiers[tierId] ?? []);
 
     if (tierId === 0) {
