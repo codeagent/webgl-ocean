@@ -30,12 +30,12 @@ import { ArcRotationCameraController } from './graphics/camera-controller';
 // testHeightFieldFactoryButterflyTexture();
 // testHeightFieldFactoryH0texture();
 // testHeightHkTexture();
-// testHeightFieldIfft2();
+testHeightFieldIfft2();
 
 const heightField = HeightFieldFactory.instance.build({
   size: 1000,
   subdivisions: 256,
-  wind: vec2.fromValues(31.0, 31.0),
+  wind: vec2.fromValues(31.0, 15.0),
   strength: 1000,
 });
 const camera = new Camera(
@@ -44,7 +44,7 @@ const camera = new Camera(
   heightField.params.size * 1.0e-2,
   heightField.params.size * 1.0e3
 );
-camera.position = vec3.fromValues(-100, 500, -100);
+camera.position = vec3.fromValues(100, 500, 100);
 const controller = new ArcRotationCameraController(
   canvas,
   camera,

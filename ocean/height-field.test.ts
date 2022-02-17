@@ -1,6 +1,6 @@
 import { vec2 } from 'gl-matrix';
 
-import { createImage, float2ToUint8Clamped } from '../image';
+import { createImage, float2ToUint8Clamped, float4ToUint8Clamped } from '../image';
 import { HeightFieldFactory } from './height-field-factory';
 
 const heightField = HeightFieldFactory.instance.build({
@@ -19,20 +19,20 @@ export const testHeightHkTexture = () => {
   const result = heightField['generateHkTexture'](0);
   gpu.attachTexture(framebuffer, result, 0);
   const actual = new Float32Array(
-    heightField.params.subdivisions * heightField.params.subdivisions * 2
+    heightField.params.subdivisions * heightField.params.subdivisions * 4
   );
   gpu.readValues(
     framebuffer,
     actual,
     heightField.params.subdivisions,
     heightField.params.subdivisions,
-    WebGL2RenderingContext.RG,
+    WebGL2RenderingContext.RGBA,
     WebGL2RenderingContext.FLOAT
   );
 
   // Display
   createImage(
-    float2ToUint8Clamped(Float32Array.from(actual)),
+    float4ToUint8Clamped(Float32Array.from(actual)),
     heightField.params.subdivisions,
     heightField.params.subdivisions
   ).then((img) => document.body.appendChild(img));
@@ -46,19 +46,19 @@ export const testHeightFieldIfft2 = () => {
   const result = heightField['ifft2'](hkTexture);
   gpu.attachTexture(framebuffer, result, 0);
   const actual = new Float32Array(
-    heightField.params.subdivisions * heightField.params.subdivisions * 2
+    heightField.params.subdivisions * heightField.params.subdivisions * 4
   );
   gpu.readValues(
     framebuffer,
     actual,
     heightField.params.subdivisions,
     heightField.params.subdivisions,
-    WebGL2RenderingContext.RG,
+    WebGL2RenderingContext.RGBA,
     WebGL2RenderingContext.FLOAT
   );
 
   createImage(
-    float2ToUint8Clamped(Float32Array.from(actual), true),
+    float4ToUint8Clamped(Float32Array.from(actual), true),
     heightField.params.subdivisions,
     heightField.params.subdivisions
   ).then((img) => document.body.appendChild(img));

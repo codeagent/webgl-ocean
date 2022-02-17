@@ -6,8 +6,8 @@ import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
 
 export class HeightField {
-  get heightTexture(): Texture2d {
-    return this._heightTexture;
+  get displacement(): Texture2d {
+    return this._displacementTexture;
   }
 
   private readonly ppTexture: Texture2d;
@@ -16,7 +16,7 @@ export class HeightField {
   private readonly hkProgram: ShaderProgram;
   private readonly fft2hProgram: ShaderProgram;
   private readonly fft2vProgram: ShaderProgram;
-  private _heightTexture: Texture2d;
+  private _displacementTexture: Texture2d;
 
   constructor(
     private readonly gpu: Gpu,
@@ -26,11 +26,11 @@ export class HeightField {
     public readonly params: HeightFieldBuildParams
   ) {
     this.framebuffer = this.gpu.createRenderTarget();
-    this.hkTexture = this.gpu.createFloat2Texture(
+    this.hkTexture = this.gpu.createFloat4Texture(
       params.subdivisions,
       params.subdivisions
     );
-    this._heightTexture = this.ppTexture = this.gpu.createFloat2Texture(
+    this._displacementTexture = this.ppTexture = this.gpu.createFloat4Texture(
       params.subdivisions,
       params.subdivisions
     );
@@ -40,11 +40,11 @@ export class HeightField {
   }
 
   update(time: number): void {
-    this._heightTexture = this.ifft2(this.generateHkTexture(time));
+    this._displacementTexture = this.ifft2(this.generateHkTexture(time));
   }
 
   download(data: Float32Array): void {
-    this.gpu.attachTexture(this.framebuffer, this._heightTexture, 0);
+    this.gpu.attachTexture(this.framebuffer, this._displacementTexture, 0);
     this.gpu.readValues(
       this.framebuffer,
       data,

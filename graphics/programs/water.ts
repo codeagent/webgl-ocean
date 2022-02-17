@@ -5,7 +5,7 @@ layout(location = 1) in vec2 id;
 
 uniform mat4 viewMat;
 uniform mat4 projMat;
-uniform sampler2D heightField;
+uniform sampler2D displacementMap;
 uniform float delta;
 
 out vec3 _position;
@@ -13,20 +13,24 @@ out vec2 _id;
 out vec3 _normal;
 
 vec3 getNormal(ivec2 uv) {
-  float n = texelFetch(heightField, uv + ivec2(0, 1), 0).x;
-  float s = texelFetch(heightField, uv + ivec2(0, -1), 0).x;
-  float w = texelFetch(heightField, uv + ivec2(-1, 0), 0).x;
-  float e = texelFetch(heightField, uv + ivec2(1, 0), 0).x;
+  vec3 center = texelFetch(displacementMap, uv, 0).xyz;
+  vec3 top = vec3(0.0, 0.0, delta) + texelFetch(displacementMap, uv + ivec2(0, 1), 0).xyz - center;
+  vec3 bottom = vec3(0.0, 0.0, -delta) + texelFetch(displacementMap, uv + ivec2(0, -1), 0).xyz - center;
+  vec3 left = vec3(-delta, 0.0, 0.0) + texelFetch(displacementMap, uv + ivec2(-1, 0), 0).xyz - center;
+  vec3 right = vec3(delta, 0.0, 0.0) + texelFetch(displacementMap, uv + ivec2(1, 0), 0).xyz - center;
 
-  float dz = (n - s) / 2.0 / delta;
-  float dx = (e - w) / 2.0 / delta;
-  return normalize(vec3(dx, 1.0, dz));
+  vec3 x0 = cross(top, left);
+  vec3 x1 = cross(left, bottom);
+  vec3 x2 = cross(bottom, right);
+  vec3 x3 = cross(right, top);
+
+  return normalize(x0 + x1 + x2 + x3 );
 }
 
 void main()
 {
   ivec2 uv = ivec2(id.x, id.y);
-  _position = position.xyz + vec3(0.0, texelFetch(heightField, uv, 0).y, 0.0);
+  _position = position + texelFetch(displacementMap, uv, 0).xyz;
   _normal = getNormal(uv); 
   _id = id;
   gl_Position = projMat * viewMat * vec4(_position, 1.0f);
@@ -43,16 +47,15 @@ in vec3 _position;
 in vec2 _id;
 
 
-uniform sampler2D heightField;
 uniform vec3 pos;
 
 void main()
 {
-  vec2 height = texelFetch(heightField, ivec2(_id.x, _id.y), 0).xy;
   vec4 albedo = vec4(0, 0.62, 0.77, 1.0) ;
   vec3 n = normalize(_normal);
   vec3 l = normalize(pos - _position);
-  float nol = dot(n, l) * 0.7 + 0.3;
+  float nol = dot(n, l) * 0.9 + 0.1;
   color = albedo * vec4(vec3(nol), 1.0f);
+
 }
 `;

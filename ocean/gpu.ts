@@ -54,7 +54,7 @@ export class Gpu {
   private static _instance: Gpu = null;
 
   private constructor(private readonly _gl: WebGL2RenderingContext) {
-    // _gl.disable(WebGL2RenderingContext.DEPTH_TEST);
+    _gl.disable(WebGL2RenderingContext.DEPTH_TEST);
     // _gl.disable(WebGL2RenderingContext.CULL_FACE);
     _gl.disable(WebGL2RenderingContext.BLEND);
     _gl.pixelStorei(WebGL2RenderingContext.UNPACK_ALIGNMENT, 1);
@@ -412,7 +412,10 @@ export class Gpu {
   }
 
   clearRenderTarget() {
-    this._gl.clear(WebGL2RenderingContext.COLOR_BUFFER_BIT);
+    this._gl.clear(
+      WebGL2RenderingContext.COLOR_BUFFER_BIT |
+        WebGL2RenderingContext.DEPTH_BUFFER_BIT
+    );
     this._gl.clearBufferfv(
       WebGL2RenderingContext.COLOR,
       0,

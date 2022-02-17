@@ -25,8 +25,8 @@ export class Viewport {
     this.gpu.setProgram(this.waterShader);
     this.gpu.setProgramTexture(
       this.waterShader,
-      'heightField',
-      this.heightField.heightTexture,
+      'displacementMap',
+      this.heightField.displacement,
       0
     );
     this.gpu.setProgramVariable(
