@@ -1,20 +1,20 @@
 import './style.css';
-import { Gpu } from './ocean/gpu';
+import { Gpu } from './wave/gpu';
 import { testDft, testFft } from './fft.test';
 import { testdft2, testFft2 } from './fft2.test';
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 Gpu.init(canvas);
 
 import {
-  testHeightFieldIfft2,
-  testHeightHkTexture,
-} from './ocean/height-field.test';
+  testDisplacementFieldIfft2,
+  testDisplacementFieldHkTexture,
+} from './wave/displacement-field.test';
 import {
-  testHeightFieldFactoryButterflyTexture,
-  testHeightFieldFactoryH0texture,
-} from './ocean/height-field-factory.test';
-import { testButterflyTexture } from './ocean/butterfly.test';
-import { HeightFieldFactory } from './ocean/height-field-factory';
+  testDisplacementFieldFactoryButterflyTexture,
+  testDisplacementFieldFactoryH0texture,
+} from './wave/displacement-field-factory.test';
+import { testButterflyTexture } from './wave/butterfly.test';
+import { DisplacementFieldFactory } from './wave/displacement-field-factory';
 import { vec2, vec3 } from 'gl-matrix';
 import { Viewport } from './graphics/viewport';
 import { Camera } from './graphics/camera';
@@ -27,12 +27,12 @@ import { ArcRotationCameraController } from './graphics/camera-controller';
 // testFft();
 // testdft2();
 // testFft2();
-// testHeightFieldFactoryButterflyTexture();
-// testHeightFieldFactoryH0texture();
-// testHeightHkTexture();
-// testHeightFieldIfft2();
+// testDisplacementFieldFactoryButterflyTexture();
+// testDisplacementFieldFactoryH0texture();
+// testDisplacementFieldHkTexture();
+// testDisplacementFieldIfft2();
 
-const heightField = HeightFieldFactory.instance.build({
+const heightField = DisplacementFieldFactory.instance.build({
   size: 100,
   subdivisions: 512,
   wind: vec2.fromValues(10.0, 10.0),

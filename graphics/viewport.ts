@@ -1,6 +1,6 @@
 import { vec2, vec3 } from 'gl-matrix';
-import { Geometry, Gpu, ShaderProgram } from '../ocean/gpu';
-import { HeightField } from '../ocean/height-field';
+import { Geometry, Gpu, ShaderProgram } from '../wave/gpu';
+import { DisplacementField } from '../wave/displacement-field';
 import { Camera } from './camera';
 import { vs as watervs, fs as waterfs } from './programs/water';
 
@@ -12,7 +12,7 @@ export class Viewport {
   public constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly camera: Camera,
-    private readonly heightField: HeightField
+    private readonly displacementField: DisplacementField
   ) {
     this.waterShader = this.gpu.createShaderProgram(watervs, waterfs);
     this.water = this.createWaterGeometry();
@@ -26,7 +26,7 @@ export class Viewport {
     this.gpu.setProgramTexture(
       this.waterShader,
       'displacementMap',
-      this.heightField.displacement,
+      this.displacementField.displacement,
       0
     );
     this.gpu.setProgramVariable(
@@ -51,7 +51,7 @@ export class Viewport {
       this.waterShader,
       'delta',
       'float',
-      this.heightField.params.size / (this.heightField.params.subdivisions - 1)
+      this.displacementField.params.size / (this.displacementField.params.subdivisions - 1)
     );
 
     this.gpu.drawGeometry(this.water);
@@ -61,8 +61,8 @@ export class Viewport {
     const vertices: vec3[] = [];
     const ids: vec2[] = [];
     const indices: number[] = [];
-    const N = this.heightField.params.subdivisions;
-    const L = this.heightField.params.size;
+    const N = this.displacementField.params.subdivisions;
+    const L = this.displacementField.params.size;
     const delta = L / (N - 1);
     const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
 
@@ -116,8 +116,6 @@ export class Viewport {
       ),
       indexData: Uint32Array.from(indices),
     };
-
-    console.log(mesh.indexData.length);
 
     return this.gpu.createGeometry(mesh);
   }
