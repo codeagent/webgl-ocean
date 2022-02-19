@@ -1,85 +1,54 @@
-import { complex, Complex, eix } from '../complex';
+import { vec4 } from 'gl-matrix';
 
-export interface BatterflyNode {
-  indices: number[];
-  even?: BatterflyNode;
-  odd?: BatterflyNode;
-}
-export type ButterflyEntry = [number, number, Complex];
-export type ButterflyTier = ButterflyEntry[];
+import { eix } from '../complex';
 
-export const makeBatterflyTree = (indices: number[]) => {
-  const node: BatterflyNode = { indices: [...indices] };
-
-  if (indices.length > 2) {
-    const n = indices.length;
-    const even = new Array<number>(n / 2);
-    const odd = new Array<number>(n / 2);
-
-    for (let i = 0, e = 0, o = 0; i < n; i++) {
-      if (i % 2 === 0) {
-        even[e++] = indices[i];
-      } else {
-        odd[o++] = indices[i];
-      }
-    }
-
-    node.even = makeBatterflyTree(even);
-    node.odd = makeBatterflyTree(odd);
-  }
-
-  return node;
-};
-
-export const makeButterfly = (root: BatterflyNode): ButterflyTier[] => {
-  const queue: BatterflyNode[] = [root];
-  const tiers = new Array<ButterflyTier>(Math.log2(root.indices.length));
-
-  // Breadth-first
-  while (queue.length) {
-    const node = queue.shift();
-    const size = node.indices.length;
-    const tierId = Math.log2(size) - 1;
-
-    const w = (-2 * Math.PI) / size;
-    const tier = (tiers[tierId] = tiers[tierId] ?? []);
-
-    if (tierId === 0) {
-      tier.push([node.indices[0], node.indices[1], complex(1, 0)]);
-      tier.push([node.indices[0], node.indices[1], eix(w)]);
-    } else {
-      const offset = tier.length;
-
-      const n2 = size / 2;
-
-      for (let k = 0; k < size; k++) {
-        tier.push([offset + (k % n2), offset + (k % n2) + n2, eix(w * k)]);
-      }
-
-      queue.push(node.even);
-      queue.push(node.odd);
-    }
-  }
-
-  return tiers;
-};
+export const reverseBits = (v: number, width: number): number =>
+  parseInt(v.toString(2).padStart(width, '0').split('').reverse().join(''), 2);
 
 export const createButterflyTexture = (size: number): Float32Array => {
-  const indices = [...Array(size).keys()];
-  const tree = makeBatterflyTree(indices);
-  const butterfly = makeButterfly(tree);
-
-  const width = butterfly.length;
-  const height = butterfly[0].length;
+  const width = Math.log2(size);
+  const height = size;
   const texture = new Float32Array(width * height * 4);
+  const w = (-2.0 * Math.PI) / size;
+  const bitReversed = [...Array(size).keys()].map((v) => reverseBits(v, width));
 
-  for (let i = 0; i < height; i++) {
-    for (let j = 0; j < width; j++) {
-      const [b, a, [r, g]] = butterfly[j][i];
-      texture[(width * i + j) * 4] = r;
-      texture[(width * i + j) * 4 + 1] = g;
-      texture[(width * i + j) * 4 + 2] = b;
-      texture[(width * i + j) * 4 + 3] = a;
+  for (let j = 0; j < width; j++) {
+    for (let i = 0; i < height; i++) {
+      const k = i * (size >> (j + 1));
+      const twiddle = eix(k * w);
+      const span = 2 ** j;
+      const wing = i % 2 ** (j + 1) < span ? 0 : 1; // 0 - top wing, 1 - bottom wing
+      const texel = vec4.create();
+      if (j === 0) {
+        if (wing === 0) {
+          vec4.set(
+            texel,
+            twiddle[0],
+            twiddle[1],
+            bitReversed[i],
+            bitReversed[i + 1]
+          );
+        } else {
+          vec4.set(
+            texel,
+            twiddle[0],
+            twiddle[1],
+            bitReversed[i - 1],
+            bitReversed[i]
+          );
+        }
+      } else {
+        if (wing === 0) {
+          vec4.set(texel, twiddle[0], twiddle[1], i, i + span);
+        } else {
+          vec4.set(texel, twiddle[0], twiddle[1], i - span, i);
+        }
+      }
+
+      texture[(width * i + j) * 4] = texel[0];
+      texture[(width * i + j) * 4 + 1] = texel[1];
+      texture[(width * i + j) * 4 + 2] = texel[2];
+      texture[(width * i + j) * 4 + 3] = texel[3];
     }
   }
 

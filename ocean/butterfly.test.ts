@@ -1,26 +1,32 @@
-import { makeBatterflyTree, makeButterfly } from './butterfly';
+import { createButterflyTexture } from './butterfly';
 import { abs, add, complex, Complex, mult, scale, sub } from '../complex';
-import { fft, ifft } from '../fft';
+import { ifft } from '../fft';
 
-export const testButterfly = (size: number) => {
+export const testButterflyTexture = (size: number) => {
+  // Arrange
   const signal = [...Array(size).keys()]
     .map(() => Math.random() * 2.0 - 1.0)
     .map((v) => complex(v, 0));
 
-  const tree = makeBatterflyTree([...Array(size).keys()]);
-  const butterfly = makeButterfly(tree);
-
-  const pingPong = [new Array<Complex>(size), new Array<Complex>(size)];
-  pingPong[0] = [...signal];
+  const pingPong = [[...signal], new Array<Complex>(size)];
+  const butterfly = createButterflyTexture(size);
+  const phases = Math.log2(size);
 
   let src = 0;
   let dest = 1;
+  for (let phase = 0; phase < phases; phase++) {
+    for (let k = 0; k < size; k++) {
+      const [re, im, i, j] = new Float32Array(
+        butterfly.buffer,
+        (phases * k + phase) * 4 * Float32Array.BYTES_PER_ELEMENT,
+        4
+      );
 
-  for (let phase of butterfly) {
-    for (let k = 0; k < phase.length; k++) {
-      const [i, j, w] = phase[k];
       pingPong[dest][k] = scale(
-        add(pingPong[src][i], mult(pingPong[src][j], w)),
+        add(
+          pingPong[src][Math.trunc(i)],
+          mult(pingPong[src][Math.trunc(j)], complex(re, im))
+        ),
         0.5
       );
     }
