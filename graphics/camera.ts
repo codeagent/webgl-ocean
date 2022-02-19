@@ -1,4 +1,5 @@
 import { mat4, vec3, glMatrix } from 'gl-matrix';
+
 import { Transform } from './transform';
 
 export class Camera extends Transform {

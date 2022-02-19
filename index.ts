@@ -1,31 +1,30 @@
 import './style.css';
-import { Gpu } from './wave/gpu';
-import { testDft, testFft } from './fft.test';
-import { testdft2, testFft2 } from './fft2.test';
+import { Gpu } from './graphics';
+import {
+  testButterflyTexture,
+  testDft,
+  testFft,
+  testDft2,
+  testFft2,
+  testDisplacementFieldFactoryButterflyTexture,
+  testDisplacementFieldFactoryH0texture,
+  testDisplacementFieldHkTexture,
+  testDisplacementFieldIfft2,
+} from './test';
+
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 Gpu.init(canvas);
 
-import {
-  testDisplacementFieldIfft2,
-  testDisplacementFieldHkTexture,
-} from './wave/displacement-field.test';
-import {
-  testDisplacementFieldFactoryButterflyTexture,
-  testDisplacementFieldFactoryH0texture,
-} from './wave/displacement-field-factory.test';
-import { testButterflyTexture } from './wave/butterfly.test';
 import { DisplacementFieldFactory } from './wave/displacement-field-factory';
 import { vec2, vec3 } from 'gl-matrix';
 import { Viewport } from './graphics/viewport';
 import { Camera } from './graphics/camera';
 import { ArcRotationCameraController } from './graphics/camera-controller';
 
-// for (let p = 1; p < 16; p++) {
-//   testButterflyTexture(1 << p);
-// }
+// testButterflyTexture();
 // testDft();
 // testFft();
-// testdft2();
+// testDft2();
 // testFft2();
 // testDisplacementFieldFactoryButterflyTexture();
 // testDisplacementFieldFactoryH0texture();

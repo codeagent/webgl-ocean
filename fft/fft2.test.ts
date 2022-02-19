@@ -1,7 +1,7 @@
 import { abs, Complex, complex, sub } from './complex';
 import { dft2, fft2, idft2, ifft2 } from './fft2';
 
-export const testdft2 = () => {
+export const testDft2 = () => {
   for (let pow of [1, 2, 3, 4, 5, 6, 7, 8]) {
     // Arrange
     const size = 1 << pow;
@@ -22,12 +22,12 @@ export const testdft2 = () => {
     const diff = sf.map((v, i) => abs(sub(v, iftf[i])));
     const closeEnougth = diff.every((v) => v <= 1.0e-5);
     if (!closeEnougth) {
-      console.warn("testFft2: Test don't passesd: ", diff);
+      console.warn("testDft2: Test don't passesd: ", diff);
       return;
     }
   }
 
-  console.log('testFft2: Test passed!');
+  console.log('testDft2: Test passed!');
 };
 
 export const testFft2 = () => {

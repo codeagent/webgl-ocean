@@ -1,9 +1,16 @@
 import { vec2 } from 'gl-matrix';
 
 import { createButterflyTexture } from './butterfly';
-import { Gpu, RenderTarget, ShaderProgram, Texture2d, Geometry } from './gpu';
+import {
+  Gpu,
+  RenderTarget,
+  ShaderProgram,
+  Texture2d,
+  Geometry,
+  quad,
+} from '../graphics';
 import { DisplacementField } from './displacement-field';
-import quad from './quad';
+
 import { vs as h0vs, fs as h0fs } from './programs/h0';
 
 export interface DisplacementFieldBuildParams {

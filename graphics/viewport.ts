@@ -1,5 +1,6 @@
 import { vec2, vec3 } from 'gl-matrix';
-import { Geometry, Gpu, ShaderProgram } from '../wave/gpu';
+
+import { Geometry, Gpu, ShaderProgram } from './gpu';
 import { DisplacementField } from '../wave/displacement-field';
 import { Camera } from './camera';
 import { vs as watervs, fs as waterfs } from './programs/water';
@@ -51,7 +52,8 @@ export class Viewport {
       this.waterShader,
       'delta',
       'float',
-      this.displacementField.params.size / (this.displacementField.params.subdivisions - 1)
+      this.displacementField.params.size /
+        (this.displacementField.params.subdivisions - 1)
     );
 
     this.gpu.drawGeometry(this.water);

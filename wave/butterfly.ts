@@ -1,6 +1,6 @@
 import { vec4 } from 'gl-matrix';
 
-import { eix } from '../complex';
+import { eix } from '../fft';
 
 export const reverseBits = (v: number, width: number): number =>
   parseInt(v.toString(2).padStart(width, '0').split('').reverse().join(''), 2);

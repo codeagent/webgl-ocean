@@ -1,4 +1,10 @@
-import { Geometry, Gpu, RenderTarget, ShaderProgram, Texture2d } from './gpu';
+import {
+  Geometry,
+  Gpu,
+  RenderTarget,
+  ShaderProgram,
+  Texture2d,
+} from '../graphics';
 import { DisplacementFieldBuildParams } from './displacement-field-factory';
 
 import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
@@ -83,7 +89,7 @@ export class DisplacementField {
     const phases = Math.log2(this.params.subdivisions);
     const pingPong = [fourierTexture, this.ppTexture];
 
-    // horizontal fft
+    // horizontal ifft
     let ping = 0;
     let pong = 1;
     this.gpu.setDimensions(this.params.subdivisions, this.params.subdivisions);
@@ -110,7 +116,7 @@ export class DisplacementField {
       pong = (pong + 1) % 2;
     }
 
-    // vertical fft
+    // vertical ifft
     this.gpu.setProgram(this.fft2vProgram);
     this.gpu.setProgramTexture(
       this.fft2vProgram,
