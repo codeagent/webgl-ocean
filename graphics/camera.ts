@@ -12,23 +12,37 @@ export class Camera extends Transform {
     return this._projection;
   }
 
+  set fov(fov: number) {
+    this._fov = fov;
+    this.updateProjection();
+  }
+
+  set aspect(aspect: number) {
+    this._aspect = aspect;
+    this.updateProjection();
+  }
+
+  set near(near: number) {
+    this._near = near;
+    this.updateProjection();
+  }
+
+  set far(far: number) {
+    this._far = far;
+    this.updateProjection();
+  }
+
   protected _view: mat4 = mat4.create();
   protected _projection: mat4 = mat4.create();
 
   constructor(
-    public readonly fov: number,
-    public readonly aspect: number,
-    public readonly near: number,
-    public readonly far: number
+    private _fov: number,
+    private _aspect: number,
+    private _near: number,
+    private _far: number
   ) {
     super();
-    mat4.perspective(
-      this._projection,
-      glMatrix.toRadian(this.fov),
-      this.aspect,
-      this.near,
-      this.far
-    );
+    this.updateProjection();
   }
 
   lookAt(eye: vec3, at: vec3) {
@@ -36,5 +50,15 @@ export class Camera extends Transform {
     mat4.getTranslation(this._position, this._view);
     mat4.getRotation(this._rotation, this._view);
     this._dirty = true;
+  }
+
+  private updateProjection() {
+    mat4.perspective(
+      this._projection,
+      glMatrix.toRadian(this._fov),
+      this._aspect,
+      this._near,
+      this._far
+    );
   }
 }

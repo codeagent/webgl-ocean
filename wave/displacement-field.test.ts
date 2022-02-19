@@ -1,9 +1,16 @@
 import { vec2 } from 'gl-matrix';
 
-import { createImage, float2ToUint8Clamped, float4ToUint8Clamped } from '../image';
+import {
+  createImage,
+  float2ToUint8Clamped,
+  float4ToUint8Clamped,
+} from '../image';
+import { createMockGpu } from '../graphics/gpu.mock';
 import { DisplacementFieldFactory } from './displacement-field-factory';
 
-const displacementField = DisplacementFieldFactory.instance.build({
+const factory = new DisplacementFieldFactory(createMockGpu());
+
+const displacementField = factory.build({
   size: 1000,
   subdivisions: 128,
   wind: vec2.fromValues(28.0, 28.0),
@@ -19,7 +26,9 @@ export const testDisplacementFieldHkTexture = () => {
   const result = displacementField['generateHkTexture'](0);
   gpu.attachTexture(framebuffer, result, 0);
   const actual = new Float32Array(
-    displacementField.params.subdivisions * displacementField.params.subdivisions * 4
+    displacementField.params.subdivisions *
+      displacementField.params.subdivisions *
+      4
   );
   gpu.readValues(
     framebuffer,
@@ -46,7 +55,9 @@ export const testDisplacementFieldIfft2 = () => {
   const result = displacementField['ifft2'](hkTexture);
   gpu.attachTexture(framebuffer, result, 0);
   const actual = new Float32Array(
-    displacementField.params.subdivisions * displacementField.params.subdivisions * 4
+    displacementField.params.subdivisions *
+      displacementField.params.subdivisions *
+      4
   );
   gpu.readValues(
     framebuffer,

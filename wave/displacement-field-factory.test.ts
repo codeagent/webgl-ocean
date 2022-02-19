@@ -4,10 +4,11 @@ import {
   float2ToUint8Clamped,
   float4ToUint8Clamped,
 } from '../image';
+import { createMockGpu } from '../graphics/gpu.mock';
 
 import { DisplacementFieldFactory } from './displacement-field-factory';
 
-const factory = DisplacementFieldFactory.instance;
+const factory = new DisplacementFieldFactory(createMockGpu());
 
 const DisplacementField = factory.build({
   size: 1000,
@@ -15,9 +16,6 @@ const DisplacementField = factory.build({
   wind: vec2.fromValues(28.0, 28.0),
   strength: 4.0,
 });
-const noise = factory['noiseTexture'].get(
-  DisplacementField.params.subdivisions
-);
 const butterfly = DisplacementField['butterflyTexture'];
 const gpu = factory['gpu'];
 const framebuffer = factory['frameBuffer'];

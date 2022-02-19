@@ -36,22 +36,13 @@ export interface DisplacementFieldBuildParams {
 }
 
 export class DisplacementFieldFactory {
-  static get instance() {
-    if (!this._instance) {
-      this._instance = new DisplacementFieldFactory();
-    }
-    return this._instance;
-  }
-
-  private static _instance: DisplacementFieldFactory = null;
-  private readonly gpu: Gpu = Gpu.instance;
   private readonly quad: Geometry;
   private readonly frameBuffer: RenderTarget;
   private readonly noiseTexture = new Map<number, Texture2d>();
   private readonly butterflyTexture = new Map<number, Texture2d>();
   private readonly h0Program: ShaderProgram;
 
-  private constructor() {
+  constructor(private readonly gpu: Gpu) {
     this.quad = this.gpu.createGeometry(quad);
     this.frameBuffer = this.gpu.createRenderTarget();
     this.h0Program = this.gpu.createShaderProgram(h0vs, h0fs);

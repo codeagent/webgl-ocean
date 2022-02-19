@@ -41,16 +41,12 @@ export class ArcRotationCameraController {
     private canvas: HTMLCanvasElement,
     public readonly camera: Camera,
     private lookAt: vec3 = [0.0, 0.0, 0.0],
-    private rotSpeed = 1.0e-2,
-    private moveSpeed = 0.25
+    public rotSpeed = 1.0e-2,
+    public moveSpeed = 0.25
   ) {
     this.canvas = canvas;
-    this.camera.lookAt(this.camera.position, lookAt);
-    vec3.sub(this.r, this.camera.position, lookAt);
-    this.distance = vec3.length(this.r);
-    vec3.normalize(this.r, this.r);
-    [this.phi, this.tetta] = cartesianToSpherical(this.r);
-
+    this.camera.lookAt(this.camera.position, this.lookAt);
+    this.sync();
     this.updateTransform();
 
     fromEvent(this.canvas, 'mousedown')
@@ -71,6 +67,14 @@ export class ArcRotationCameraController {
 
   release() {
     this.release$.next();
+  }
+
+  sync() {
+    vec3.sub(this.r, this.camera.position, this.lookAt);
+    this.distance = vec3.length(this.r);
+    vec3.normalize(this.r, this.r);
+    [this.phi, this.tetta] = cartesianToSpherical(this.r);
+    this.updateTransform();
   }
 
   private mouseDown(e: MouseEvent) {
