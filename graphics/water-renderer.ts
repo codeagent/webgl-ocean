@@ -1,7 +1,5 @@
-import { vec2, vec3 } from 'gl-matrix';
-
-import { Geometry, Gpu, ShaderProgram, Texture2d } from './gpu';
-import { DisplacementField } from '../wave/displacement-field';
+import { Geometry, Gpu, ShaderProgram } from './gpu';
+import { DisplacementField } from '../wave';
 import { Camera } from './camera';
 import { vs as watervs, fs as waterfs } from './programs/water';
 
