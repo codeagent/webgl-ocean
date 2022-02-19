@@ -1,68 +1,61 @@
 import { vec2, vec3 } from 'gl-matrix';
-import { Geometry, Gpu, ShaderProgram } from '../ocean/gpu';
-import { HeightField } from '../ocean/height-field';
-import { Camera } from './camera';
-import { vs as watervs, fs as waterfs } from './programs/water';
 
-export class Viewport {
-  private readonly gpu: Gpu = Gpu.instance;
-  private readonly waterShader: ShaderProgram;
-  private readonly water: Geometry;
+import {
+  Gpu,
+  WaterRenderer,
+  Camera,
+  ArcRotationCameraController,
+} from './graphics';
+import {
+  DisplacementFieldBuildParams,
+  DisplacementFieldFactory,
+} from './wave/displacement-field-factory';
 
-  public constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private readonly camera: Camera,
-    private readonly heightField: HeightField
-  ) {
-    this.waterShader = this.gpu.createShaderProgram(watervs, waterfs);
-    this.water = this.createWaterGeometry();
+export class Simulation {
+  private readonly gpu: Gpu;
+  private readonly fieldFactory: DisplacementFieldFactory;
+  private readonly camera: Camera;
+  private readonly controller: ArcRotationCameraController;
+  private readonly renderer: WaterRenderer;
+
+  constructor(private readonly canvas: HTMLCanvasElement) {
+    this.gpu = new Gpu(canvas.getContext('webgl2'));
+    this.fieldFactory = new DisplacementFieldFactory(this.gpu);
+    this.camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100);
+    this.controller = new ArcRotationCameraController(this.canvas, this.camera);
+    this.renderer = new WaterRenderer(this.gpu);
   }
 
-  render() {
-    this.gpu.setDimensions(this.canvas.width, this.canvas.height);
-    this.gpu.setRenderTarget(null);
-    this.gpu.clearRenderTarget();
-    this.gpu.setProgram(this.waterShader);
-    this.gpu.setProgramTexture(
-      this.waterShader,
-      'displacementMap',
-      this.heightField.displacement,
-      0
-    );
-    this.gpu.setProgramVariable(
-      this.waterShader,
-      'viewMat',
-      'mat4',
-      this.camera.view
-    );
-    this.gpu.setProgramVariable(
-      this.waterShader,
-      'projMat',
-      'mat4',
-      this.camera.projection
-    );
-    this.gpu.setProgramVariable(
-      this.waterShader,
-      'pos',
-      'vec3',
-      this.camera.position
-    );
-    this.gpu.setProgramVariable(
-      this.waterShader,
-      'delta',
-      'float',
-      this.heightField.params.size / (this.heightField.params.subdivisions - 1)
+  start(params: DisplacementFieldBuildParams) {
+    const field = this.fieldFactory.build(params);
+    const geometry = this.createWaterGeometry(params);
+
+    this.camera.near = field.params.size * 1.0e-2;
+    this.camera.far = field.params.size * 1.0e3;
+    this.camera.lookAt(
+      vec3.fromValues(field.params.size, field.params.size, 0),
+      vec3.create()
     );
 
-    this.gpu.drawGeometry(this.water);
+    this.controller.moveSpeed = field.params.size * 0.25;
+    this.controller.sync();
+
+    const step = () => {
+      field.update(performance.now() / 1000);
+      this.controller.update();
+      this.renderer.render(geometry, field, this.camera);
+      requestAnimationFrame(() => step());
+    };
+
+    step();
   }
 
-  private createWaterGeometry() {
+  private createWaterGeometry(params: DisplacementFieldBuildParams) {
     const vertices: vec3[] = [];
     const ids: vec2[] = [];
     const indices: number[] = [];
-    const N = this.heightField.params.subdivisions;
-    const L = this.heightField.params.size;
+    const N = params.subdivisions;
+    const L = params.size;
     const delta = L / (N - 1);
     const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
 
@@ -116,8 +109,6 @@ export class Viewport {
       ),
       indexData: Uint32Array.from(indices),
     };
-
-    console.log(mesh.indexData.length);
 
     return this.gpu.createGeometry(mesh);
   }

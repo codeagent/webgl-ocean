@@ -1,11 +1,17 @@
-import { Geometry, Gpu, RenderTarget, ShaderProgram, Texture2d } from './gpu';
-import { HeightFieldBuildParams } from './height-field-factory';
+import {
+  Geometry,
+  Gpu,
+  RenderTarget,
+  ShaderProgram,
+  Texture2d,
+} from '../graphics';
+import { DisplacementFieldBuildParams } from './displacement-field-factory';
 
 import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
 import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
 
-export class HeightField {
+export class DisplacementField {
   get displacement(): Texture2d {
     return this._displacementTexture;
   }
@@ -23,7 +29,7 @@ export class HeightField {
     private readonly h0Texture: Texture2d,
     private readonly butterflyTexture: Texture2d,
     private readonly quad: Geometry,
-    public readonly params: HeightFieldBuildParams
+    public readonly params: DisplacementFieldBuildParams
   ) {
     this.framebuffer = this.gpu.createRenderTarget();
     this.hkTexture = this.gpu.createFloat4Texture(
@@ -83,7 +89,7 @@ export class HeightField {
     const phases = Math.log2(this.params.subdivisions);
     const pingPong = [fourierTexture, this.ppTexture];
 
-    // horizontal fft
+    // horizontal ifft
     let ping = 0;
     let pong = 1;
     this.gpu.setDimensions(this.params.subdivisions, this.params.subdivisions);
@@ -110,7 +116,7 @@ export class HeightField {
       pong = (pong + 1) % 2;
     }
 
-    // vertical fft
+    // vertical ifft
     this.gpu.setProgram(this.fft2vProgram);
     this.gpu.setProgramTexture(
       this.fft2vProgram,

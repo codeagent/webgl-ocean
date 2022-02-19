@@ -1,14 +1,21 @@
 import { vec2 } from 'gl-matrix';
 
 import { createButterflyTexture } from './butterfly';
-import { Gpu, RenderTarget, ShaderProgram, Texture2d, Geometry } from './gpu';
-import { HeightField } from './height-field';
-import quad from './quad';
+import {
+  Gpu,
+  RenderTarget,
+  ShaderProgram,
+  Texture2d,
+  Geometry,
+  quad,
+} from '../graphics';
+import { DisplacementField } from './displacement-field';
+
 import { vs as h0vs, fs as h0fs } from './programs/h0';
 
-export interface HeightFieldBuildParams {
+export interface DisplacementFieldBuildParams {
   /**
-   * The dimension of height field block in meters
+   * The dimension of displacement field block in meters
    */
   size: number;
 
@@ -28,30 +35,21 @@ export interface HeightFieldBuildParams {
   strength: number;
 }
 
-export class HeightFieldFactory {
-  static get instance() {
-    if (!this._instance) {
-      this._instance = new HeightFieldFactory();
-    }
-    return this._instance;
-  }
-
-  private static _instance: HeightFieldFactory = null;
-  private readonly gpu: Gpu = Gpu.instance;
+export class DisplacementFieldFactory {
   private readonly quad: Geometry;
   private readonly frameBuffer: RenderTarget;
   private readonly noiseTexture = new Map<number, Texture2d>();
   private readonly butterflyTexture = new Map<number, Texture2d>();
   private readonly h0Program: ShaderProgram;
 
-  private constructor() {
+  constructor(private readonly gpu: Gpu) {
     this.quad = this.gpu.createGeometry(quad);
     this.frameBuffer = this.gpu.createRenderTarget();
     this.h0Program = this.gpu.createShaderProgram(h0vs, h0fs);
   }
 
-  build(params: HeightFieldBuildParams): HeightField {
-    return new HeightField(
+  build(params: DisplacementFieldBuildParams): DisplacementField {
+    return new DisplacementField(
       this.gpu,
       this.getH0Texture(params),
       this.getButterflyTexture(params.subdivisions),
@@ -77,7 +75,7 @@ export class HeightFieldFactory {
     return this.noiseTexture.get(size);
   }
 
-  private getH0Texture(params: HeightFieldBuildParams): Texture2d {
+  private getH0Texture(params: DisplacementFieldBuildParams): Texture2d {
     const texture = this.gpu.createFloat4Texture(
       params.subdivisions,
       params.subdivisions

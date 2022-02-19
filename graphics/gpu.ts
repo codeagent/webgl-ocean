@@ -39,23 +39,13 @@ export interface Mesh {
 }
 
 export class Gpu {
-  static get instance() {
-    return Gpu._instance;
-  }
-
-  static init(canvas: HTMLCanvasElement) {
-    Gpu._instance = new Gpu(canvas.getContext('webgl2'));
-  }
-
   get context() {
     return this._gl;
   }
 
-  private static _instance: Gpu = null;
-
-  private constructor(private readonly _gl: WebGL2RenderingContext) {
-    _gl.disable(WebGL2RenderingContext.DEPTH_TEST);
-    // _gl.disable(WebGL2RenderingContext.CULL_FACE);
+  constructor(private readonly _gl: WebGL2RenderingContext) {
+    _gl.enable(WebGL2RenderingContext.DEPTH_TEST);
+    // _gl.enable(WebGL2RenderingContext.CULL_FACE);
     _gl.disable(WebGL2RenderingContext.BLEND);
     _gl.pixelStorei(WebGL2RenderingContext.UNPACK_ALIGNMENT, 1);
     _gl.pixelStorei(WebGL2RenderingContext.PACK_ALIGNMENT, 1);
