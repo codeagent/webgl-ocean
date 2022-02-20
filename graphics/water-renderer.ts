@@ -15,12 +15,13 @@ export class WaterRenderer {
     displacementField: DisplacementField,
     camera: Camera
   ) {
-    this.gpu.setDimensions(
+    this.gpu.setViewport(
+      0,
+      0,
       this.gpu.context.canvas.width,
       this.gpu.context.canvas.height
     );
-    this.gpu.setRenderTarget(null);
-    this.gpu.clearRenderTarget();
+
     this.gpu.setProgram(this.waterShader);
     this.gpu.setProgramTexture(
       this.waterShader,

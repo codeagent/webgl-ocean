@@ -62,7 +62,12 @@ export class DisplacementField {
   }
 
   private generateHkTexture(time: number): Texture2d {
-    this.gpu.setDimensions(this.params.subdivisions, this.params.subdivisions);
+    this.gpu.setViewport(
+      0,
+      0,
+      this.params.subdivisions,
+      this.params.subdivisions
+    );
     this.gpu.setProgram(this.hkProgram);
     this.gpu.setProgramTexture(this.hkProgram, 'h0Texture', this.h0Texture, 0);
     this.gpu.setProgramVariable(
@@ -92,7 +97,12 @@ export class DisplacementField {
     // horizontal ifft
     let ping = 0;
     let pong = 1;
-    this.gpu.setDimensions(this.params.subdivisions, this.params.subdivisions);
+    this.gpu.setViewport(
+      0,
+      0,
+      this.params.subdivisions,
+      this.params.subdivisions
+    );
     this.gpu.setProgram(this.fft2hProgram);
     this.gpu.setProgramTexture(
       this.fft2hProgram,

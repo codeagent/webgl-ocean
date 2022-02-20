@@ -45,7 +45,7 @@ void main()
 export const fs = `#version 300 es
 precision highp float;
 
-layout( location = 0 ) out vec4 color;	
+layout(location = 0) out vec4 color;	
 
 in vec3 _normal;
 in vec3 _position;

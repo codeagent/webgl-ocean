@@ -205,8 +205,8 @@ export class Gpu {
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, texture);
   }
 
-  setDimensions(width: number, height: number) {
-    this._gl.viewport(0, 0, width, height);
+  setViewport(x: number, y: number, width: number, height: number) {
+    this._gl.viewport(x, y, width, height);
   }
 
   drawGeometry(geometry: Geometry) {

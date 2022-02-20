@@ -6,6 +6,7 @@ import {
   Camera,
   ArcRotationCameraController,
 } from './graphics';
+import { TextureRenderer, TextureType } from './graphics/texture-renderer';
 import {
   DisplacementFieldBuildParams,
   DisplacementFieldFactory,
@@ -16,14 +17,16 @@ export class Simulation {
   private readonly fieldFactory: DisplacementFieldFactory;
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
-  private readonly renderer: WaterRenderer;
+  private readonly waterRenderer: WaterRenderer;
+  private readonly textureRenderer: TextureRenderer;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.gpu = new Gpu(canvas.getContext('webgl2'));
     this.fieldFactory = new DisplacementFieldFactory(this.gpu);
     this.camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100);
     this.controller = new ArcRotationCameraController(this.canvas, this.camera);
-    this.renderer = new WaterRenderer(this.gpu);
+    this.waterRenderer = new WaterRenderer(this.gpu);
+    this.textureRenderer = new TextureRenderer(this.gpu);
   }
 
   start(params: DisplacementFieldBuildParams) {
@@ -43,7 +46,14 @@ export class Simulation {
     const step = () => {
       field.update(performance.now() / 1000);
       this.controller.update();
-      this.renderer.render(geometry, field, this.camera);
+      this.gpu.setRenderTarget(null);
+      this.gpu.clearRenderTarget();
+      this.waterRenderer.render(geometry, field, this.camera);
+      this.textureRenderer.render(
+        vec2.fromValues(10, 10),
+        field.displacement,
+        TextureType.Displacement
+      );
       requestAnimationFrame(() => step());
     };
 
