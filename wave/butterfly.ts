@@ -9,7 +9,7 @@ export const createButterflyTexture = (size: number): Float32Array => {
   const width = Math.log2(size);
   const height = size;
   const texture = new Float32Array(width * height * 4);
-  const w = (-2.0 * Math.PI) / size;
+  const w = (2.0 * Math.PI) / size;
   const bitReversed = [...Array(size).keys()].map((v) => reverseBits(v, width));
 
   for (let j = 0; j < width; j++) {

@@ -53,6 +53,12 @@ export class WaterRenderer {
       displacementField.params.size /
         (displacementField.params.subdivisions - 1)
     );
+    this.gpu.setProgramVariable(
+      this.waterShader,
+      'croppiness',
+      'float',
+      displacementField.params.croppiness
+    );
 
     this.gpu.drawGeometry(geometry);
   }

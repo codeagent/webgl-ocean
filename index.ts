@@ -34,4 +34,5 @@ simulation.start({
   subdivisions: 512,
   wind: vec2.fromValues(10.0, 10.0),
   strength: 2000000, // @todo: what is that!
+  croppiness: -0.85
 });

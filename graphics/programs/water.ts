@@ -7,17 +7,22 @@ uniform mat4 viewMat;
 uniform mat4 projMat;
 uniform sampler2D displacementMap;
 uniform float delta;
+uniform float croppiness;
 
 out vec3 _position;
 out vec2 _id;
 out vec3 _normal;
 
+vec3 getDisplacement(ivec2 uv) {
+  return texelFetch(displacementMap, uv, 0).xyz * vec3(croppiness, 1.0f, croppiness);
+}
+
 vec3 getNormal(ivec2 uv) {
-  vec3 center = texelFetch(displacementMap, uv, 0).xyz;
-  vec3 top = vec3(0.0, 0.0, -delta) + texelFetch(displacementMap, uv + ivec2(0, -1), 0).xyz - center;
-  vec3 bottom = vec3(0.0, 0.0, delta) + texelFetch(displacementMap, uv + ivec2(0, 1), 0).xyz - center;
-  vec3 left = vec3(-delta, 0.0, 0.0) + texelFetch(displacementMap, uv + ivec2(-1, 0), 0).xyz - center;
-  vec3 right = vec3(delta, 0.0, 0.0) + texelFetch(displacementMap, uv + ivec2(1, 0), 0).xyz - center;
+  vec3 center = getDisplacement(uv);
+  vec3 top = vec3(0.0, 0.0, -delta) + getDisplacement(uv + ivec2(0, -1)) - center;
+  vec3 bottom = vec3(0.0, 0.0, delta) + getDisplacement(uv + ivec2(0, 1)) - center;
+  vec3 left = vec3(-delta, 0.0, 0.0) + getDisplacement(uv + ivec2(-1, 0)) - center;
+  vec3 right = vec3(delta, 0.0, 0.0) + getDisplacement(uv + ivec2(1, 0)) - center;
 
   vec3 x0 = cross(top, left);
   vec3 x1 = cross(left, bottom);
@@ -30,8 +35,7 @@ vec3 getNormal(ivec2 uv) {
 void main()
 {
   ivec2 uv = ivec2(id.x, id.y);
-  vec3 displacement = texelFetch(displacementMap, uv, 0).xyz;
-  _position = position + displacement;
+  _position = position + getDisplacement(uv);
   _normal = getNormal(uv); 
   _id = id;
   gl_Position = projMat * viewMat * vec4(_position, 1.0f);

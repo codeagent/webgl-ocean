@@ -30,6 +30,11 @@ export interface DisplacementFieldBuildParams {
   wind: vec2;
 
   /**
+   * Importance of waves displacement. Should be <= 0.
+   */
+  croppiness: number;
+
+  /**
    * Variable for adjusting. Value should be between [0, 1]
    */
   strength: number;
