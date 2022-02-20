@@ -11,6 +11,7 @@ import { DisplacementFieldFactory } from './displacement-field-factory';
 const factory = new DisplacementFieldFactory(createMockGpu());
 
 const DisplacementField = factory.build({
+  croppiness: -0.85,
   size: 1000,
   subdivisions: 256,
   wind: vec2.fromValues(28.0, 28.0),

@@ -8,8 +8,15 @@ export enum TextureType {
   Noise = 0,
   Butterfly = 1,
   H0 = 2,
-  HK = 3,
-
+  H0_STAR = 3,
+  Hk = 4,
+  DDX = 5,
+  DDZ = 6,
+  DX = 7,
+  DZ = 8,
+  DDXDX = 9,
+  DDZDZ = 10,
+  Normals = 11,
 }
 
 export class TextureRenderer {

@@ -48,12 +48,62 @@ export class Simulation {
       this.controller.update();
       this.gpu.setRenderTarget(null);
       this.gpu.clearRenderTarget();
+
+      // Water
       this.waterRenderer.render(geometry, field, this.camera);
+
+      // Noise
       this.textureRenderer.render(
         vec2.fromValues(10, 10),
-        field.displacement,
-        TextureType.Displacement
+        this.fieldFactory['noiseTexture'].get(params.subdivisions),
+        TextureType.Noise
       );
+
+      // Butterfly
+      this.textureRenderer.render(
+        vec2.fromValues(10, 100),
+        this.fieldFactory['butterflyTexture'].get(params.subdivisions),
+        TextureType.Butterfly
+      );
+
+      // H0
+      this.textureRenderer.render(
+        vec2.fromValues(10, 200),
+        field['h0Texture'],
+        TextureType.H0
+      );
+
+      // H0
+      this.textureRenderer.render(
+        vec2.fromValues(10, 300),
+        field['h0Texture'],
+        TextureType.H0_STAR
+      );
+
+      /**
+       * @todo:
+       */
+      // HK
+      this.textureRenderer.render(
+        vec2.fromValues(10, 400),
+        field['hkTexture'],
+        TextureType.Hk
+      );
+
+      // Displacement X
+      this.textureRenderer.render(
+        vec2.fromValues(10, 500),
+        field.displacement,
+        TextureType.DX
+      );
+
+      // Displacement Z
+      this.textureRenderer.render(
+        vec2.fromValues(100, 500),
+        field.displacement,
+        TextureType.DZ
+      );
+
       requestAnimationFrame(() => step());
     };
 

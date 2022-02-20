@@ -16,15 +16,15 @@ import {
 
 import { Simulation } from './simulation';
 
-// testButterflyTexture();
-// testDft();
-// testFft();
-// testDft2();
-// testFft2();
-// testDisplacementFieldFactoryButterflyTexture();
-// testDisplacementFieldFactoryH0texture();
-// testDisplacementFieldHkTexture();
-// testDisplacementFieldIfft2();
+testButterflyTexture();
+testDft();
+testFft();
+testDft2();
+testFft2();
+testDisplacementFieldFactoryButterflyTexture();
+testDisplacementFieldFactoryH0texture();
+testDisplacementFieldHkTexture();
+testDisplacementFieldIfft2();
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement
