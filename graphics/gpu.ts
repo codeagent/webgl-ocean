@@ -205,6 +205,16 @@ export class Gpu {
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, texture);
   }
 
+  setProgramTextures(
+    program: ShaderProgram,
+    names: string[],
+    textures: Texture2d[]
+  ) {
+    for (let i = 0; i < names.length; i++) {
+      this.setProgramTexture(program, names[i], textures[i], i);
+    }
+  }
+
   setViewport(x: number, y: number, width: number, height: number) {
     this._gl.viewport(x, y, width, height);
   }
@@ -311,6 +321,45 @@ export class Gpu {
     return texture;
   }
 
+  createFloat3Texture(width: number, height: number): WebGLTexture {
+    const texture = this._gl.createTexture();
+    this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
+    this._gl.texImage2D(
+      WebGL2RenderingContext.TEXTURE_2D,
+      0,
+      WebGL2RenderingContext.RGB32F,
+      width,
+      height,
+      0,
+      WebGL2RenderingContext.RGB,
+      WebGL2RenderingContext.FLOAT,
+      null
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_MIN_FILTER,
+      WebGL2RenderingContext.NEAREST
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_MAG_FILTER,
+      WebGL2RenderingContext.NEAREST
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_WRAP_S,
+      WebGL2RenderingContext.CLAMP_TO_EDGE
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_2D,
+      WebGL2RenderingContext.TEXTURE_WRAP_T,
+      WebGL2RenderingContext.CLAMP_TO_EDGE
+    );
+    this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
+
+    return texture;
+  }
+
   createFloat4Texture(width: number, height: number): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -386,7 +435,38 @@ export class Gpu {
       0
     );
 
-    this._gl.drawBuffers([WebGL2RenderingContext.COLOR_ATTACHMENT0]);
+    // this._gl.drawBuffers([WebGL2RenderingContext.COLOR_ATTACHMENT0]);
+    this._gl.drawBuffers(
+      [...Array(slot + 1).keys()].map(
+        (i) => WebGL2RenderingContext.COLOR_ATTACHMENT0 + i
+      )
+    );
+
+    const status = this._gl.checkFramebufferStatus(
+      WebGL2RenderingContext.FRAMEBUFFER
+    );
+    if (status !== WebGL2RenderingContext.FRAMEBUFFER_COMPLETE) {
+      throw new Error(`Incomplete frame buffer, status: ${status}`);
+    }
+    this._gl.bindFramebuffer(WebGL2RenderingContext.FRAMEBUFFER, null);
+  }
+
+  attachTextures(target: RenderTarget, textures: Texture2d[]) {
+    this._gl.bindFramebuffer(WebGL2RenderingContext.FRAMEBUFFER, target);
+    const drawBuffers: GLenum[] = [];
+
+    for (let i = 0; i < textures.length; i++) {
+      this._gl.framebufferTexture2D(
+        WebGL2RenderingContext.FRAMEBUFFER,
+        WebGL2RenderingContext.COLOR_ATTACHMENT0 + i,
+        WebGL2RenderingContext.TEXTURE_2D,
+        textures[i],
+        0
+      );
+      drawBuffers.push(WebGL2RenderingContext.COLOR_ATTACHMENT0 + i);
+    }
+
+    this._gl.drawBuffers(drawBuffers);
 
     const status = this._gl.checkFramebufferStatus(
       WebGL2RenderingContext.FRAMEBUFFER

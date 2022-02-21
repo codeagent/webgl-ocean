@@ -1,5 +1,5 @@
 export const vs = `#version 300 es
-in vec4 position;
+layout(location = 0) in vec4 position;
 void main() {
   gl_Position = position;
 }
@@ -11,7 +11,10 @@ export const fs = `#version 300 es
 
 precision highp float;
 
-out vec4 outColor; 
+layout(location = 0) out vec4 height;	
+layout(location = 1) out vec4 slope;	
+layout(location = 2) out vec4 displacement;	
+layout(location = 3) out vec4 ddisplacement; 
 
 uniform uint subdivisions;  // N
 uniform float size;         // L
@@ -22,8 +25,6 @@ struct complex {
   float re;
   float im;
 };
-
-complex i = complex(0.0f, 1.0f);
 
 complex add(complex a, complex b) {
   return complex(a.re + b.re, a.im + b.im);
@@ -61,11 +62,19 @@ void main() {
   complex h0Min = complex(h0Texel.z, h0Texel.w);
   
   complex hy = add(mult(h0, e), mult(conj(h0Min), conj(e)));
-  complex hx = mult(complex(0.0f, -k.x / kLen), hy);
-  complex hz = mult(complex(0.0f, -k.y / kLen), hy);
-  complex d = add(hx, mult(i, hy));
+  complex dx = mult(complex(0.0f, -k.x / kLen), hy);
+  complex dz = mult(complex(0.0f, -k.y / kLen), hy);
+  complex sx = mult(complex(0.0f, k.y), hy);
+  complex sz = mult(complex(0.0f, k.y), hy);
+  complex ddx = scale(hy, k.x * k.x / kLen);
+  complex ddz = scale(hy, k.y * k.y / kLen);
   
-  outColor =  vec4(d.re, d.im, hz.re, hz.im);
+  height = vec4(hy.re, hy.im, 0.0, 0.0);
+  slope = vec4(sx.re, sx.im, sz.re, sz.im);
+  displacement = vec4(dx.re, dx.im, dz.re, dz.im);
+  ddisplacement = vec4(ddx.re, ddx.im, ddz.re, ddz.im);
+
+  // outColor =  vec4(d.re, d.im, hz.re, hz.im);
   // outColor =  vec4(hy.re, hy.im, hy.re, hy.im);
 }
 `;

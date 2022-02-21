@@ -14,18 +14,29 @@ import { vs as hkvs, fs as hkfs } from './programs/hk';
 
 export class DisplacementField {
   get displacement(): Texture2d {
-    return this.displacementTexture;
+    return this.displacementTexture[0];
   }
 
-  private readonly ppTexture: Texture2d;
-  private readonly hkTexture: Texture2d;
-  private ifftTexture: Texture2d = null;
-  private displacementTexture: Texture2d = null;
-  private readonly framebuffer: RenderTarget;
-  private readonly hkProgram: ShaderProgram;
-  private readonly fft2hProgram: ShaderProgram;
-  private readonly fft2vProgram: ShaderProgram;
-  private readonly fft2multProgram: ShaderProgram;
+  get normals(): Texture2d {
+    return this.normalsTexture;
+  }
+
+  get foam(): Texture2d {
+    return this.foamTexture;
+  }
+
+  private spectrumTextures: Texture2d[];
+  private pingPongTextures: Texture2d[];
+  private ifftTextures: Texture2d[];
+  private displacementTexture: Texture2d;
+  private normalsTexture: Texture2d;
+  private foamTexture: Texture2d;
+
+  private framebuffer: RenderTarget;
+  private hkProgram: ShaderProgram;
+  private fft2hProgram: ShaderProgram;
+  private fft2vProgram: ShaderProgram;
+  private fft2multProgram: ShaderProgram;
 
   constructor(
     private readonly gpu: Gpu,
@@ -35,22 +46,12 @@ export class DisplacementField {
     public readonly params: DisplacementFieldBuildParams
   ) {
     this.framebuffer = this.gpu.createRenderTarget();
-    this.hkTexture = this.gpu.createFloat4Texture(
-      params.subdivisions,
-      params.subdivisions
-    );
-    this.ppTexture = this.gpu.createFloat4Texture(
-      params.subdivisions,
-      params.subdivisions
-    );
-    this.fft2hProgram = this.gpu.createShaderProgram(fft2hvs, fft2hfs);
-    this.fft2vProgram = this.gpu.createShaderProgram(fft2vvs, fft2vfs);
-    this.fft2multProgram = this.gpu.createShaderProgram(fft2multvs, fft2multfs);
-    this.hkProgram = this.gpu.createShaderProgram(hkvs, hkfs);
+    this.createTextures();
+    this.createPrograms();
   }
 
   update(time: number): void {
-    this.generateHkTexture(time);
+    this.generateSpectrumTextures(time);
     this.ifft2();
     this.postMultiply();
   }
@@ -67,26 +68,69 @@ export class DisplacementField {
     );
   }
 
-  private postMultiply() {
-    this.gpu.setViewport(
-      0,
-      0,
-      this.params.subdivisions,
-      this.params.subdivisions
-    );
-    this.gpu.attachTexture(this.framebuffer, this.displacementTexture, 0);
-    this.gpu.setRenderTarget(this.framebuffer);
-    this.gpu.setProgram(this.fft2multProgram);
-    this.gpu.setProgramTexture(
-      this.fft2multProgram,
-      'iff2',
-      this.ifftTexture,
-      0
-    );
-    this.gpu.drawGeometry(this.quad);
+  private createPrograms() {
+    this.fft2hProgram = this.gpu.createShaderProgram(fft2hvs, fft2hfs);
+    this.fft2vProgram = this.gpu.createShaderProgram(fft2vvs, fft2vfs);
+    this.fft2multProgram = this.gpu.createShaderProgram(fft2multvs, fft2multfs);
+    this.hkProgram = this.gpu.createShaderProgram(hkvs, hkfs);
   }
 
-  private generateHkTexture(time: number): Texture2d {
+  private createTextures() {
+    this.spectrumTextures = [
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+    ];
+
+    this.pingPongTextures = [
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.subdivisions,
+        this.params.subdivisions
+      ),
+    ];
+
+    // this.displacementTexture = this.gpu.createFloat3Texture(
+    //   this.params.subdivisions,
+    //   this.params.subdivisions
+    // );
+
+    // this.normalsTexture = this.gpu.createFloat3Texture(
+    //   this.params.subdivisions,
+    //   this.params.subdivisions
+    // );
+
+    // this.foamTexture = this.gpu.createFloatTexture(
+    //   this.params.subdivisions,
+    //   this.params.subdivisions
+    // );
+  }
+
+  private generateSpectrumTextures(time: number) {
     this.gpu.setViewport(
       0,
       0,
@@ -108,16 +152,17 @@ export class DisplacementField {
       this.params.size
     );
     this.gpu.setProgramVariable(this.hkProgram, 't', 'float', time);
-    this.gpu.attachTexture(this.framebuffer, this.hkTexture, 0);
+    this.gpu.attachTextures(this.framebuffer, this.spectrumTextures);
     this.gpu.setRenderTarget(this.framebuffer);
     this.gpu.drawGeometry(this.quad);
-
-    return this.hkTexture;
   }
 
   private ifft2(): void {
     const phases = Math.log2(this.params.subdivisions);
-    const pingPong = [this.hkTexture, this.ppTexture];
+    const pingPong: [Texture2d[], Texture2d[]] = [
+      this.spectrumTextures,
+      this.pingPongTextures,
+    ];
 
     // horizontal ifft
     let ping = 0;
@@ -133,18 +178,17 @@ export class DisplacementField {
       this.fft2hProgram,
       'butterfly',
       this.butterflyTexture,
-      0
+      1
     );
 
     for (let phase = 0; phase < phases; phase++) {
-      this.gpu.attachTexture(this.framebuffer, pingPong[pong], 0);
+      this.gpu.attachTextures(this.framebuffer, pingPong[pong].slice(0, 1));
       this.gpu.setRenderTarget(this.framebuffer);
       this.gpu.setProgramVariable(this.fft2hProgram, 'phase', 'uint', phase);
-      this.gpu.setProgramTexture(
+      this.gpu.setProgramTextures(
         this.fft2hProgram,
-        'source',
-        pingPong[ping],
-        1
+        ['source'],
+        pingPong[ping].slice(0, 1)
       );
       this.gpu.drawGeometry(this.quad);
       ping = pong;
@@ -157,25 +201,43 @@ export class DisplacementField {
       this.fft2vProgram,
       'butterfly',
       this.butterflyTexture,
-      0
+      1
     );
 
     for (let phase = 0; phase < phases; phase++) {
-      this.gpu.attachTexture(this.framebuffer, pingPong[pong], 0);
+      this.gpu.attachTextures(this.framebuffer, pingPong[pong].slice(0, 1));
       this.gpu.setRenderTarget(this.framebuffer);
       this.gpu.setProgramVariable(this.fft2vProgram, 'phase', 'uint', phase);
-      this.gpu.setProgramTexture(
+      this.gpu.setProgramTextures(
         this.fft2vProgram,
-        'source',
-        pingPong[ping],
-        1
+        ['source'],
+        pingPong[ping].slice(0, 1)
       );
       this.gpu.drawGeometry(this.quad);
       ping = pong;
       pong = (pong + 1) % 2;
     }
 
-    this.ifftTexture = pingPong[ping];
+    this.ifftTextures = pingPong[ping];
     this.displacementTexture = pingPong[pong];
+  }
+
+  private postMultiply() {
+    this.gpu.setViewport(
+      0,
+      0,
+      this.params.subdivisions,
+      this.params.subdivisions
+    );
+    this.gpu.attachTexture(this.framebuffer, this.displacementTexture[0], 0);
+    this.gpu.setRenderTarget(this.framebuffer);
+    this.gpu.setProgram(this.fft2multProgram);
+    this.gpu.setProgramTexture(
+      this.fft2multProgram,
+      'iff2',
+      this.ifftTextures[0],
+      0
+    );
+    this.gpu.drawGeometry(this.quad);
   }
 }

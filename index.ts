@@ -22,7 +22,7 @@ import { Simulation } from './simulation';
 // testFft2();
 // testDisplacementFieldFactoryButterflyTexture();
 // testDisplacementFieldFactoryH0texture();
-testDisplacementFieldIfft2();
+// testDisplacementFieldIfft2();
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement
@@ -32,5 +32,5 @@ simulation.start({
   subdivisions: 512,
   wind: vec2.fromValues(10.0, 10.0),
   strength: 2000000, // @todo: what is that!
-  croppiness: -0.85
+  croppiness: 0
 });
