@@ -13,8 +13,6 @@ out vec4 outColor;
 uniform sampler2D source;
 uniform sampler2D butterfly;
 uniform uint phase;
-uniform uint phases;
-uniform uint N2;
 
 struct complex {
   float re;
@@ -43,13 +41,7 @@ void main() {
     complex b = complex(texelB.x, texelB.y);
     complex w = complex(texelButt.r, texelButt.g);
 
-    complex result = add(a, mult(b, w));
-
-    if(phase == phases - 1u) {
-      float sign[] = float[2](1.0f, -1.0f);
-      float p = float(int(gl_FragCoord.x) + int(gl_FragCoord.y));
-      result = scale(result, sign[int(mod(p, 2.0f))] / float(N2));
-    } 
+    complex result = scale(add(a, mult(b, w)), 0.5);
 
     outColor.x = result.re;
     outColor.y = result.im;
@@ -60,13 +52,7 @@ void main() {
     complex b = complex(texelB.z, texelB.w);
     complex w = complex(texelButt.r, texelButt.g);
 
-    complex result = add(a, mult(b, w));
-
-    if(phase == phases - 1u) {
-      float sign[] = float[2](1.0f, -1.0f);
-      float p = float(int(gl_FragCoord.x) + int(gl_FragCoord.y));
-      result = scale(result, sign[int(mod(p, 2.0f))] / float(N2));
-    } 
+    complex result = scale(add(a, mult(b, w)), 0.5);
 
     outColor.z = result.re;
     outColor.w = result.im;

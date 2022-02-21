@@ -27,6 +27,10 @@ complex mult(complex a, complex b) {
   return complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
 }
 
+complex scale(complex a, float v) {
+  return complex(a.re * v, a.im * v);
+}
+
 void main() {
   vec4 texelButt = texelFetch(butterfly, ivec2(phase,  gl_FragCoord.x), 0).rgba;
   vec4 texelA = texelFetch(source, ivec2(texelButt.b, gl_FragCoord.y), 0).xyzw;
@@ -37,7 +41,7 @@ void main() {
     complex b = complex(texelB.x, texelB.y);
     complex w = complex(texelButt.r, texelButt.g);
 
-    complex result = add(a, mult(b, w));
+    complex result = scale(add(a, mult(b, w)), 0.5);
 
     outColor.x = result.re;
     outColor.y = result.im;
@@ -48,7 +52,7 @@ void main() {
     complex b = complex(texelB.z, texelB.w);
     complex w = complex(texelButt.r, texelButt.g);
 
-    complex result = add(a, mult(b, w));
+    complex result = scale(add(a, mult(b, w)), 0.5);
 
     outColor.z = result.re;
     outColor.w = result.im;

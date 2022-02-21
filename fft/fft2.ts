@@ -1,4 +1,4 @@
-import { Complex } from './complex';
+import { complex, Complex } from './complex';
 import { dft, fft, idft, ifft } from './fft';
 
 /**
@@ -108,4 +108,21 @@ export const ifft2 = (fourier: Complex[][]): Complex[][] => {
   }
 
   return signal;
+};
+
+export const float4ToComplex2d = (
+  data: Float32Array,
+  size: number
+): Complex[][] => {
+  const result = [];
+  for (let i = 0; i < size; i++) {
+    const row: Complex[] = [];
+    for (let j = 0; j < size; j++) {
+      const re = data[(i * size + j) * 4];
+      const im = data[(i * size + j) * 4 + 1];
+      row.push(complex(re, im));
+    }
+    result.push(row);
+  }
+  return result;
 };

@@ -9,21 +9,19 @@ import {
   testFft2,
   testDisplacementFieldFactoryButterflyTexture,
   testDisplacementFieldFactoryH0texture,
-  testDisplacementFieldHkTexture,
   testDisplacementFieldIfft2,
 } from './test';
 
 
 import { Simulation } from './simulation';
 
-testButterflyTexture();
-testDft();
-testFft();
-testDft2();
-testFft2();
-testDisplacementFieldFactoryButterflyTexture();
-testDisplacementFieldFactoryH0texture();
-testDisplacementFieldHkTexture();
+// testButterflyTexture();
+// testDft();
+// testFft();
+// testDft2();
+// testFft2();
+// testDisplacementFieldFactoryButterflyTexture();
+// testDisplacementFieldFactoryH0texture();
 testDisplacementFieldIfft2();
 
 const simulation = new Simulation(
