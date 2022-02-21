@@ -73,8 +73,5 @@ void main() {
   slope = vec4(sx.re, sx.im, sz.re, sz.im);
   displacement = vec4(dx.re, dx.im, dz.re, dz.im);
   ddisplacement = vec4(ddx.re, ddx.im, ddz.re, ddz.im);
-
-  // outColor =  vec4(d.re, d.im, hz.re, hz.im);
-  // outColor =  vec4(hy.re, hy.im, hy.re, hy.im);
 }
 `;

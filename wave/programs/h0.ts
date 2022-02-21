@@ -53,7 +53,6 @@ void main() {
   );
 
   vec4 rnd = gauss();
-
   outColor =  vec4(h0k * rnd.x, h0k * rnd.y, h0mk * rnd.z, h0mk * rnd.w);
 }
 `;
