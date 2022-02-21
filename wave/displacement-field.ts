@@ -201,17 +201,20 @@ export class DisplacementField {
       this.fft2vProgram,
       'butterfly',
       this.butterflyTexture,
-      1
+      4
     );
 
+    /**
+     * @todo: ping-pong framebuffers
+     */
     for (let phase = 0; phase < phases; phase++) {
-      this.gpu.attachTextures(this.framebuffer, pingPong[pong].slice(0, 1));
+      this.gpu.attachTextures(this.framebuffer, pingPong[pong]);
       this.gpu.setRenderTarget(this.framebuffer);
       this.gpu.setProgramVariable(this.fft2vProgram, 'phase', 'uint', phase);
       this.gpu.setProgramTextures(
         this.fft2vProgram,
-        ['source'],
-        pingPong[ping].slice(0, 1)
+        ['spectrum0', 'spectrum1', 'spectrum2', 'spectrum3'],
+        pingPong[ping]
       );
       this.gpu.drawGeometry(this.quad);
       ping = pong;
