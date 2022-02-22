@@ -84,24 +84,31 @@ export class Simulation {
        * @todo:
        */
       // HK
-      this.textureRenderer.render(
-        vec2.fromValues(10, 400),
-        field['hkTexture'],
-        TextureType.Hk
-      );
+      // this.textureRenderer.render(
+      //   vec2.fromValues(10, 400),
+      //   field['hkTexture'],
+      //   TextureType.Hk
+      // );
 
       // Displacement X
       this.textureRenderer.render(
-        vec2.fromValues(10, 500),
+        vec2.fromValues(10, 400),
         field.displacement,
         TextureType.DX
       );
 
       // Displacement Z
       this.textureRenderer.render(
-        vec2.fromValues(100, 500),
+        vec2.fromValues(10, 500),
         field.displacement,
         TextureType.DZ
+      );
+
+      // Normals
+      this.textureRenderer.render(
+        vec2.fromValues(100, 500),
+        field.normals,
+        TextureType.Normals
       );
 
       requestAnimationFrame(() => step());

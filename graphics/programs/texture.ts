@@ -40,9 +40,11 @@ void main() {
     outColor = vec4(texture(texImage, _uv).ba, 0.0, 1.0);
   } else if(texType == DX) {
     outColor = vec4(vec3(texture(texImage, _uv).x), 1.0);
-  }  else if(texType == DZ) {
+  } else if(texType == DZ) {
     outColor = vec4(vec3(texture(texImage, _uv).z), 1.0);
-  }  else  {
+  } else if(texType == NORMALS) {
+    outColor = vec4(texture(texImage, _uv).xyz * 0.5f + 0.5f, 1.0);
+  } else  {
 
     outColor = texture(texImage, _uv).rgba;
   }

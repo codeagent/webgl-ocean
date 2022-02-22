@@ -30,7 +30,7 @@ const simulation = new Simulation(
 simulation.start({
   size: 100,
   subdivisions: 512,
-  wind: vec2.fromValues(15.0, 0.0),
+  wind: vec2.fromValues(1.0, 2.0),
   strength: 2000000, // @todo: what is that!
   croppiness: -0.85
 });

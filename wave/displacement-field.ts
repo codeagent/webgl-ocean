@@ -82,7 +82,15 @@ export class DisplacementField {
 
     this.fft2hProgram = this.gpu.createShaderProgram(fft2hvs, fft2hfs);
     this.fft2vProgram = this.gpu.createShaderProgram(fft2vvs, fft2vfs);
+
     this.postfft2Program = this.gpu.createShaderProgram(postfft2vs, postfft2fs);
+    this.gpu.setProgram(this.postfft2Program);
+    this.gpu.setProgramVariable(
+      this.postfft2Program,
+      'croppiness',
+      'float',
+      this.params.croppiness
+    );
   }
 
   private createTextures() {

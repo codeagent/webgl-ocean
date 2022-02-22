@@ -35,6 +35,7 @@ export class TextureRenderer {
       this.gpu.context.canvas.width * 0.1,
       this.gpu.context.canvas.width * 0.1
     );
+
     this.gpu.setProgram(this.textureShader);
     this.gpu.setProgramTexture(this.textureShader, 'texImage', texture, 0);
     this.gpu.setProgramVariable(this.textureShader, 'texType', 'uint', type);
