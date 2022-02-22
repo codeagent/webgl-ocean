@@ -14,14 +14,14 @@ precision highp float;
 out vec4 outColor; 
 
 uniform sampler2D noise;
-uniform uint subdivisions;  // N
+uniform uint resolution;  // N
 uniform float size;         // L
 uniform float A;
 uniform vec2 wind;
 
 
 vec4 gauss() {
-  vec2 uv = vec2(gl_FragCoord.xy) / float(subdivisions);
+  vec2 uv = vec2(gl_FragCoord.xy) / float(resolution);
   vec4 noise4 = texture(noise, uv).rgba;
   float u0 = 2.0f * PI * noise4.x;
   float v0 = sqrt(-2.0f * log(noise4.y));
@@ -31,7 +31,7 @@ vec4 gauss() {
 }
 
 void main() {
-  vec2 x = vec2(gl_FragCoord.xy) - float(subdivisions) * 0.5; //  [-N/2, N/2]
+  vec2 x = vec2(gl_FragCoord.xy) - float(resolution) * 0.5; //  [-N/2, N/2]
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
   float k2 = dot(k, k);
   float L = dot(wind, wind) / g;

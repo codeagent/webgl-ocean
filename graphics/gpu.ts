@@ -38,6 +38,11 @@ export interface Mesh {
   indexData: Uint32Array;
 }
 
+export enum TextureFiltering {
+  Nearest = WebGL2RenderingContext.NEAREST,
+  Linear = WebGL2RenderingContext.LINEAR,
+}
+
 export class Gpu {
   get context() {
     return this._gl;
@@ -51,6 +56,7 @@ export class Gpu {
     _gl.pixelStorei(WebGL2RenderingContext.PACK_ALIGNMENT, 1);
     _gl.viewport(0, 0, _gl.canvas.width, _gl.canvas.height);
     _gl.getExtension('EXT_color_buffer_float');
+    _gl.getExtension('OES_texture_float_linear');
     _gl.clearColor(0.0, 0.0, 0.0, 1.0);
   }
 
@@ -243,7 +249,11 @@ export class Gpu {
     this._gl.finish();
   }
 
-  createFloatTexture(width: number, height: number): WebGLTexture {
+  createFloatTexture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -260,12 +270,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
@@ -282,7 +292,11 @@ export class Gpu {
     return texture;
   }
 
-  createFloat2Texture(width: number, height: number): WebGLTexture {
+  createFloat2Texture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -299,12 +313,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
@@ -321,7 +335,11 @@ export class Gpu {
     return texture;
   }
 
-  createFloat3Texture(width: number, height: number): WebGLTexture {
+  createFloat3Texture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -338,12 +356,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
@@ -360,7 +378,11 @@ export class Gpu {
     return texture;
   }
 
-  createFloat4Texture(width: number, height: number): WebGLTexture {
+  createFloat4Texture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -377,12 +399,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,

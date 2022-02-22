@@ -8,4 +8,24 @@ canvas {
   box-sizing: content-box;
   min-width: 800px;
   background-color: black;
+  margin: 0 auto;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 800px 1fr;
+  grid-template-rows: 1fr;
+  grid-gap: 16px;
+}
+
+label {
+  padding-right: 16px;
+  width: 60px;
+  display: inline-block;
+}
+
+small {
+  display: inline-block;
+  width: 16px;
+  font-size: 10px;
 }

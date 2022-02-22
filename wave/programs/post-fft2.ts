@@ -29,10 +29,10 @@ void main() {
   vec2 disp = texelFetch(ifft2, ivec2(gl_FragCoord.xy), 0).rb * s;
   vec2 ddisp = texelFetch(ifft3, ivec2(gl_FragCoord.xy), 0).rb * s;
   
-  displacement = vec4(disp.x, height, disp.y, 0.0f);
+  displacement = vec4(disp.x * croppiness, height, disp.y * croppiness, 0.0f);
 
   vec2 slope = vec2(deriv.x / (1.0f + croppiness * ddisp.x), deriv.y / (1.0f + croppiness * ddisp.y));
-  normal = normalize(vec3(-slope.x, -slope.y, 1.0f));
+  normal = normalize(vec3(-slope.x, 1.0f, -slope.y));
   foam = 1.0f;
 }
 `;

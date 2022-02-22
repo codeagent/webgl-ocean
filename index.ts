@@ -12,7 +12,6 @@ import {
   testDisplacementFieldIfft2,
 } from './test';
 
-
 import { Simulation } from './simulation';
 
 // testButterflyTexture();
@@ -29,8 +28,9 @@ const simulation = new Simulation(
 );
 simulation.start({
   size: 100,
-  subdivisions: 512,
-  wind: vec2.fromValues(1.0, 2.0),
-  strength: 2000000, // @todo: what is that!
-  croppiness: -0.85
+  geometryResolution: 256,
+  resolution: 512,
+  wind: vec2.fromValues(20.0, 10.0),
+  strength: 4000000, // @todo: what is that!
+  croppiness: -0.7,
 });

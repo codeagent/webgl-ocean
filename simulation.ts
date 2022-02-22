@@ -50,19 +50,24 @@ export class Simulation {
       this.gpu.clearRenderTarget();
 
       // Water
-      this.waterRenderer.render(geometry, field, this.camera);
+      this.waterRenderer.render(
+        geometry,
+        this.camera,
+        field.displacement,
+        field.normals
+      );
 
       // Noise
       this.textureRenderer.render(
         vec2.fromValues(10, 10),
-        this.fieldFactory['noiseTexture'].get(params.subdivisions),
+        this.fieldFactory['noiseTexture'].get(params.resolution),
         TextureType.Noise
       );
 
       // Butterfly
       this.textureRenderer.render(
         vec2.fromValues(10, 100),
-        this.fieldFactory['butterflyTexture'].get(params.subdivisions),
+        this.fieldFactory['butterflyTexture'].get(params.resolution),
         TextureType.Butterfly
       );
 
@@ -119,9 +124,9 @@ export class Simulation {
 
   private createWaterGeometry(params: DisplacementFieldBuildParams) {
     const vertices: vec3[] = [];
-    const ids: vec2[] = [];
+    const uvs: vec2[] = [];
     const indices: number[] = [];
-    const N = params.subdivisions;
+    const N = params.geometryResolution;
     const L = params.size;
     const delta = L / (N - 1);
     const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
@@ -130,22 +135,22 @@ export class Simulation {
       for (let j = 0; j < N - 1; j++) {
         let v0 = vec3.fromValues(j * delta, 0.0, i * delta);
         vec3.add(v0, v0, offset);
-        let id0 = vec2.fromValues(j, i);
+        let uv0 = vec2.fromValues(j / N, i / N);
         let v1 = vec3.fromValues((j + 1) * delta, 0.0, i * delta);
         vec3.add(v1, v1, offset);
-        let id1 = vec2.fromValues(j + 1, i);
+        let uv1 = vec2.fromValues((j + 1) / N, i / N);
         let v2 = vec3.fromValues((j + 1) * delta, 0.0, (i + 1) * delta);
         vec3.add(v2, v2, offset);
-        let id2 = vec2.fromValues(j + 1, i + 1);
+        let uv2 = vec2.fromValues((j + 1) / N, (i + 1) / N);
         let v3 = vec3.fromValues(j * delta, 0.0, (i + 1) * delta);
         vec3.add(v3, v3, offset);
-        let id3 = vec2.fromValues(j, i + 1);
+        let uv3 = vec2.fromValues(j / N, (i + 1) / N);
 
         indices.push(vertices.length, vertices.length + 1, vertices.length + 2);
         indices.push(vertices.length + 2, vertices.length + 3, vertices.length);
 
         vertices.push(v0, v1, v2, v3);
-        ids.push(id0, id1, id2, id3);
+        uvs.push(uv0, uv1, uv2, uv3);
       }
     }
 
@@ -162,7 +167,7 @@ export class Simulation {
           stride: 12,
         },
         {
-          semantics: 'id',
+          semantics: 'uv',
           size: 2,
           type: WebGL2RenderingContext.FLOAT,
           slot: 1,
@@ -172,7 +177,7 @@ export class Simulation {
       ],
 
       vertexData: Float32Array.from(
-        [...vertices, ...ids].map((v) => [...v]).flat()
+        [...vertices, ...uvs].map((v) => [...v]).flat()
       ),
       indexData: Uint32Array.from(indices),
     };
