@@ -435,7 +435,6 @@ export class Gpu {
       0
     );
 
-    // this._gl.drawBuffers([WebGL2RenderingContext.COLOR_ATTACHMENT0]);
     this._gl.drawBuffers(
       [...Array(slot + 1).keys()].map(
         (i) => WebGL2RenderingContext.COLOR_ATTACHMENT0 + i
