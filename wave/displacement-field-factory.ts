@@ -91,7 +91,9 @@ export class DisplacementFieldFactory {
       params.resolution
     );
 
-    this.gpu.attachTexture(this.frameBuffer, texture, 0);
+    this.gpu.attachTextures(this.frameBuffer, [texture]);
+
+    // this.gpu.attachTexture(this.frameBuffer, texture, 0);
     this.gpu.setRenderTarget(this.frameBuffer);
     this.gpu.setViewport(0, 0, params.resolution, params.resolution);
     this.gpu.clearRenderTarget();

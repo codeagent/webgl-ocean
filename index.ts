@@ -7,8 +7,6 @@ import {
   testFft,
   testDft2,
   testFft2,
-  testDisplacementFieldFactoryButterflyTexture,
-  testDisplacementFieldFactoryH0texture,
   testDisplacementFieldIfft2,
 } from './test';
 
@@ -19,9 +17,7 @@ import { Simulation } from './simulation';
 // testFft();
 // testDft2();
 // testFft2();
-// testDisplacementFieldFactoryButterflyTexture();
-// testDisplacementFieldFactoryH0texture();
-// testDisplacementFieldIfft2();
+testDisplacementFieldIfft2();
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement

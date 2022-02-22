@@ -534,12 +534,14 @@ export class Gpu {
     width: number,
     height: number,
     format: GLenum,
-    type: GLenum
+    type: GLenum,
+    slot: number
   ) {
     this._gl.bindFramebuffer(
       WebGL2RenderingContext.READ_FRAMEBUFFER,
       target ?? null
     );
+    this._gl.readBuffer(WebGL2RenderingContext.COLOR_ATTACHMENT0 + slot);
     this._gl.readPixels(0, 0, width, height, format, type, values);
   }
 
