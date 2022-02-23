@@ -13,7 +13,7 @@ layout(location = 1) out vec4 ifft1; // slope
 layout(location = 2) out vec4 ifft2; // displacement
 layout(location = 3) out vec4 ifft3; // ddisplacement
 
-uniform sampler2D spectrum0;  // height
+uniform sampler2D spectrum0;  // height & dx/dz
 uniform sampler2D spectrum1;  // slope
 uniform sampler2D spectrum2;  // displacement
 uniform sampler2D spectrum3;  // ddisplacement
@@ -61,7 +61,7 @@ vec2 twiddleZW(in sampler2D source, in vec4 texelButt) {
 
 void main() {
   vec4 texelButt = texelFetch(butterfly, ivec2(phase,  gl_FragCoord.x), 0).rgba;
-  ifft0 = vec4(twiddleXY(spectrum0, texelButt), 0.0f, 0.0f);
+  ifft0 = vec4(twiddleXY(spectrum0, texelButt), twiddleZW(spectrum0, texelButt));
   ifft1 = vec4(twiddleXY(spectrum1, texelButt), twiddleZW(spectrum1, texelButt));
   ifft2 = vec4(twiddleXY(spectrum2, texelButt), twiddleZW(spectrum2, texelButt));
   ifft3 = vec4(twiddleXY(spectrum3, texelButt), twiddleZW(spectrum3, texelButt));

@@ -73,12 +73,12 @@ export const testDisplacementFieldIfft2 = () => {
       const closeEnougth = diff.every((v) => v <= 1.0e-5);
       if (!closeEnougth) {
         console.warn(
-          `testDisplacementFieldIfft2 [slot ${slot}-${couple + 1}]: Test don't passesd: `,
+          `testDisplacementFieldIfft2 [slot ${slot}-${couple}]: Test don't passesd: `,
           diff
         );
         return;
       }
-      console.log(`testDisplacementFieldIfft2 [slot ${slot}-${couple + 1}]: Test passed!`);
+      console.log(`testDisplacementFieldIfft2 [slot ${slot}-${couple}]: Test passed!`);
     }
   }
 };

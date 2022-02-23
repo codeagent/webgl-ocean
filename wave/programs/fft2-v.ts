@@ -61,7 +61,7 @@ vec2 twiddleZW(in sampler2D source, in vec4 texelButt) {
 
 void main() {
   vec4 texelButt = texelFetch(butterfly, ivec2(phase,  gl_FragCoord.y), 0).rgba;
-  ifft0 = vec4(twiddleXY(spectrum0, texelButt), 0.0f, 0.0f);
+  ifft0 = vec4(twiddleXY(spectrum0, texelButt), twiddleZW(spectrum0, texelButt));
   ifft1 = vec4(twiddleXY(spectrum1, texelButt), twiddleZW(spectrum1, texelButt));
   ifft2 = vec4(twiddleXY(spectrum2, texelButt), twiddleZW(spectrum2, texelButt));
   ifft3 = vec4(twiddleXY(spectrum3, texelButt), twiddleZW(spectrum3, texelButt));

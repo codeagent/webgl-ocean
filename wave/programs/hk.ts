@@ -66,12 +66,13 @@ void main() {
   complex dz = mult(complex(0.0f, -k.y / kLen), hy);
   complex sx = mult(complex(0.0f, k.x), hy);
   complex sz = mult(complex(0.0f, k.y), hy);
-  complex ddx = scale(hy, k.x * k.x / kLen);
-  complex ddz = scale(hy, k.y * k.y / kLen);
+  complex dxdx = scale(hy, k.x * k.x / kLen);
+  complex dzdz = scale(hy, k.y * k.y / kLen);
+  complex dxdz = scale(hy, k.y * k.x / kLen);
   
-  height = vec4(hy.re, hy.im, 0.0, 0.0);
+  height = vec4(hy.re, hy.im, dxdz.re, dxdz.im);
   slope = vec4(sx.re, sx.im, sz.re, sz.im);
   displacement = vec4(dx.re, dx.im, dz.re, dz.im);
-  ddisplacement = vec4(ddx.re, ddx.im, ddz.re, ddz.im);
+  ddisplacement = vec4(dxdx.re, dxdx.im, dzdz.re, dzdz.im);
 }
 `;

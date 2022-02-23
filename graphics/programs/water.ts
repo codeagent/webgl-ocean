@@ -28,14 +28,16 @@ in vec3 _position;
 in vec2 _uv;
 
 uniform sampler2D normalMap;
+uniform sampler2D foamMap;
 uniform vec3 pos;
 
 void main()
 {
+  vec4 foam = vec4(1.0f) * texture(foamMap, _uv).r;
   vec4 albedo = vec4(0, 0.62, 0.77, 1.0);
   vec3 n = texture(normalMap, _uv).xyz;
   vec3 l = normalize(pos - _position);
   float nol = dot(n, l) * 0.9 + 0.1;
-  color = albedo * vec4(vec3(nol), 1.0f);
+  color = albedo * vec4(vec3(nol), 1.0f) + foam;
 }
 `;

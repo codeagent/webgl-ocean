@@ -54,7 +54,8 @@ export class Simulation {
         geometry,
         this.camera,
         field.displacement,
-        field.normals
+        field.normals,
+        field.foam
       );
 
       // Noise
@@ -111,9 +112,16 @@ export class Simulation {
 
       // Normals
       this.textureRenderer.render(
-        vec2.fromValues(100, 500),
+        vec2.fromValues(110, 500),
         field.normals,
         TextureType.Normals
+      );
+
+      // Foam
+      this.textureRenderer.render(
+        vec2.fromValues(210, 500),
+        field.foam,
+        TextureType.Foam
       );
 
       requestAnimationFrame(() => step());
