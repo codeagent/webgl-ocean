@@ -28,5 +28,5 @@ simulation.start({
   resolution: 512,
   wind: vec2.fromValues(20.0, 10.0),
   strength: 4000000, // @todo: what is that!
-  croppiness: -0.99,
+  croppiness: -0.85,
 });

@@ -51,13 +51,15 @@ export class Gpu {
   constructor(private readonly _gl: WebGL2RenderingContext) {
     _gl.enable(WebGL2RenderingContext.DEPTH_TEST);
     // _gl.enable(WebGL2RenderingContext.CULL_FACE);
+    _gl.clearDepth(1.0);
+    _gl.lineWidth(2);
     _gl.disable(WebGL2RenderingContext.BLEND);
     _gl.pixelStorei(WebGL2RenderingContext.UNPACK_ALIGNMENT, 1);
     _gl.pixelStorei(WebGL2RenderingContext.PACK_ALIGNMENT, 1);
     _gl.viewport(0, 0, _gl.canvas.width, _gl.canvas.height);
     _gl.getExtension('EXT_color_buffer_float');
     _gl.getExtension('OES_texture_float_linear');
-    _gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    _gl.clearColor(0.0, 0.0, 0.0, 0.0);
   }
 
   createGeometry(
@@ -507,11 +509,8 @@ export class Gpu {
       WebGL2RenderingContext.COLOR_BUFFER_BIT |
         WebGL2RenderingContext.DEPTH_BUFFER_BIT
     );
-    this._gl.clearBufferfv(
-      WebGL2RenderingContext.COLOR,
-      0,
-      [0.0, 0.0, 0.0, 0.0]
-    );
+    // this._gl.clearBufferuiv(WebGL2RenderingContext.COLOR, 0, [0, 0, 0, 0]);
+    // this._gl.clearBufferfv(WebGL2RenderingContext.DEPTH, 0, [1.0]);
   }
 
   destroyProgram(program: ShaderProgram) {

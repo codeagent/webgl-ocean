@@ -1,49 +1,49 @@
 import { Mesh } from './gpu';
 
-const PRIMARY = [0.5, 0.5, 0.5];
-const SECONDARY = [0.25, 0.25, 0.25];
+const PRIMARY = [0.95, 0.95, 0.95];
+const SECONDARY = [0.75, 0.75, 0.75];
 
-export const createGrid = (): Mesh => {
-  const STEP = 5.0;
-  const UINT = 1.0;
-  const EXPANSION = 10;
+export const createGrid = (expansion: number = 10.0): Mesh => {
+  const STEP = expansion / 2;
+  const UINT = expansion / 10;
+  
 
   let u = 0;
   let vertices = [];
   let indices = [];
 
-  for (let e = 0.0; e <= EXPANSION; e += UINT) {
+  for (let e = 0.0; e <= expansion; e += UINT) {
     if (u == 0) {
       indices.push(indices.length);
-      vertices.push(-EXPANSION, 0.0, 0.0, ...PRIMARY);
+      vertices.push(-expansion, 0.0, 0.0, ...PRIMARY);
 
       indices.push(indices.length);
-      vertices.push(EXPANSION, 0.0, 0.0, ...PRIMARY);
+      vertices.push(expansion, 0.0, 0.0, ...PRIMARY);
 
       indices.push(indices.length);
-      vertices.push(0.0, 0.0, -EXPANSION, ...PRIMARY);
+      vertices.push(0.0, 0.0, -expansion, ...PRIMARY);
 
       indices.push(indices.length);
-      vertices.push(0.0, 0.0, EXPANSION, ...PRIMARY);
+      vertices.push(0.0, 0.0, expansion, ...PRIMARY);
     } else {
       const color = u % STEP == 0 ? PRIMARY : SECONDARY;
       indices.push(indices.length);
-      vertices.push(-EXPANSION, 0.0, e, ...color);
+      vertices.push(-expansion, 0.0, e, ...color);
       indices.push(indices.length);
-      vertices.push(EXPANSION, 0.0, e, ...color);
+      vertices.push(expansion, 0.0, e, ...color);
       indices.push(indices.length);
-      vertices.push(-EXPANSION, 0.0, -e, ...color);
+      vertices.push(-expansion, 0.0, -e, ...color);
       indices.push(indices.length);
-      vertices.push(EXPANSION, 0.0, -e, ...color);
+      vertices.push(expansion, 0.0, -e, ...color);
 
       indices.push(indices.length);
-      vertices.push(e, 0.0, -EXPANSION, ...color);
+      vertices.push(e, 0.0, -expansion, ...color);
       indices.push(indices.length);
-      vertices.push(e, 0.0, EXPANSION, ...color);
+      vertices.push(e, 0.0, expansion, ...color);
       indices.push(indices.length);
-      vertices.push(-e, 0.0, -EXPANSION, ...color);
+      vertices.push(-e, 0.0, -expansion, ...color);
       indices.push(indices.length);
-      vertices.push(-e, 0.0, EXPANSION, ...color);
+      vertices.push(-e, 0.0, expansion, ...color);
     }
     u++;
   }
@@ -68,6 +68,6 @@ export const createGrid = (): Mesh => {
       },
     ],
     vertexData: Float32Array.from(vertices),
-    indexData: Uint16Array.from(indices),
+    indexData: Uint32Array.from(indices),
   };
 };

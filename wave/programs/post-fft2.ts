@@ -49,7 +49,7 @@ vec3 correctDisplacement(in vec3 displacement, vec4 jacobian) {
   vec4 ev = eigenvectors(eq, jacobian);
   
   if(eq.x <= 0.0f && eq.y > 0.0f) {
-    return displacement - vec3(ev.x * (eq.x * eq.y), 0, ev.y * eq.x * eq.y);
+    return displacement - vec3(ev.x * eq.x, 0, ev.y * eq.x);
   } 
   return displacement;
 }

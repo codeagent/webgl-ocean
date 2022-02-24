@@ -5,9 +5,12 @@ import {
   WaterRenderer,
   Camera,
   ArcRotationCameraController,
+  GizmoRenderer,
+  TextureRenderer,
+  TextureType,
+  createGrid,
 } from './graphics';
-import { createGrid } from './graphics/grid';
-import { TextureRenderer, TextureType } from './graphics/texture-renderer';
+
 import {
   DisplacementFieldBuildParams,
   DisplacementFieldFactory,
@@ -19,14 +22,18 @@ export class Simulation {
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
   private readonly waterRenderer: WaterRenderer;
+  private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
-    this.gpu = new Gpu(canvas.getContext('webgl2'));
+    this.gpu = new Gpu(
+      canvas.getContext('webgl2', { preserveDrawingBuffer: true })
+    );
     this.fieldFactory = new DisplacementFieldFactory(this.gpu);
     this.camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100);
     this.controller = new ArcRotationCameraController(this.canvas, this.camera);
     this.waterRenderer = new WaterRenderer(this.gpu);
+    this.gizmoRenderer = new GizmoRenderer(this.gpu);
     this.textureRenderer = new TextureRenderer(this.gpu);
   }
 
@@ -34,23 +41,24 @@ export class Simulation {
     const field = this.fieldFactory.build(params);
     const geometry = this.createWaterGeometry(params);
     const grid = this.gpu.createGeometry(
-      createGrid(),
+      createGrid(params.size * 0.5),
       WebGL2RenderingContext.LINES
     );
 
-    this.camera.near = field.params.size * 1.0e-2;
-    this.camera.far = field.params.size * 1.0e3;
+    this.camera.near = params.size * 1.0e-2;
+    this.camera.far = params.size * 1.0e3;
     this.camera.lookAt(
-      vec3.fromValues(field.params.size, field.params.size, 0),
+      vec3.fromValues(params.size, params.size, 0),
       vec3.create()
     );
 
-    this.controller.moveSpeed = field.params.size * 0.25;
+    this.controller.moveSpeed = params.size * 0.25;
     this.controller.sync();
 
     const step = () => {
       field.update(performance.now() / 1e3);
       this.controller.update();
+      this.gpu.setViewport(0, 0, this.canvas.width, this.canvas.height);
       this.gpu.setRenderTarget(null);
       this.gpu.clearRenderTarget();
 
@@ -64,6 +72,7 @@ export class Simulation {
       );
 
       // Grid
+      this.gizmoRenderer.render(grid, this.camera);
 
       // Noise
       this.textureRenderer.render(
@@ -92,16 +101,6 @@ export class Simulation {
         field['h0Texture'],
         TextureType.H0_STAR
       );
-
-      /**
-       * @todo:
-       */
-      // HK
-      // this.textureRenderer.render(
-      //   vec2.fromValues(10, 400),
-      //   field['hkTexture'],
-      //   TextureType.Hk
-      // );
 
       // Displacement X
       this.textureRenderer.render(
