@@ -6,6 +6,7 @@ import {
   Camera,
   ArcRotationCameraController,
 } from './graphics';
+import { createGrid } from './graphics/grid';
 import { TextureRenderer, TextureType } from './graphics/texture-renderer';
 import {
   DisplacementFieldBuildParams,
@@ -32,6 +33,10 @@ export class Simulation {
   start(params: DisplacementFieldBuildParams) {
     const field = this.fieldFactory.build(params);
     const geometry = this.createWaterGeometry(params);
+    const grid = this.gpu.createGeometry(
+      createGrid(),
+      WebGL2RenderingContext.LINES
+    );
 
     this.camera.near = field.params.size * 1.0e-2;
     this.camera.far = field.params.size * 1.0e3;
@@ -44,7 +49,7 @@ export class Simulation {
     this.controller.sync();
 
     const step = () => {
-      field.update(performance.now() / 1000);
+      field.update(performance.now() / 1e3);
       this.controller.update();
       this.gpu.setRenderTarget(null);
       this.gpu.clearRenderTarget();
@@ -57,6 +62,8 @@ export class Simulation {
         field.normals,
         field.foam
       );
+
+      // Grid
 
       // Noise
       this.textureRenderer.render(

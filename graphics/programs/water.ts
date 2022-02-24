@@ -39,5 +39,10 @@ void main()
   vec3 l = normalize(pos - _position);
   float nol = dot(n, l) * 0.9 + 0.1;
   color = albedo * vec4(vec3(nol), 1.0f) + foam;
+  
+  if(gl_FrontFacing) {
+    color = vec4(vec3(-nol), 1.0f);
+  }
+  
 }
 `;
