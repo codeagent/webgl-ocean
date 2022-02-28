@@ -22,7 +22,12 @@ export interface DisplacementFieldBuildParams {
   /**
    * Size of generated texture. Must be power of 2
    */
-  subdivisions: number;
+  resolution: number;
+
+  /**
+   * Size of generated mesh.
+   */
+  geometryResolution: number;
 
   /**
    * Wind vector. Module correspond to wind force.
@@ -57,7 +62,7 @@ export class DisplacementFieldFactory {
     return new DisplacementField(
       this.gpu,
       this.getH0Texture(params),
-      this.getButterflyTexture(params.subdivisions),
+      this.getButterflyTexture(params.resolution),
       this.quad,
       params
     );
@@ -82,27 +87,29 @@ export class DisplacementFieldFactory {
 
   private getH0Texture(params: DisplacementFieldBuildParams): Texture2d {
     const texture = this.gpu.createFloat4Texture(
-      params.subdivisions,
-      params.subdivisions
+      params.resolution,
+      params.resolution
     );
 
-    this.gpu.attachTexture(this.frameBuffer, texture, 0);
+    this.gpu.attachTextures(this.frameBuffer, [texture]);
+
+    // this.gpu.attachTexture(this.frameBuffer, texture, 0);
     this.gpu.setRenderTarget(this.frameBuffer);
-    this.gpu.setViewport(0, 0, params.subdivisions, params.subdivisions);
+    this.gpu.setViewport(0, 0, params.resolution, params.resolution);
     this.gpu.clearRenderTarget();
 
     this.gpu.setProgram(this.h0Program);
     this.gpu.setProgramTexture(
       this.h0Program,
       'noise',
-      this.getNoiseTexture(params.subdivisions),
+      this.getNoiseTexture(params.resolution),
       0
     );
     this.gpu.setProgramVariable(
       this.h0Program,
-      'subdivisions',
+      'resolution',
       'uint',
-      params.subdivisions
+      params.resolution
     );
     this.gpu.setProgramVariable(this.h0Program, 'size', 'float', params.size);
     this.gpu.setProgramVariable(this.h0Program, 'wind', 'vec2', params.wind);

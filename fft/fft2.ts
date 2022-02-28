@@ -112,14 +112,15 @@ export const ifft2 = (fourier: Complex[][]): Complex[][] => {
 
 export const float4ToComplex2d = (
   data: Float32Array,
-  size: number
+  size: number,
+  offset: number = 0
 ): Complex[][] => {
   const result = [];
   for (let i = 0; i < size; i++) {
     const row: Complex[] = [];
     for (let j = 0; j < size; j++) {
-      const re = data[(i * size + j) * 4];
-      const im = data[(i * size + j) * 4 + 1];
+      const re = data[(i * size + j) * 4 + offset];
+      const im = data[(i * size + j) * 4 + 1 + offset];
       row.push(complex(re, im));
     }
     result.push(row);

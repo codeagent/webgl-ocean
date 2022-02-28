@@ -4,3 +4,6 @@ export * from './transform';
 export * from './water-renderer';
 export { default as quad } from './quad';
 export * from './gpu';
+export * from './texture-renderer';
+export * from './gizmo-renderer';
+export * from './grid';

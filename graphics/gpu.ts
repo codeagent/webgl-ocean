@@ -38,6 +38,11 @@ export interface Mesh {
   indexData: Uint32Array;
 }
 
+export enum TextureFiltering {
+  Nearest = WebGL2RenderingContext.NEAREST,
+  Linear = WebGL2RenderingContext.LINEAR,
+}
+
 export class Gpu {
   get context() {
     return this._gl;
@@ -46,12 +51,16 @@ export class Gpu {
   constructor(private readonly _gl: WebGL2RenderingContext) {
     _gl.enable(WebGL2RenderingContext.DEPTH_TEST);
     // _gl.enable(WebGL2RenderingContext.CULL_FACE);
+    // _gl.frontFace(WebGL2RenderingContext.CCW)
+    _gl.clearDepth(1.0);
+    _gl.lineWidth(2);
     _gl.disable(WebGL2RenderingContext.BLEND);
     _gl.pixelStorei(WebGL2RenderingContext.UNPACK_ALIGNMENT, 1);
     _gl.pixelStorei(WebGL2RenderingContext.PACK_ALIGNMENT, 1);
     _gl.viewport(0, 0, _gl.canvas.width, _gl.canvas.height);
     _gl.getExtension('EXT_color_buffer_float');
-    _gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    _gl.getExtension('OES_texture_float_linear');
+    _gl.clearColor(0.0, 0.0, 0.0, 0.0);
   }
 
   createGeometry(
@@ -243,7 +252,11 @@ export class Gpu {
     this._gl.finish();
   }
 
-  createFloatTexture(width: number, height: number): WebGLTexture {
+  createFloatTexture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -260,12 +273,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
@@ -282,7 +295,11 @@ export class Gpu {
     return texture;
   }
 
-  createFloat2Texture(width: number, height: number): WebGLTexture {
+  createFloat2Texture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -299,12 +316,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
@@ -321,7 +338,11 @@ export class Gpu {
     return texture;
   }
 
-  createFloat3Texture(width: number, height: number): WebGLTexture {
+  createFloat3Texture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -338,12 +359,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
@@ -360,7 +381,11 @@ export class Gpu {
     return texture;
   }
 
-  createFloat4Texture(width: number, height: number): WebGLTexture {
+  createFloat4Texture(
+    width: number,
+    height: number,
+    filter: TextureFiltering = TextureFiltering.Nearest
+  ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
     this._gl.texImage2D(
@@ -377,12 +402,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MIN_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_MAG_FILTER,
-      WebGL2RenderingContext.NEAREST
+      filter
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
@@ -485,11 +510,8 @@ export class Gpu {
       WebGL2RenderingContext.COLOR_BUFFER_BIT |
         WebGL2RenderingContext.DEPTH_BUFFER_BIT
     );
-    this._gl.clearBufferfv(
-      WebGL2RenderingContext.COLOR,
-      0,
-      [0.0, 0.0, 0.0, 0.0]
-    );
+    // this._gl.clearBufferuiv(WebGL2RenderingContext.COLOR, 0, [0, 0, 0, 0]);
+    // this._gl.clearBufferfv(WebGL2RenderingContext.DEPTH, 0, [1.0]);
   }
 
   destroyProgram(program: ShaderProgram) {
@@ -512,12 +534,14 @@ export class Gpu {
     width: number,
     height: number,
     format: GLenum,
-    type: GLenum
+    type: GLenum,
+    slot: number
   ) {
     this._gl.bindFramebuffer(
       WebGL2RenderingContext.READ_FRAMEBUFFER,
       target ?? null
     );
+    this._gl.readBuffer(WebGL2RenderingContext.COLOR_ATTACHMENT0 + slot);
     this._gl.readPixels(0, 0, width, height, format, type, values);
   }
 

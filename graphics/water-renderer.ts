@@ -1,5 +1,4 @@
-import { Geometry, Gpu, ShaderProgram } from './gpu';
-import { DisplacementField } from '../wave';
+import { Geometry, Gpu, ShaderProgram, Texture2d } from './gpu';
 import { Camera } from './camera';
 import { vs as watervs, fs as waterfs } from './programs/water';
 
@@ -12,8 +11,10 @@ export class WaterRenderer {
 
   render(
     geometry: Geometry,
-    displacementField: DisplacementField,
-    camera: Camera
+    camera: Camera,
+    displacementMap: Texture2d,
+    normalMap: Texture2d,
+    foamMap: Texture2d
   ) {
     this.gpu.setViewport(
       0,
@@ -26,9 +27,11 @@ export class WaterRenderer {
     this.gpu.setProgramTexture(
       this.waterShader,
       'displacementMap',
-      displacementField.displacement,
+      displacementMap,
       0
     );
+    this.gpu.setProgramTexture(this.waterShader, 'normalMap', normalMap, 1);
+    this.gpu.setProgramTexture(this.waterShader, 'foamMap', foamMap, 2);
     this.gpu.setProgramVariable(
       this.waterShader,
       'viewMat',
@@ -46,19 +49,6 @@ export class WaterRenderer {
       'pos',
       'vec3',
       camera.position
-    );
-    this.gpu.setProgramVariable(
-      this.waterShader,
-      'delta',
-      'float',
-      displacementField.params.size /
-        (displacementField.params.subdivisions - 1)
-    );
-    this.gpu.setProgramVariable(
-      this.waterShader,
-      'croppiness',
-      'float',
-      displacementField.params.croppiness
     );
 
     this.gpu.drawGeometry(geometry);

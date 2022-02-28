@@ -32,6 +32,7 @@ const uint DZ = 8u;
 const uint DDISP_XDX = 9u;
 const uint DDISP_ZDZ = 10u;
 const uint NORMALS = 11u;
+const uint FOAM = 12u;
 
 void main() {
   if(texType == H0) {
@@ -44,8 +45,9 @@ void main() {
     outColor = vec4(vec3(texture(texImage, _uv).z), 1.0);
   } else if(texType == NORMALS) {
     outColor = vec4(texture(texImage, _uv).xyz * 0.5f + 0.5f, 1.0);
+  } else if(texType == FOAM) {
+    outColor = vec4(vec3(texture(texImage, _uv).x), 1.0);
   } else  {
-
     outColor = texture(texImage, _uv).rgba;
   }
   

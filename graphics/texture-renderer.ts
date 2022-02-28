@@ -17,6 +17,7 @@ export enum TextureType {
   DDXDX = 9,
   DDZDZ = 10,
   Normals = 11,
+  Foam = 12,
 }
 
 export class TextureRenderer {

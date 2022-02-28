@@ -1,43 +1,20 @@
 export const vs = `#version 300 es
 
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec2 id;
+layout(location = 1) in vec2 uv;
 
 uniform mat4 viewMat;
 uniform mat4 projMat;
 uniform sampler2D displacementMap;
-uniform float delta;
-uniform float croppiness;
 
 out vec3 _position;
-out vec2 _id;
-out vec3 _normal;
+out vec2 _uv;
 
-vec3 getDisplacement(ivec2 uv) {
-  return texelFetch(displacementMap, uv, 0).xyz * vec3(croppiness, 1.0f, croppiness);
-}
-
-vec3 getNormal(ivec2 uv) {
-  vec3 center = getDisplacement(uv);
-  vec3 top = vec3(0.0, 0.0, -delta) + getDisplacement(uv + ivec2(0, -1)) - center;
-  vec3 bottom = vec3(0.0, 0.0, delta) + getDisplacement(uv + ivec2(0, 1)) - center;
-  vec3 left = vec3(-delta, 0.0, 0.0) + getDisplacement(uv + ivec2(-1, 0)) - center;
-  vec3 right = vec3(delta, 0.0, 0.0) + getDisplacement(uv + ivec2(1, 0)) - center;
-
-  vec3 x0 = cross(top, left);
-  vec3 x1 = cross(left, bottom);
-  vec3 x2 = cross(bottom, right);
-  vec3 x3 = cross(right, top);
-
-  return normalize(x0 + x1 + x2 + x3 );
-}
 
 void main()
 {
-  ivec2 uv = ivec2(id.x, id.y);
-  _position = position + getDisplacement(uv);
-  _normal = getNormal(uv); 
-  _id = id;
+  _position = position + texture(displacementMap, uv).xyz;
+  _uv = uv;
   gl_Position = projMat * viewMat * vec4(_position, 1.0f);
 }
 `;
@@ -47,20 +24,25 @@ precision highp float;
 
 layout(location = 0) out vec4 color;	
 
-in vec3 _normal;
 in vec3 _position;
-in vec2 _id;
+in vec2 _uv;
 
-
+uniform sampler2D normalMap;
+uniform sampler2D foamMap;
 uniform vec3 pos;
 
 void main()
 {
-  vec4 albedo = vec4(0, 0.62, 0.77, 1.0) ;
-  vec3 n = normalize(_normal);
+  vec4 foam = vec4(1.0f) * texture(foamMap, _uv).r;
+  vec4 albedo = vec4(0, 0.62, 0.77, 1.0);
+  vec3 n = texture(normalMap, _uv).xyz;
   vec3 l = normalize(pos - _position);
   float nol = dot(n, l) * 0.9 + 0.1;
-  color = albedo * vec4(vec3(nol), 1.0f);
-
+  color = albedo * vec4(vec3(nol), 1.0f) + foam;
+  
+  if(!gl_FrontFacing) {
+    color = vec4(1.0f);
+  }
+  
 }
 `;

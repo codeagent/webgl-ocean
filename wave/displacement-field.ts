@@ -4,6 +4,7 @@ import {
   RenderTarget,
   ShaderProgram,
   Texture2d,
+  TextureFiltering,
 } from '../graphics';
 import { DisplacementFieldBuildParams } from './displacement-field-factory';
 
@@ -53,12 +54,7 @@ export class DisplacementField {
   }
 
   update(time: number): void {
-    this.gpu.setViewport(
-      0,
-      0,
-      this.params.subdivisions,
-      this.params.subdivisions
-    );
+    this.gpu.setViewport(0, 0, this.params.resolution, this.params.resolution);
     this.generateSpectrumTextures(time);
     this.ifft2();
     this.postIfft2();
@@ -69,9 +65,9 @@ export class DisplacementField {
     this.gpu.setProgram(this.hkProgram);
     this.gpu.setProgramVariable(
       this.hkProgram,
-      'subdivisions',
+      'resolution',
       'uint',
-      this.params.subdivisions
+      this.params.resolution
     );
     this.gpu.setProgramVariable(
       this.hkProgram,
@@ -96,55 +92,58 @@ export class DisplacementField {
   private createTextures() {
     this.spectrumTextures = [
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
     ];
 
     this.pingPongTextures = [
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
       this.gpu.createFloat4Texture(
-        this.params.subdivisions,
-        this.params.subdivisions
+        this.params.resolution,
+        this.params.resolution
       ),
     ];
 
     this.displacementTexture = this.gpu.createFloat4Texture(
-      this.params.subdivisions,
-      this.params.subdivisions
+      this.params.resolution,
+      this.params.resolution,
+      TextureFiltering.Linear
     );
 
     this.normalsTexture = this.gpu.createFloat4Texture(
-      this.params.subdivisions,
-      this.params.subdivisions
+      this.params.resolution,
+      this.params.resolution,
+      TextureFiltering.Linear
     );
 
     this.foamTexture = this.gpu.createFloatTexture(
-      this.params.subdivisions,
-      this.params.subdivisions
+      this.params.resolution,
+      this.params.resolution,
+      TextureFiltering.Linear
     );
   }
 
@@ -172,7 +171,7 @@ export class DisplacementField {
   }
 
   private ifft2(): void {
-    const phases = Math.log2(this.params.subdivisions);
+    const phases = Math.log2(this.params.resolution);
     const pingPongTextures: [Texture2d[], Texture2d[]] = [
       this.spectrumTextures,
       this.pingPongTextures,

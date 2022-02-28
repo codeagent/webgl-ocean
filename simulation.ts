@@ -5,12 +5,16 @@ import {
   WaterRenderer,
   Camera,
   ArcRotationCameraController,
+  GizmoRenderer,
+  TextureRenderer,
+  TextureType,
+  createGrid,
 } from './graphics';
-import { TextureRenderer, TextureType } from './graphics/texture-renderer';
+
 import {
   DisplacementFieldBuildParams,
   DisplacementFieldFactory,
-} from './wave/displacement-field-factory';
+} from './wave';
 
 export class Simulation {
   private readonly gpu: Gpu;
@@ -18,51 +22,69 @@ export class Simulation {
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
   private readonly waterRenderer: WaterRenderer;
+  private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
-    this.gpu = new Gpu(canvas.getContext('webgl2'));
+    this.gpu = new Gpu(
+      canvas.getContext('webgl2', { preserveDrawingBuffer: true })
+    );
     this.fieldFactory = new DisplacementFieldFactory(this.gpu);
     this.camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100);
     this.controller = new ArcRotationCameraController(this.canvas, this.camera);
     this.waterRenderer = new WaterRenderer(this.gpu);
+    this.gizmoRenderer = new GizmoRenderer(this.gpu);
     this.textureRenderer = new TextureRenderer(this.gpu);
   }
 
   start(params: DisplacementFieldBuildParams) {
     const field = this.fieldFactory.build(params);
     const geometry = this.createWaterGeometry(params);
+    const grid = this.gpu.createGeometry(
+      createGrid(params.size * 0.5),
+      WebGL2RenderingContext.LINES
+    );
 
-    this.camera.near = field.params.size * 1.0e-2;
-    this.camera.far = field.params.size * 1.0e3;
+    this.camera.near = params.size * 1.0e-2;
+    this.camera.far = params.size * 1.0e3;
     this.camera.lookAt(
-      vec3.fromValues(field.params.size, field.params.size, 0),
+      vec3.fromValues(params.size, params.size, -params.size),
       vec3.create()
     );
 
-    this.controller.moveSpeed = field.params.size * 0.25;
+    this.controller.moveSpeed = params.size * 0.25;
     this.controller.sync();
 
     const step = () => {
-      field.update(performance.now() / 1000);
+      field.update(performance.now() / 1e3);
       this.controller.update();
+      this.gpu.setViewport(0, 0, this.canvas.width, this.canvas.height);
       this.gpu.setRenderTarget(null);
       this.gpu.clearRenderTarget();
 
       // Water
-      this.waterRenderer.render(geometry, field, this.camera);
+      this.waterRenderer.render(
+        geometry,
+        this.camera,
+        field.displacement,
+        field.normals,
+        field.foam
+      );
+
+      // Grid
+      this.gizmoRenderer.render(grid, this.camera);
 
       // Noise
       this.textureRenderer.render(
         vec2.fromValues(10, 10),
-        this.fieldFactory['noiseTexture'].get(params.subdivisions),
+        this.fieldFactory['noiseTexture'].get(params.resolution),
         TextureType.Noise
       );
 
       // Butterfly
       this.textureRenderer.render(
         vec2.fromValues(10, 100),
-        this.fieldFactory['butterflyTexture'].get(params.subdivisions),
+        this.fieldFactory['butterflyTexture'].get(params.resolution),
         TextureType.Butterfly
       );
 
@@ -80,16 +102,6 @@ export class Simulation {
         TextureType.H0_STAR
       );
 
-      /**
-       * @todo:
-       */
-      // HK
-      // this.textureRenderer.render(
-      //   vec2.fromValues(10, 400),
-      //   field['hkTexture'],
-      //   TextureType.Hk
-      // );
-
       // Displacement X
       this.textureRenderer.render(
         vec2.fromValues(10, 400),
@@ -106,9 +118,16 @@ export class Simulation {
 
       // Normals
       this.textureRenderer.render(
-        vec2.fromValues(100, 500),
+        vec2.fromValues(110, 500),
         field.normals,
         TextureType.Normals
+      );
+
+      // Foam
+      this.textureRenderer.render(
+        vec2.fromValues(210, 500),
+        field.foam,
+        TextureType.Foam
       );
 
       requestAnimationFrame(() => step());
@@ -119,9 +138,9 @@ export class Simulation {
 
   private createWaterGeometry(params: DisplacementFieldBuildParams) {
     const vertices: vec3[] = [];
-    const ids: vec2[] = [];
+    const uvs: vec2[] = [];
     const indices: number[] = [];
-    const N = params.subdivisions;
+    const N = params.geometryResolution;
     const L = params.size;
     const delta = L / (N - 1);
     const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
@@ -130,22 +149,22 @@ export class Simulation {
       for (let j = 0; j < N - 1; j++) {
         let v0 = vec3.fromValues(j * delta, 0.0, i * delta);
         vec3.add(v0, v0, offset);
-        let id0 = vec2.fromValues(j, i);
+        let uv0 = vec2.fromValues(j / N, i / N);
         let v1 = vec3.fromValues((j + 1) * delta, 0.0, i * delta);
         vec3.add(v1, v1, offset);
-        let id1 = vec2.fromValues(j + 1, i);
+        let uv1 = vec2.fromValues((j + 1) / N, i / N);
         let v2 = vec3.fromValues((j + 1) * delta, 0.0, (i + 1) * delta);
         vec3.add(v2, v2, offset);
-        let id2 = vec2.fromValues(j + 1, i + 1);
+        let uv2 = vec2.fromValues((j + 1) / N, (i + 1) / N);
         let v3 = vec3.fromValues(j * delta, 0.0, (i + 1) * delta);
         vec3.add(v3, v3, offset);
-        let id3 = vec2.fromValues(j, i + 1);
+        let uv3 = vec2.fromValues(j / N, (i + 1) / N);
 
-        indices.push(vertices.length, vertices.length + 1, vertices.length + 2);
-        indices.push(vertices.length + 2, vertices.length + 3, vertices.length);
+        indices.push(vertices.length + 1, vertices.length, vertices.length + 2);
+        indices.push(vertices.length + 3, vertices.length + 2, vertices.length);
 
         vertices.push(v0, v1, v2, v3);
-        ids.push(id0, id1, id2, id3);
+        uvs.push(uv0, uv1, uv2, uv3);
       }
     }
 
@@ -162,7 +181,7 @@ export class Simulation {
           stride: 12,
         },
         {
-          semantics: 'id',
+          semantics: 'uv',
           size: 2,
           type: WebGL2RenderingContext.FLOAT,
           slot: 1,
@@ -172,7 +191,7 @@ export class Simulation {
       ],
 
       vertexData: Float32Array.from(
-        [...vertices, ...ids].map((v) => [...v]).flat()
+        [...vertices, ...uvs].map((v) => [...v]).flat()
       ),
       indexData: Uint32Array.from(indices),
     };
