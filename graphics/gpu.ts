@@ -51,6 +51,7 @@ export class Gpu {
   constructor(private readonly _gl: WebGL2RenderingContext) {
     _gl.enable(WebGL2RenderingContext.DEPTH_TEST);
     // _gl.enable(WebGL2RenderingContext.CULL_FACE);
+    // _gl.frontFace(WebGL2RenderingContext.CCW)
     _gl.clearDepth(1.0);
     _gl.lineWidth(2);
     _gl.disable(WebGL2RenderingContext.BLEND);

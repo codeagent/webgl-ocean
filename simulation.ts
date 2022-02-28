@@ -14,7 +14,7 @@ import {
 import {
   DisplacementFieldBuildParams,
   DisplacementFieldFactory,
-} from './wave/displacement-field-factory';
+} from './wave';
 
 export class Simulation {
   private readonly gpu: Gpu;
@@ -48,7 +48,7 @@ export class Simulation {
     this.camera.near = params.size * 1.0e-2;
     this.camera.far = params.size * 1.0e3;
     this.camera.lookAt(
-      vec3.fromValues(params.size, params.size, 0),
+      vec3.fromValues(params.size, params.size, -params.size),
       vec3.create()
     );
 
@@ -160,8 +160,8 @@ export class Simulation {
         vec3.add(v3, v3, offset);
         let uv3 = vec2.fromValues(j / N, (i + 1) / N);
 
-        indices.push(vertices.length, vertices.length + 1, vertices.length + 2);
-        indices.push(vertices.length + 2, vertices.length + 3, vertices.length);
+        indices.push(vertices.length + 1, vertices.length, vertices.length + 2);
+        indices.push(vertices.length + 3, vertices.length + 2, vertices.length);
 
         vertices.push(v0, v1, v2, v3);
         uvs.push(uv0, uv1, uv2, uv3);
