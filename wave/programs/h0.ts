@@ -15,10 +15,10 @@ out vec4 outColor;
 
 uniform sampler2D noise;
 uniform uint resolution;  // N
-uniform float size;         // L
+uniform float size;       // L
 uniform float A;
 uniform vec2 wind;
-
+uniform float alignment;
 
 vec4 gauss() {
   vec2 uv = vec2(gl_FragCoord.xy) / float(resolution);
@@ -34,6 +34,12 @@ void main() {
   vec2 x = vec2(gl_FragCoord.xy) - float(resolution) * 0.5; //  [-N/2, N/2]
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
   float k2 = dot(k, k);
+
+  if(k2 == 0.0f) {
+    outColor = vec4(0.0f);
+    return;
+  }
+
   float L = dot(wind, wind) / g;
   float L2 = L * L;
   float l2 = size * size * 1.0e-6;  // filter out small waves (the waves the wave length of which is less than given tolerance)
@@ -41,14 +47,14 @@ void main() {
   float h0k = sqrt(
     (A / k2 / k2) * 
     exp(-1.0 / (k2 * L2) - (k2 * l2)) * 
-    pow(dot(normalize(wind), normalize(k)), 2.0f) * 
+    pow(max(0.0f, dot(normalize(wind), normalize(k))), alignment) * 
     0.5
   );
 
   float h0mk = sqrt(
     (A / k2 / k2) * 
     exp(-1.0 / (k2 * L2) - (k2 * l2)) *
-    pow(dot(normalize(wind), normalize(-k)), 2.0f) * 
+    pow(max(0.0f, dot(normalize(wind), normalize(-k))), alignment) * 
     0.5
   );
 

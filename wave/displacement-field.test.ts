@@ -8,6 +8,7 @@ export const testDisplacementFieldIfft2 = () => {
   const gpu = createMockGpu();
   const factory = new DisplacementFieldFactory(gpu);
   const displacementField = factory.build({
+    alignment: 1.0,
     croppiness: -0.6,
     size: 100,
     resolution: 512,

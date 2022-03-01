@@ -40,6 +40,11 @@ export interface DisplacementFieldBuildParams {
   croppiness: number;
 
   /**
+   * Parameter for waves motion. 0 means no wave motion
+   */
+  alignment: number;
+
+  /**
    * Variable for adjusting. Value should be between [0, 1]
    */
   strength: number;
@@ -91,9 +96,7 @@ export class DisplacementFieldFactory {
       params.resolution
     );
 
-    this.gpu.attachTextures(this.frameBuffer, [texture]);
-
-    // this.gpu.attachTexture(this.frameBuffer, texture, 0);
+    this.gpu.attachTexture(this.frameBuffer, texture, 0);
     this.gpu.setRenderTarget(this.frameBuffer);
     this.gpu.setViewport(0, 0, params.resolution, params.resolution);
     this.gpu.clearRenderTarget();
@@ -113,6 +116,12 @@ export class DisplacementFieldFactory {
     );
     this.gpu.setProgramVariable(this.h0Program, 'size', 'float', params.size);
     this.gpu.setProgramVariable(this.h0Program, 'wind', 'vec2', params.wind);
+    this.gpu.setProgramVariable(
+      this.h0Program,
+      'alignment',
+      'float',
+      params.alignment
+    );
     this.gpu.setProgramVariable(
       this.h0Program,
       'A',
