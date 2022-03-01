@@ -9,7 +9,7 @@ out vec3 _color;
 
 void main()
 {
-  gl_Position = projMat * viewMat * vec4(position - vec3(0.0f, 10.0f, 0.0f), 1.0f);
+  gl_Position = projMat * viewMat * vec4(position - vec3(0.0f, 1.0f, 0.0f), 1.0f);
   _color = color;
 }
 `;

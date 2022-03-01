@@ -23,11 +23,12 @@ const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement
 );
 simulation.start({
-  alignment: 1.5,
-  size: 100,
+  size: 10,
+  alignment: 0.015,
+  minWave: 0.001,
   geometryResolution: 256,
   resolution: 512,
-  wind: vec2.fromValues(31.0, 10.0),
-  strength: 4000000, // @todo: what is that!
-  croppiness: -0.85,
+  wind: vec2.fromValues(10.0, 1.0),
+  strength: 300000000, // @todo: what is that!
+  croppiness: -1.0,
 });

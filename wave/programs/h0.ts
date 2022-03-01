@@ -19,6 +19,7 @@ uniform float size;       // L
 uniform float A;
 uniform vec2 wind;
 uniform float alignment;
+uniform float minWave;
 
 vec4 gauss() {
   vec2 uv = vec2(gl_FragCoord.xy) / float(resolution);
@@ -42,23 +43,16 @@ void main() {
 
   float L = dot(wind, wind) / g;
   float L2 = L * L;
-  float l2 = size * size * 1.0e-6;  // filter out small waves (the waves the wave length of which is less than given tolerance)
+  float l2 = minWave * minWave;  // filter out small waves (the waves the wave length of which is less than given tolerance)
   
-  float h0k = sqrt(
-    (A / k2 / k2) * 
-    exp(-1.0 / (k2 * L2) - (k2 * l2)) * 
-    pow(max(0.0f, dot(normalize(wind), normalize(k))), alignment) * 
-    0.5
-  );
+  float h0k = (A / k2 / k2) * exp(-1.0 / (k2 * L2) - (k2 * l2)) * 0.5f, h0mk = h0k;
 
-  float h0mk = sqrt(
-    (A / k2 / k2) * 
-    exp(-1.0 / (k2 * L2) - (k2 * l2)) *
-    pow(max(0.0f, dot(normalize(wind), normalize(-k))), alignment) * 
-    0.5
-  );
+  if(alignment > 0.0f) {
+    h0k *=  pow(max(0.0f, dot(normalize(wind), normalize(k))), alignment);
+    h0mk *=  pow(max(0.0f, dot(normalize(wind), normalize(-k))), alignment);
+  }
 
   vec4 rnd = gauss();
-  outColor =  vec4(h0k * rnd.x, h0k * rnd.y, h0mk * rnd.z, h0mk * rnd.w);
+  outColor =  sqrt(vec4(h0k, h0k, h0mk, h0mk)) * vec4(rnd.x, rnd.y, rnd.z, rnd.w);
 }
 `;

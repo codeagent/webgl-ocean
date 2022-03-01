@@ -45,6 +45,11 @@ export interface DisplacementFieldBuildParams {
   alignment: number;
 
   /**
+   * Acts as wave frequency flter. Waves with wavelength less than this quantity aren't synthesize
+   */
+  minWave: number;
+
+  /**
    * Variable for adjusting. Value should be between [0, 1]
    */
   strength: number;
@@ -121,6 +126,12 @@ export class DisplacementFieldFactory {
       'alignment',
       'float',
       params.alignment
+    );
+    this.gpu.setProgramVariable(
+      this.h0Program,
+      'minWave',
+      'float',
+      params.minWave
     );
     this.gpu.setProgramVariable(
       this.h0Program,
