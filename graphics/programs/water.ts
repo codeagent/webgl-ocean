@@ -4,6 +4,7 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 uv;
 
 uniform mat4 viewMat;
+uniform mat4 worldMat;
 uniform mat4 projMat;
 uniform sampler2D displacementMap;
 
@@ -14,6 +15,7 @@ out vec2 _uv;
 void main()
 {
   _position = position + texture(displacementMap, uv).xyz;
+  _position = vec3(worldMat * vec4(_position, 1.0f));
   _uv = uv;
   gl_Position = projMat * viewMat * vec4(_position, 1.0f);
 }

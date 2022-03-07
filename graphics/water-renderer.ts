@@ -1,6 +1,7 @@
 import { Geometry, Gpu, ShaderProgram, Texture2d } from './gpu';
 import { Camera } from './camera';
 import { vs as watervs, fs as waterfs } from './programs/water';
+import { mat4 } from 'gl-matrix';
 
 export class WaterRenderer {
   private readonly waterShader: ShaderProgram;
@@ -11,6 +12,7 @@ export class WaterRenderer {
 
   render(
     geometry: Geometry,
+    transform: mat4,
     camera: Camera,
     displacementMap: Texture2d,
     normalMap: Texture2d,
@@ -43,6 +45,12 @@ export class WaterRenderer {
       'projMat',
       'mat4',
       camera.projection
+    );
+    this.gpu.setProgramVariable(
+      this.waterShader,
+      'worldMat',
+      'mat4',
+      transform
     );
     this.gpu.setProgramVariable(
       this.waterShader,

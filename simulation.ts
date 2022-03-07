@@ -1,4 +1,4 @@
-import { vec2, vec3 } from 'gl-matrix';
+import { mat4, vec2, vec3 } from 'gl-matrix';
 
 import {
   Gpu,
@@ -11,10 +11,7 @@ import {
   createGrid,
 } from './graphics';
 
-import {
-  DisplacementFieldBuildParams,
-  DisplacementFieldFactory,
-} from './wave';
+import { DisplacementFieldBuildParams, DisplacementFieldFactory } from './wave';
 
 export class Simulation {
   private readonly gpu: Gpu;
@@ -63,13 +60,24 @@ export class Simulation {
       this.gpu.clearRenderTarget();
 
       // Water
-      this.waterRenderer.render(
-        geometry,
-        this.camera,
-        field.displacement,
-        field.normals,
-        field.foam
-      );
+      const instances = 3;
+      for (let i = 0; i < instances; i++) {
+        for (let j = 0; j < instances; j++) {
+          const transform = mat4.create();
+          mat4.fromTranslation(
+            transform,
+            vec3.fromValues(i * params.size, (i + j) * 0.0, j * params.size)
+          );
+          this.waterRenderer.render(
+            geometry,
+            transform,
+            this.camera,
+            field.displacement,
+            field.normals,
+            field.foam
+          );
+        }
+      }
 
       // Grid
       this.gizmoRenderer.render(grid, this.camera);
@@ -144,21 +152,22 @@ export class Simulation {
     const L = params.size;
     const delta = L / (N - 1);
     const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
+    const deltaUV = 1.0 / (N - 1);
 
     for (let i = 0; i < N - 1; i++) {
       for (let j = 0; j < N - 1; j++) {
         let v0 = vec3.fromValues(j * delta, 0.0, i * delta);
         vec3.add(v0, v0, offset);
-        let uv0 = vec2.fromValues(j / N, i / N);
+        let uv0 = vec2.fromValues(j * deltaUV, i * deltaUV);
         let v1 = vec3.fromValues((j + 1) * delta, 0.0, i * delta);
         vec3.add(v1, v1, offset);
-        let uv1 = vec2.fromValues((j + 1) / N, i / N);
+        let uv1 = vec2.fromValues((j + 1) * deltaUV, i * deltaUV);
         let v2 = vec3.fromValues((j + 1) * delta, 0.0, (i + 1) * delta);
         vec3.add(v2, v2, offset);
-        let uv2 = vec2.fromValues((j + 1) / N, (i + 1) / N);
+        let uv2 = vec2.fromValues((j + 1) * deltaUV, (i + 1) * deltaUV);
         let v3 = vec3.fromValues(j * delta, 0.0, (i + 1) * delta);
         vec3.add(v3, v3, offset);
-        let uv3 = vec2.fromValues(j / N, (i + 1) / N);
+        let uv3 = vec2.fromValues(j * deltaUV, (i + 1) * deltaUV);
 
         indices.push(vertices.length + 1, vertices.length, vertices.length + 2);
         indices.push(vertices.length + 3, vertices.length + 2, vertices.length);
@@ -167,6 +176,9 @@ export class Simulation {
         uvs.push(uv0, uv1, uv2, uv3);
       }
     }
+
+const list =uvs.flatMap((t) => [...t]);
+    // console.log(Math.max(...list), Math.min(...list));
 
     const mesh = {
       verticesCount: indices.length,

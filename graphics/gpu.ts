@@ -283,12 +283,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -326,12 +326,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -369,12 +369,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -412,12 +412,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.CLAMP_TO_EDGE
+      WebGL2RenderingContext.REPEAT
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
