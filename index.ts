@@ -8,6 +8,8 @@ import {
   testDft2,
   testFft2,
   testDisplacementFieldIfft2,
+  testFft2Hermitian,
+  testDisplacementFieldIfft2Hermitian
 } from './test';
 
 import { Simulation } from './simulation';
@@ -18,6 +20,8 @@ import { Simulation } from './simulation';
 // testDft2();
 // testFft2();
 // testDisplacementFieldIfft2();
+// testFft2Hermitian();
+// testDisplacementFieldIfft2Hermitian();
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement
