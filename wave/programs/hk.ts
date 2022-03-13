@@ -57,7 +57,7 @@ void main() {
   float w = sqrt(g * kLen);
   vec4 h0Texel = texelFetch(h0Texture, ivec2(gl_FragCoord.xy), 0).rgba;
 
-  complex e = eix(w * t);
+  complex e = eix(-w * t);
   complex h0 = complex(h0Texel.x, h0Texel.y);
   complex h0Min = complex(h0Texel.z, h0Texel.w);
   
@@ -69,8 +69,9 @@ void main() {
   complex dxdx = scale(hy, k.x * k.x / kLen);
   complex dzdz = scale(hy, k.y * k.y / kLen);
   complex dxdz = scale(hy, k.y * k.x / kLen);
-  
-  height = vec4(hy.re, hy.im, dxdz.re, dxdz.im);
+
+
+  height = vec4(hy.re, hy.im, 0.0, 0.0);
   slope = vec4(sx.re, sx.im, sz.re, sz.im);
   displacement = vec4(dx.re, dx.im, dz.re, dz.im);
   ddisplacement = vec4(dxdx.re, dxdx.im, dzdz.re, dzdz.im);

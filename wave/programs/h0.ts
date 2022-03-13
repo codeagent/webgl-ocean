@@ -53,6 +53,6 @@ void main() {
   }
 
   vec4 rnd = gauss();
-  outColor =  sqrt(vec4(h0k, h0k, h0mk, h0mk)) * vec4(rnd.x, rnd.y, rnd.z, rnd.w);
+  outColor =  sqrt(vec4(h0k, h0k, h0mk, h0mk)) * vec4(rnd.x, rnd.x, rnd.y, rnd.y);
 }
 `;

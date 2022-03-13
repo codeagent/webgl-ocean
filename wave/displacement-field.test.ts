@@ -2,20 +2,30 @@ import { vec2 } from 'gl-matrix';
 
 import { createMockGpu } from '../graphics/gpu.mock';
 import { DisplacementFieldFactory } from './displacement-field-factory';
-import { float4ToComplex2d, ifft2, abs, sub } from '../fft';
-import { add, areAqual, complex, Complex, mult, re } from '../fft/complex';
-import { fft2 } from '../fft/fft2';
+import {
+  float4ToComplex2d,
+  ifft2,
+  fft2,
+  abs,
+  sub,
+  add,
+  areAqual,
+  complex,
+  Complex,
+  mult,
+  re,
+} from '../fft';
 
 export const testDisplacementFieldIfft2 = () => {
   const gpu = createMockGpu();
   const factory = new DisplacementFieldFactory(gpu);
   const displacementField = factory.build({
     minWave: 0.0,
-    alignment: 1.0,
+    alignment: 0.0,
     croppiness: -0.6,
     size: 100,
-    resolution: 512,
-    geometryResolution: 256,
+    resolution: 8,
+    geometryResolution: 8,
     wind: vec2.fromValues(28.0, 28.0),
     strength: 1000000,
   });
@@ -28,8 +38,8 @@ export const testDisplacementFieldIfft2 = () => {
       4
   );
 
-  for (let slot of [0, 1, 2, 3]) {
-    for (let couple of [0, 1]) {
+  for (let slot of [0]) {
+    for (let couple of [0]) {
       displacementField['generateSpectrumTextures'](performance.now());
       gpu.readValues(
         displacementField['spectrumFramebuffer'],
@@ -71,6 +81,8 @@ export const testDisplacementFieldIfft2 = () => {
         displacementField.params.resolution,
         couple * 2
       ).flat(1);
+
+      console.log(buffer, actual, expected)
 
       // Assert
       const diff = actual.map((a, i) => abs(sub(a, expected[i])));

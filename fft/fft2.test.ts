@@ -1,4 +1,5 @@
-import { abs, add, mult, Complex, complex, sub } from './complex';
+import { vec2 } from 'gl-matrix';
+import { abs, add, mult, Complex, complex, sub, eix, conj } from './complex';
 import { dft2, fft2, idft2, ifft2 } from './fft2';
 
 export const testDft2 = () => {
@@ -59,7 +60,7 @@ export const testFft2 = () => {
   console.log('testFft2: Test passed!');
 };
 
-export const testFft2Hermitian = () => {
+export const testFft2Combined = () => {
   const I = complex(0.0, 1.0);
 
   for (let pow of [1, 2, 3, 4, 5, 6, 7, 8]) {
@@ -98,9 +99,66 @@ export const testFft2Hermitian = () => {
     const diff = ifftf.map((v, i) => abs(sub(v, complex(s0f[i], s1f[i]))));
     const closeEnougth = diff.every((v) => v <= 1.0e-5);
     if (!closeEnougth) {
-      console.warn("testFft2Hermitian: Test don't passesd: ", diff);
+      console.warn("testFft2Combined: Test don't passesd: ", diff);
       return;
     }
+  }
+
+  console.log('testFft2Combined: Test passed!');
+};
+
+export const testFft2Hermitian = () => {
+  
+
+  for (let pow of [3]) {
+    // Arrange
+    const size = 1 << pow;
+
+    const spectrum: Complex[][] = [];
+    const A = 1.0;
+    const wind = vec2.fromValues(4.0, 4.0);
+    const g = 9.8;
+    const L = vec2.dot(wind, wind) / g;
+    const L2 = L * L;
+
+    for (let i = 0; i < size; i++) {
+      const row: Complex[] = [];
+      for (let j = 0; j < size; j++) {
+        const x = vec2.fromValues(j, i);
+        // vec2.sub(x, x, vec2.fromValues(size * 0.5, size * 0.5));
+        const k = vec2.scale(x, x, (2.0 * Math.PI) / size);
+        const kLen = vec2.len(k);
+        const w = Math.sqrt(9.81 * kLen);
+        const h0k = Math.sqrt(
+          (A / kLen ** 4) * Math.exp(-1.0 / (kLen * kLen * L2)) * 0.5
+        );
+        const r0 = Math.random() * 2.0 - 1.0;
+        const r1 = Math.random() * 2.0 - 1.0;
+        const h0 = complex(r0 * h0k, -r0 * h0k);
+
+        if (kLen === 0) {
+          row.push(complex(0.0, 0.0));
+        } else {
+          row.push(add(mult(h0, eix(-w)), mult(conj(h0), eix(w))));
+        }
+      }
+
+      spectrum.push(row);
+    }
+    // Act
+    const inverse = ifft2(spectrum);
+
+    // Assert
+
+    const ifftf = inverse.flat();
+    console.log(ifftf);
+
+    // const diff = ifftf.map((v, i) => abs(sub(v, complex(s0f[i], s1f[i]))));
+    // const closeEnougth = diff.every((v) => v <= 1.0e-5);
+    // if (!closeEnougth) {
+    //   console.warn("testFft2Hermitian: Test don't passesd: ", diff);
+    //   return;
+    // }
   }
 
   console.log('testFft2Hermitian: Test passed!');

@@ -9,7 +9,9 @@ import {
   testFft2,
   testDisplacementFieldIfft2,
   testFft2Hermitian,
-  testDisplacementFieldIfft2Hermitian
+  testDisplacementFieldIfft2Hermitian,
+  testFft2Combined
+  
 } from './test';
 
 import { Simulation } from './simulation';
@@ -20,7 +22,8 @@ import { Simulation } from './simulation';
 // testDft2();
 // testFft2();
 // testDisplacementFieldIfft2();
-// testFft2Hermitian();
+testFft2Hermitian();
+// testFft2Combined();
 // testDisplacementFieldIfft2Hermitian();
 
 const simulation = new Simulation(
@@ -28,7 +31,7 @@ const simulation = new Simulation(
 );
 simulation.start({
   size: 10,
-  alignment: 0.015,
+  alignment: 0.01,
   minWave: 0.001,
   geometryResolution: 256,
   resolution: 512,
