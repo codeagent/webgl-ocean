@@ -24,8 +24,8 @@ export const testDisplacementFieldIfft2 = () => {
     alignment: 0.0,
     croppiness: -0.6,
     size: 100,
-    resolution: 8,
-    geometryResolution: 8,
+    resolution: 512,
+    geometryResolution: 256,
     wind: vec2.fromValues(28.0, 28.0),
     strength: 1000000,
   });
@@ -38,8 +38,8 @@ export const testDisplacementFieldIfft2 = () => {
       4
   );
 
-  for (let slot of [0]) {
-    for (let couple of [0]) {
+  for (let slot of [0, 1, 2, 3]) {
+    for (let couple of [0, 1]) {
       displacementField['generateSpectrumTextures'](performance.now());
       gpu.readValues(
         displacementField['spectrumFramebuffer'],
@@ -81,8 +81,6 @@ export const testDisplacementFieldIfft2 = () => {
         displacementField.params.resolution,
         couple * 2
       ).flat(1);
-
-      console.log(buffer, actual, expected)
 
       // Assert
       const diff = actual.map((a, i) => abs(sub(a, expected[i])));
