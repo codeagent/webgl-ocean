@@ -108,8 +108,6 @@ export const testFft2Combined = () => {
 };
 
 export const testFft2Hermitian = () => {
-  
-
   for (let pow of [3]) {
     // Arrange
     const size = 1 << pow;
@@ -125,16 +123,15 @@ export const testFft2Hermitian = () => {
       const row: Complex[] = [];
       for (let j = 0; j < size; j++) {
         const x = vec2.fromValues(j, i);
-        // vec2.sub(x, x, vec2.fromValues(size * 0.5, size * 0.5));
+        vec2.sub(x, x, vec2.fromValues(size * 0.5, size * 0.5));
         const k = vec2.scale(x, x, (2.0 * Math.PI) / size);
         const kLen = vec2.len(k);
-        const w = Math.sqrt(9.81 * kLen);
+        const w = Math.sqrt(g * kLen);
         const h0k = Math.sqrt(
           (A / kLen ** 4) * Math.exp(-1.0 / (kLen * kLen * L2)) * 0.5
         );
-        const r0 = Math.random() * 2.0 - 1.0;
-        const r1 = Math.random() * 2.0 - 1.0;
-        const h0 = complex(r0 * h0k, -r0 * h0k);
+
+        const h0 = complex(h0k, h0k);
 
         if (kLen === 0) {
           row.push(complex(0.0, 0.0));

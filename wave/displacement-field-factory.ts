@@ -8,10 +8,12 @@ import {
   Texture2d,
   Geometry,
   quad,
+  TextureFiltering,
 } from '../graphics';
 import { DisplacementField } from './displacement-field';
 
 import { vs as h0vs, fs as h0fs } from './programs/h0';
+import { TextureMode } from '../graphics/gpu';
 
 export interface DisplacementFieldBuildParams {
   /**
@@ -81,7 +83,12 @@ export class DisplacementFieldFactory {
   private getNoiseTexture(size: number): Texture2d {
     if (!this.noiseTexture.has(size)) {
       const data = this.getNoise2d(size);
-      const texture = this.gpu.createFloat4Texture(size, size);
+      const texture = this.gpu.createFloat4Texture(
+        size,
+        size,
+        TextureFiltering.Linear,
+        TextureMode.Mirror
+      );
       this.gpu.updateTexture(
         texture,
         size,
@@ -98,7 +105,9 @@ export class DisplacementFieldFactory {
   private getH0Texture(params: DisplacementFieldBuildParams): Texture2d {
     const texture = this.gpu.createFloat4Texture(
       params.resolution,
-      params.resolution
+      params.resolution,
+      TextureFiltering.Nearest,
+      TextureMode.Edge
     );
 
     this.gpu.attachTexture(this.frameBuffer, texture, 0);

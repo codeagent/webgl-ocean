@@ -9,33 +9,34 @@ import {
   testFft2,
   testDisplacementFieldIfft2,
   testFft2Hermitian,
-  testDisplacementFieldIfft2Hermitian,
+  testDisplacementFieldIfft2HermitianProperty,
   testFft2Combined
   
 } from './test';
 
 import { Simulation } from './simulation';
 
-testButterflyTexture();
-testDft();
-testFft();
-testDft2();
-testFft2();
-testDisplacementFieldIfft2();
-testFft2Hermitian();
-testFft2Combined();
-testDisplacementFieldIfft2Hermitian();
+// testButterflyTexture();
+// testDft();
+// testFft();
+// testDft2();
+// testFft2();
+// testDisplacementFieldIfft2();
+testDisplacementFieldIfft2HermitianProperty();
+// testFft2Hermitian();
+// testFft2Combined();
+
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement
 );
 simulation.start({
   size: 10,
-  alignment: 0.01,
+  alignment: .01,
   minWave: 0.001,
   geometryResolution: 256,
   resolution: 512,
-  wind: vec2.fromValues(10.0, 1.0),
-  strength: 300000000, // @todo: what is that!
+  wind: vec2.fromValues(10.0, 10.0),
+  strength: 500000000, // @todo: what is that!
   croppiness: -1.0,
 });

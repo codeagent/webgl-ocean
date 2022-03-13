@@ -53,7 +53,7 @@ export class Simulation {
     this.controller.sync();
 
     const step = () => {
-      field.update(performance.now() / 1e3);
+      field.update(performance.now() / 1e3 + 360);
       this.controller.update();
       this.gpu.setViewport(0, 0, this.canvas.width, this.canvas.height);
       this.gpu.setRenderTarget(null);
@@ -176,9 +176,6 @@ export class Simulation {
         uvs.push(uv0, uv1, uv2, uv3);
       }
     }
-
-const list =uvs.flatMap((t) => [...t]);
-    // console.log(Math.max(...list), Math.min(...list));
 
     const mesh = {
       verticesCount: indices.length,

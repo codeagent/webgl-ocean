@@ -43,6 +43,12 @@ export enum TextureFiltering {
   Linear = WebGL2RenderingContext.LINEAR,
 }
 
+export enum TextureMode {
+  Repeat = WebGL2RenderingContext.REPEAT,
+  Edge = WebGL2RenderingContext.CLAMP_TO_EDGE,
+  Mirror = WebGL2RenderingContext.MIRRORED_REPEAT,
+}
+
 export class Gpu {
   get context() {
     return this._gl;
@@ -255,7 +261,8 @@ export class Gpu {
   createFloatTexture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat,
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -283,12 +290,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -298,7 +305,8 @@ export class Gpu {
   createFloat2Texture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -326,12 +334,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -341,7 +349,8 @@ export class Gpu {
   createFloat3Texture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -369,12 +378,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -384,7 +393,8 @@ export class Gpu {
   createFloat4Texture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -412,12 +422,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 

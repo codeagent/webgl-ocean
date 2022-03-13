@@ -22,7 +22,7 @@ uniform float alignment;
 uniform float minWave;
 
 vec4 gauss() {
-  vec2 uv = vec2(gl_FragCoord.xy) / float(resolution);
+  vec2 uv = 2.0f * vec2(ivec2(gl_FragCoord.xy)) / float(resolution) - vec2(1.0f);
   vec4 noise4 = texture(noise, uv).rgba;
   float u0 = 2.0f * PI * noise4.x;
   float v0 = sqrt(-2.0f * log(noise4.y));
@@ -32,7 +32,7 @@ vec4 gauss() {
 }
 
 void main() {
-  vec2 x = vec2(gl_FragCoord.xy) - float(resolution) * 0.5; //  [-N/2, N/2]
+  vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2]
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
   float k2 = dot(k, k);
 
@@ -53,6 +53,6 @@ void main() {
   }
 
   vec4 rnd = gauss();
-  outColor =  sqrt(vec4(h0k, h0k, h0mk, h0mk)) * vec4(rnd.x, rnd.x, rnd.y, rnd.y);
+  outColor =  sqrt(vec4(h0k, h0k, h0mk, h0mk)) * vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
 }
 `;
