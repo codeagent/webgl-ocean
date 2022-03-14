@@ -60,7 +60,7 @@ export class Simulation {
       this.gpu.clearRenderTarget();
 
       // Water
-      const instances = 3;
+      const instances = 1;
       for (let i = 0; i < instances; i++) {
         for (let j = 0; j < instances; j++) {
           const transform = mat4.create();

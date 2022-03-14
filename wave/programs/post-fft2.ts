@@ -13,10 +13,9 @@ layout(location = 1) out vec3 normal;
 layout(location = 2) out float foam; 
 
 uniform float croppiness;
-uniform sampler2D ifft0; // height & dx/dz
-uniform sampler2D ifft1; // slope
-uniform sampler2D ifft2; // displacement
-uniform sampler2D ifft3; // ddisplacement
+uniform sampler2D ifft0;  // dx_hy_dz_dxdz
+uniform sampler2D ifft1;  // sx_sz_dxdx_dzdz
+
 
 vec4 jacobian(float dxdx, float dxdz, float dzdz) {
   float Jxx = 1.0f + croppiness * dxdx;
@@ -35,16 +34,12 @@ void main() {
   float p = float(int(gl_FragCoord.x) + int(gl_FragCoord.y));
   float s = sign[int(mod(p, 2.0f))];
 
-  vec2 heightDxDz = texelFetch(ifft0, ivec2(gl_FragCoord.xy), 0).rb * s;
-  float height = heightDxDz.x;
-  float dxdz = heightDxDz.y;
-  vec2 deriv = texelFetch(ifft1, ivec2(gl_FragCoord.xy), 0).rb * s;
-  vec2 disp = texelFetch(ifft2, ivec2(gl_FragCoord.xy), 0).rb * s;
-  vec2 ddisp = texelFetch(ifft3, ivec2(gl_FragCoord.xy), 0).rb * s;
-  vec2 slope = vec2(deriv.x / (1.0f + croppiness * ddisp.x), deriv.y / (1.0f + croppiness * ddisp.y));
+  vec4 texel0 = texelFetch(ifft0, ivec2(gl_FragCoord.xy), 0).rgba * s;
+  vec4 texel1 = texelFetch(ifft1, ivec2(gl_FragCoord.xy), 0).rgba * s;
+  vec2 slope = vec2(texel1.x / (1.0f + croppiness * texel1.z), texel1.y / (1.0f + croppiness * texel1.w));
 
-  displacement = vec3(disp.x * croppiness, height, disp.y * croppiness);
+  displacement = texel0.xyz * vec3(croppiness, 1.0f, croppiness);
   normal = normalize(vec3(-slope.x, 1.0f, -slope.y));
-  foam = pow(-min(0.0f, det(jacobian(ddisp.x, dxdz, ddisp.y)) - 1.0f), 2.0);
+  foam = pow(-min(0.0f, det(jacobian(texel1.z, texel0.w, texel1.w)) - 1.0f), 2.0);
 }
 `;

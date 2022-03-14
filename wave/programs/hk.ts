@@ -11,10 +11,8 @@ export const fs = `#version 300 es
 
 precision highp float;
 
-layout(location = 0) out vec4 height;	
-layout(location = 1) out vec4 slope;	
-layout(location = 2) out vec4 displacement;	
-layout(location = 3) out vec4 ddisplacement; 
+layout(location = 0) out vec4 spectrum0;	
+layout(location = 1) out vec4 spectrum1;	
 
 uniform uint resolution;  // N
 uniform float size;       // L
@@ -25,6 +23,8 @@ struct complex {
   float re;
   float im;
 };
+
+const complex i = complex(0.0f, 1.0f);
 
 complex add(complex a, complex b) {
   return complex(a.re + b.re, a.im + b.im);
@@ -51,12 +51,12 @@ complex negate(complex v) {
 }
 
 void main() {
-  vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2]
+  vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2)
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
   float kLen = length(k);
 
   if(kLen == 0.0f) {
-    height = slope = displacement = ddisplacement = vec4(0.0f);
+    spectrum0 = spectrum1 = vec4(0.0f);
     return;
   }
 
@@ -71,7 +71,6 @@ void main() {
   complex sz = complex(0.0f, 0.0f);
   complex dx = complex(0.0f, 0.0f);
   complex dz = complex(0.0f, 0.0f);
-  
   complex dxdx = complex(0.0f, 0.0f);
   complex dzdz = complex(0.0f, 0.0f);
   complex dxdz = complex(0.0f, 0.0f);
@@ -92,9 +91,12 @@ void main() {
     }
   }
 
-  height = vec4(hy.re, hy.im, dxdz.re, dxdz.im);
-  slope = vec4(sx.re, sx.im, sz.re, sz.im);
-  displacement = vec4(dx.re, dx.im, dz.re, dz.im);
-  ddisplacement = vec4(dxdx.re, dxdx.im, dzdz.re, dzdz.im);
+  complex dx_hy = add(dx, mult(i, hy));
+  complex dz_dxdz = add(dz, mult(i, dxdz));
+  complex sx_sz = add(sx, mult(i, sz));
+  complex dxdx_dzdz = add(dxdx, mult(i, dzdz));
+
+  spectrum0 = vec4(dx_hy.re, dx_hy.im, dz_dxdz.re, dz_dxdz.im);
+  spectrum1 = vec4(sx_sz.re, sx_sz.im, dxdx_dzdz.re, dxdx_dzdz.im);
 }
 `;

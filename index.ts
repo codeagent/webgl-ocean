@@ -30,7 +30,7 @@ const simulation = new Simulation(
 );
 simulation.start({
   size: 10,
-  alignment: 0.01,
+  alignment: 0.0,
   minWave: 0.001,
   geometryResolution: 256,
   resolution: 512,

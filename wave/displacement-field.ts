@@ -99,25 +99,9 @@ export class DisplacementField {
         this.params.resolution,
         this.params.resolution
       ),
-      this.gpu.createFloat4Texture(
-        this.params.resolution,
-        this.params.resolution
-      ),
-      this.gpu.createFloat4Texture(
-        this.params.resolution,
-        this.params.resolution
-      ),
     ];
 
     this.pingPongTextures = [
-      this.gpu.createFloat4Texture(
-        this.params.resolution,
-        this.params.resolution
-      ),
-      this.gpu.createFloat4Texture(
-        this.params.resolution,
-        this.params.resolution
-      ),
       this.gpu.createFloat4Texture(
         this.params.resolution,
         this.params.resolution
@@ -196,7 +180,7 @@ export class DisplacementField {
       this.gpu.setProgramVariable(this.fft2hProgram, 'phase', 'uint', phase);
       this.gpu.setProgramTextures(
         this.fft2hProgram,
-        ['spectrum0', 'spectrum1', 'spectrum2', 'spectrum3'],
+        ['spectrum0', 'spectrum1'],
         pingPongTextures[pingPong]
       );
       this.gpu.drawGeometry(this.quad);
@@ -217,7 +201,7 @@ export class DisplacementField {
       this.gpu.setProgramVariable(this.fft2vProgram, 'phase', 'uint', phase);
       this.gpu.setProgramTextures(
         this.fft2vProgram,
-        ['spectrum0', 'spectrum1', 'spectrum2', 'spectrum3'],
+        ['spectrum0', 'spectrum1'],
         pingPongTextures[pingPong]
       );
       this.gpu.drawGeometry(this.quad);
@@ -232,7 +216,7 @@ export class DisplacementField {
     this.gpu.setProgram(this.postfft2Program);
     this.gpu.setProgramTextures(
       this.postfft2Program,
-      ['ifft0', 'ifft1', 'ifft2', 'ifft3'],
+      ['ifft0', 'ifft1'],
       this.ifftTextures
     );
     this.gpu.drawGeometry(this.quad);
