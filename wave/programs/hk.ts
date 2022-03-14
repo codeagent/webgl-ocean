@@ -54,36 +54,43 @@ void main() {
   vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2]
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
   float kLen = length(k);
+
   if(kLen == 0.0f) {
     height = slope = displacement = ddisplacement = vec4(0.0f);
     return;
   }
+
   float w = sqrt(g * kLen);
   vec4 h0Texel = texelFetch(h0Texture, ivec2(gl_FragCoord.xy), 0).rgba;
 
   complex e = eix(w * t);
   complex h0 = complex(h0Texel.x, h0Texel.y);
   complex h0MinConj = complex(h0Texel.z, h0Texel.w);
-  
   complex hy = add(mult(h0, e), mult(h0MinConj, conj(e)));
-  complex dx = mult(complex(0.0f, -k.x / kLen), hy);
-  complex dz = mult(complex(0.0f, -k.y / kLen), hy);
-  complex sx = mult(complex(0.0f, k.x), hy);
-  complex sz = mult(complex(0.0f, k.y), hy);
-  complex dxdx = scale(hy, k.x * k.x / kLen);
-  complex dzdz = scale(hy, k.y * k.y / kLen);
-  complex dxdz = scale(hy, k.y * k.x / kLen);
+  complex sx = complex(0.0f, 0.0f);
+  complex sz = complex(0.0f, 0.0f);
+  complex dx = complex(0.0f, 0.0f);
+  complex dz = complex(0.0f, 0.0f);
+  
+  complex dxdx = complex(0.0f, 0.0f);
+  complex dzdz = complex(0.0f, 0.0f);
+  complex dxdz = complex(0.0f, 0.0f);
 
-  // if(
-  //     uint(gl_FragCoord.x) == 0u || 
-  //     uint(gl_FragCoord.x) == resolution - 1u || 
-  //     uint(gl_FragCoord.y) == 0u || 
-  //     uint(gl_FragCoord.y) == resolution - 1u
-  //   ) 
-  // {
-  //   sx = complex(0.0f, 0.0f);
-  //   sz = complex(0.0f, 0.0f);
-  // }
+  if(int(gl_FragCoord.x) != 0) {
+    sx = mult(complex(0.0f, k.x), hy);
+    dx = mult(complex(0.0f, -k.x / kLen), hy);
+    dxdx = scale(hy, k.x * k.x / kLen);
+  }
+
+  if(int(gl_FragCoord.y) != 0) {
+    sz = mult(complex(0.0f, k.y), hy);
+    dz = mult(complex(0.0f, -k.y / kLen), hy);
+    dzdz = scale(hy, k.y * k.y / kLen);
+
+    if(int(gl_FragCoord.x) != 0) {
+      dxdz = scale(hy, k.y * k.x / kLen);
+    }
+  }
 
   height = vec4(hy.re, hy.im, dxdz.re, dxdz.im);
   slope = vec4(sx.re, sx.im, sz.re, sz.im);

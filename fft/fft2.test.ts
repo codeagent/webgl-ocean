@@ -1,5 +1,15 @@
 import { vec2 } from 'gl-matrix';
-import { abs, add, mult, Complex, complex, sub, eix, conj } from './complex';
+import {
+  abs,
+  add,
+  mult,
+  Complex,
+  complex,
+  sub,
+  eix,
+  conj,
+  im,
+} from './complex';
 import { dft2, fft2, idft2, ifft2 } from './fft2';
 
 export const testDft2 = () => {
@@ -108,7 +118,7 @@ export const testFft2Combined = () => {
 };
 
 export const testFft2Hermitian = () => {
-  for (let pow of [3]) {
+  for (let pow of [1, 2, 3, 4, 5, 6, 7, 8]) {
     // Arrange
     const size = 1 << pow;
 
@@ -146,16 +156,13 @@ export const testFft2Hermitian = () => {
     const inverse = ifft2(spectrum);
 
     // Assert
-
     const ifftf = inverse.flat();
-    console.log(ifftf);
-
-    // const diff = ifftf.map((v, i) => abs(sub(v, complex(s0f[i], s1f[i]))));
-    // const closeEnougth = diff.every((v) => v <= 1.0e-5);
-    // if (!closeEnougth) {
-    //   console.warn("testFft2Hermitian: Test don't passesd: ", diff);
-    //   return;
-    // }
+    const _im = ifftf.map((v) => im(v));
+    const isReal = _im.every((v) => Math.abs(v) <= 1.0e-6);
+    if (!isReal) {
+      console.warn(`testFft2Hermitian: Test don't pass`);
+      return;
+    }
   }
 
   console.log('testFft2Hermitian: Test passed!');

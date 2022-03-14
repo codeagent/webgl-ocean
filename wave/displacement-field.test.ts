@@ -2,19 +2,7 @@ import { vec2 } from 'gl-matrix';
 
 import { createMockGpu } from '../graphics/gpu.mock';
 import { DisplacementFieldFactory } from './displacement-field-factory';
-import {
-  float4ToComplex2d,
-  ifft2,
-  fft2,
-  abs,
-  sub,
-  add,
-  areAqual,
-  complex,
-  Complex,
-  mult,
-  re,
-} from '../fft';
+import { float4ToComplex2d, ifft2, abs, sub, im } from '../fft';
 
 export const testDisplacementFieldIfft2 = () => {
   const gpu = createMockGpu();
@@ -107,8 +95,8 @@ export const testDisplacementFieldIfft2HermitianProperty = () => {
     alignment: 0.0,
     croppiness: -0.6,
     size: 100,
-    resolution: 8,
-    geometryResolution: 8,
+    resolution: 512,
+    geometryResolution: 256,
     wind: vec2.fromValues(28.0, 28.0),
     strength: 1000000,
   });
@@ -121,7 +109,7 @@ export const testDisplacementFieldIfft2HermitianProperty = () => {
       4
   );
 
-  for (let slot of [0, 1]) {
+  for (let slot of [0, 1, 2, 3]) {
     for (let couple of [0, 1]) {
       displacementField['generateSpectrumTextures'](performance.now());
 
@@ -148,19 +136,19 @@ export const testDisplacementFieldIfft2HermitianProperty = () => {
         couple * 2
       ).flat(1);
 
-console.log(actual);
       // Assert
-      // const diff = actual.map((a, i) => abs(sub(a, expected[i])));
-      // const closeEnougth = diff.every((v) => v <= 1.0e-5);
-      // if (!closeEnougth) {
-      //   console.warn(
-      //     `testDisplacementFieldIfft2 [slot ${slot}-${couple}]: Test don't passesd: `,
-      //     diff
-      //   );
-      //   return;
-      // }
+      const _im = actual.map((v) => im(v));
+      const isReal = _im.every((v) => Math.abs(v) <= 1.0e-5);
+      if (!isReal) {
+        console.warn(
+          `testDisplacementFieldIfft2HermitianProperty [slot ${slot}-${couple}]: Test don't pass: [max: ${Math.max(
+            ..._im
+          )}, min: ${Math.min(..._im)}]`
+        );
+        return;
+      }
       console.log(
-        `testDisplacementFieldIfft2 [slot ${slot}-${couple}]: Test passed!`
+        `testDisplacementFieldIfft2HermitianProperty [slot ${slot}-${couple}]: Test passed!`
       );
     }
   }

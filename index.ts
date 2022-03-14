@@ -10,8 +10,7 @@ import {
   testDisplacementFieldIfft2,
   testFft2Hermitian,
   testDisplacementFieldIfft2HermitianProperty,
-  testFft2Combined
-  
+  testFft2Combined,
 } from './test';
 
 import { Simulation } from './simulation';
@@ -21,18 +20,17 @@ import { Simulation } from './simulation';
 // testFft();
 // testDft2();
 // testFft2();
-// testDisplacementFieldIfft2();
-testDisplacementFieldIfft2HermitianProperty();
 // testFft2Hermitian();
 // testFft2Combined();
-
+// testDisplacementFieldIfft2();
+// testDisplacementFieldIfft2HermitianProperty();
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement
 );
 simulation.start({
   size: 10,
-  alignment: .01,
+  alignment: 0.01,
   minWave: 0.001,
   geometryResolution: 256,
   resolution: 512,
