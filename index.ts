@@ -30,11 +30,11 @@ const simulation = new Simulation(
 );
 simulation.start({
   size: 10,
-  alignment: 0.0,
+  alignment: 0.00,
   minWave: 0.001,
   geometryResolution: 256,
   resolution: 512,
   wind: vec2.fromValues(10.0, 10.0),
-  strength: 500000000, // @todo: what is that!
+  strength: 210000000, // @todo: what is that!
   croppiness: -1.0,
 });

@@ -21,14 +21,19 @@ uniform vec2 wind;
 uniform float alignment;
 uniform float minWave;
 
-vec4 gauss() {
+vec2 gauss() {
   vec2 uv = 2.0f * vec2(ivec2(gl_FragCoord.xy)) / float(resolution) - vec2(1.0f);
-  vec4 noise4 = texture(noise, uv).rgba;
-  float u0 = 2.0f * PI * noise4.x;
-  float v0 = sqrt(-2.0f * log(noise4.y));
-  float u1 = 2.0f * PI * noise4.z;
-  float v1 = sqrt(-2.0f * log(noise4.w));
-  return  vec4(v0 * cos(u0), v0 * sin(u0), v1 * cos(u1),  v1 * sin(u1));
+  vec2 noise2 = vec2(0.0f);
+
+  if((uv.x >= 0.0f && uv.y >= 0.0f) || (uv.x <= 0.0f && uv.y <= 0.0f)) {
+    noise2 = texture(noise, uv).rg;
+  } else {
+    noise2 = texture(noise, uv).ba;
+  }
+
+  float u0 = 2.0f * PI * noise2.x;
+  float v0 = sqrt(-2.0f * log(noise2.y));
+  return vec2(v0 * cos(u0), v0 * sin(u0));
 }
 
 void main() {
@@ -52,7 +57,7 @@ void main() {
     h0mk *=  pow(max(0.0f, dot(normalize(wind), normalize(-k))), alignment);
   }
 
-  vec4 rnd = gauss();
+  vec2 rnd = gauss();
   outColor =  sqrt(vec4(h0k, h0k, h0mk, h0mk)) * vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
 }
 `;
