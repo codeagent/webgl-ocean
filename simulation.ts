@@ -38,22 +38,19 @@ export class Simulation {
     const field = this.fieldFactory.build(params);
     const geometry = this.createWaterGeometry(params);
     const grid = this.gpu.createGeometry(
-      createGrid(params.size * 0.5),
+      createGrid(5.0),
       WebGL2RenderingContext.LINES
     );
 
-    this.camera.near = params.size * 1.0e-2;
-    this.camera.far = params.size * 1.0e3;
-    this.camera.lookAt(
-      vec3.fromValues(params.size, params.size, -params.size),
-      vec3.create()
-    );
+    this.camera.near = 1.0e-1;
+    this.camera.far = 1.0e4;
+    this.camera.lookAt(vec3.fromValues(10, 10, -10), vec3.create());
 
-    this.controller.moveSpeed = params.size * 0.25;
+    this.controller.moveSpeed = 2.5;
     this.controller.sync();
 
     const step = () => {
-      field.update(performance.now() / 1e3 + 360);
+      field.update(performance.now() / 1e3 + 36000);
       this.controller.update();
       this.gpu.setViewport(0, 0, this.canvas.width, this.canvas.height);
       this.gpu.setRenderTarget(null);

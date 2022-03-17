@@ -87,6 +87,12 @@ export class DisplacementField {
       'float',
       this.params.croppiness
     );
+    this.gpu.setProgramVariable(
+      this.postfft2Program,
+      'N2',
+      'float',
+      this.params.resolution * this.params.resolution
+    );
   }
 
   private createTextures() {

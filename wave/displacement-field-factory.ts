@@ -146,7 +146,7 @@ export class DisplacementFieldFactory {
       this.h0Program,
       'A',
       'float',
-      params.strength /* 0.081 * / (params.size * params.size)  */
+      params.strength * 0.081 / (params.size * params.size)
     );
 
     this.gpu.drawGeometry(this.quad);
