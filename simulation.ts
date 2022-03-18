@@ -11,11 +11,11 @@ import {
   createGrid,
 } from './graphics';
 
-import { DisplacementFieldBuildParams, DisplacementFieldFactory } from './wave';
+import { OceanFieldBuildParams, OceanFieldBuilder } from './ocean';
 
 export class Simulation {
   private readonly gpu: Gpu;
-  private readonly fieldFactory: DisplacementFieldFactory;
+  private readonly fieldFactory: OceanFieldBuilder;
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
   private readonly waterRenderer: WaterRenderer;
@@ -26,7 +26,7 @@ export class Simulation {
     this.gpu = new Gpu(
       canvas.getContext('webgl2', { preserveDrawingBuffer: true })
     );
-    this.fieldFactory = new DisplacementFieldFactory(this.gpu);
+    this.fieldFactory = new OceanFieldBuilder(this.gpu);
     this.camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100);
     this.controller = new ArcRotationCameraController(this.canvas, this.camera);
     this.waterRenderer = new WaterRenderer(this.gpu);
@@ -34,7 +34,7 @@ export class Simulation {
     this.textureRenderer = new TextureRenderer(this.gpu);
   }
 
-  start(params: DisplacementFieldBuildParams) {
+  start(params: OceanFieldBuildParams) {
     const field = this.fieldFactory.build(params);
     const geometry = this.createWaterGeometry(params);
     const grid = this.gpu.createGeometry(
@@ -141,7 +141,7 @@ export class Simulation {
     step();
   }
 
-  private createWaterGeometry(params: DisplacementFieldBuildParams) {
+  private createWaterGeometry(params: OceanFieldBuildParams) {
     const vertices: vec3[] = [];
     const uvs: vec2[] = [];
     const indices: number[] = [];

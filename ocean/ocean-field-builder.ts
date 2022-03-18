@@ -10,12 +10,12 @@ import {
   quad,
   TextureFiltering,
 } from '../graphics';
-import { DisplacementField } from './displacement-field';
+import { OceanField } from './ocean-field';
 
 import { vs as h0vs, fs as h0fs } from './programs/h0';
 import { TextureMode } from '../graphics/gpu';
 
-export interface DisplacementFieldBuildParams {
+export interface OceanFieldBuildParams {
   /**
    * The dimension of displacement field block in meters
    */
@@ -57,7 +57,7 @@ export interface DisplacementFieldBuildParams {
   strength: number;
 }
 
-export class DisplacementFieldFactory {
+export class OceanFieldBuilder {
   private readonly quad: Geometry;
   private readonly frameBuffer: RenderTarget;
   private readonly noiseTexture = new Map<number, Texture2d>();
@@ -70,8 +70,8 @@ export class DisplacementFieldFactory {
     this.h0Program = this.gpu.createShaderProgram(h0vs, h0fs);
   }
 
-  build(params: DisplacementFieldBuildParams): DisplacementField {
-    return new DisplacementField(
+  build(params: OceanFieldBuildParams): OceanField {
+    return new OceanField(
       this.gpu,
       this.getH0Texture(params),
       this.getButterflyTexture(params.resolution),
@@ -102,7 +102,7 @@ export class DisplacementFieldFactory {
     return this.noiseTexture.get(size);
   }
 
-  private getH0Texture(params: DisplacementFieldBuildParams): Texture2d {
+  private getH0Texture(params: OceanFieldBuildParams): Texture2d {
     const texture = this.gpu.createFloat4Texture(
       params.resolution,
       params.resolution,

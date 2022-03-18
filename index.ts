@@ -7,23 +7,23 @@ import {
   testFft,
   testDft2,
   testFft2,
-  testDisplacementFieldIfft2,
+  testOceanFieldIfft2,
   testFft2Hermitian,
-  testDisplacementFieldIfft2HermitianProperty,
+  testOceanFieldIfft2HermitianProperty,
   testFft2Combined,
 } from './test';
 
 import { Simulation } from './simulation';
 
-// testButterflyTexture();
-// testDft();
-// testFft();
-// testDft2();
-// testFft2();
-// testFft2Hermitian();
-// testFft2Combined();
-// testDisplacementFieldIfft2();
-// testDisplacementFieldIfft2HermitianProperty();
+testButterflyTexture();
+testDft();
+testFft();
+testDft2();
+testFft2();
+testFft2Hermitian();
+testFft2Combined();
+testOceanFieldIfft2();
+testOceanFieldIfft2HermitianProperty();
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement

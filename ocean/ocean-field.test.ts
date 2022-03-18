@@ -1,12 +1,12 @@
 import { vec2 } from 'gl-matrix';
 
 import { createMockGpu } from '../graphics/gpu.mock';
-import { DisplacementFieldFactory } from './displacement-field-factory';
+import { OceanFieldBuilder } from './ocean-field-builder';
 import { float4ToComplex2d, ifft2, abs, sub, im } from '../fft';
 
-export const testDisplacementFieldIfft2 = () => {
+export const testOceanFieldIfft2 = () => {
   const gpu = createMockGpu();
-  const factory = new DisplacementFieldFactory(gpu);
+  const factory = new OceanFieldBuilder(gpu);
   const displacementField = factory.build({
     minWave: 0.0,
     alignment: 0.0,
@@ -75,22 +75,22 @@ export const testDisplacementFieldIfft2 = () => {
       const closeEnougth = diff.every((v) => v <= 1.0e-5);
       if (!closeEnougth) {
         console.warn(
-          `testDisplacementFieldIfft2 [slot ${slot}-${couple}]: Test don't passesd: `,
+          `testOceanFieldIfft2 [slot ${slot}-${couple}]: Test don't passesd: `,
           diff
         );
         return;
       }
       console.log(
-        `testDisplacementFieldIfft2 [slot ${slot}-${couple}]: Test passed!`
+        `testOceanFieldIfft2 [slot ${slot}-${couple}]: Test passed!`
       );
     }
   }
 };
 
 // @todo: fix test
-export const testDisplacementFieldIfft2HermitianProperty = () => {
+export const testOceanFieldIfft2HermitianProperty = () => {
   const gpu = createMockGpu();
-  const factory = new DisplacementFieldFactory(gpu);
+  const factory = new OceanFieldBuilder(gpu);
   const displacementField = factory.build({
     minWave: 0.0,
     alignment: 0.0,
@@ -152,12 +152,12 @@ export const testDisplacementFieldIfft2HermitianProperty = () => {
         );
 
         console.warn(
-          `testDisplacementFieldIfft2HermitianProperty [slot ${slot}-${couple}]: Test don't pass: [max: ${max}, min: ${min}]`
+          `testOceanFieldIfft2HermitianProperty [slot ${slot}-${couple}]: Test don't pass: [max: ${max}, min: ${min}]`
         );
         return;
       }
       console.log(
-        `testDisplacementFieldIfft2HermitianProperty [slot ${slot}-${couple}]: Test passed!`
+        `testOceanFieldIfft2HermitianProperty [slot ${slot}-${couple}]: Test passed!`
       );
     }
   }

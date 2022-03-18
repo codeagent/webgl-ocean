@@ -6,14 +6,14 @@ import {
   Texture2d,
   TextureFiltering,
 } from '../graphics';
-import { DisplacementFieldBuildParams } from './displacement-field-factory';
+import { OceanFieldBuildParams } from './ocean-field-builder';
 
 import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
 import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
 import { vs as postfft2vs, fs as postfft2fs } from './programs/post-fft2';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
 
-export class DisplacementField {
+export class OceanField {
   get displacement(): Texture2d {
     return this.displacementTexture;
   }
@@ -46,7 +46,7 @@ export class DisplacementField {
     private readonly h0Texture: Texture2d,
     private readonly butterflyTexture: Texture2d,
     private readonly quad: Geometry,
-    public readonly params: DisplacementFieldBuildParams
+    public readonly params: OceanFieldBuildParams
   ) {
     this.createTextures();
     this.createFramebuffers();
