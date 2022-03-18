@@ -15,26 +15,27 @@ import {
 
 import { Simulation } from './simulation';
 
-testButterflyTexture();
-testDft();
-testFft();
-testDft2();
-testFft2();
-testFft2Hermitian();
-testFft2Combined();
-testOceanFieldIfft2();
-testOceanFieldIfft2HermitianProperty();
+// testButterflyTexture();
+// testDft();
+// testFft();
+// testDft2();
+// testFft2();
+// testFft2Hermitian();
+// testFft2Combined();
+// testOceanFieldIfft2();
+// testOceanFieldIfft2HermitianProperty();
 
 const simulation = new Simulation(
   document.getElementById('viewport') as HTMLCanvasElement
 );
 simulation.start({
   size: 10,
-  alignment: 0.001,
-  minWave: 0.001,
+  alignment: 0.0,
+  minWave: 0.0,
   geometryResolution: 256,
   resolution: 512,
-  wind: vec2.fromValues(10.0, 10.0),
-  strength: 4.0, 
+  wind: vec2.fromValues(5.0, 2.0),
+  strength: 4.0,
   croppiness: -1.0,
+  randomSeed: 0,
 });

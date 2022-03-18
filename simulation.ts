@@ -80,11 +80,11 @@ export class Simulation {
       this.gizmoRenderer.render(grid, this.camera);
 
       // Noise
-      this.textureRenderer.render(
-        vec2.fromValues(10, 10),
-        this.fieldFactory['noiseTexture'].get(params.resolution),
-        TextureType.Noise
-      );
+      // this.textureRenderer.render(
+      //   vec2.fromValues(10, 10),
+      //   this.fieldFactory['noiseTexture'].get(params.resolution),
+      //   TextureType.Noise
+      // );
 
       // Butterfly
       this.textureRenderer.render(
@@ -96,14 +96,14 @@ export class Simulation {
       // H0
       this.textureRenderer.render(
         vec2.fromValues(10, 200),
-        field['h0Texture'],
+        field['h0Textures'][0],
         TextureType.H0
       );
 
       // H0
       this.textureRenderer.render(
         vec2.fromValues(10, 300),
-        field['h0Texture'],
+        field['h0Textures'][0],
         TextureType.H0_STAR
       );
 

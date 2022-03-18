@@ -55,12 +55,16 @@ export interface OceanFieldBuildParams {
    * Variable for adjusting. Value should be between [0, 1]
    */
   strength: number;
+
+  /**
+   * Seed of random generator
+   */
+  randomSeed: number;
 }
 
 export class OceanFieldBuilder {
   private readonly quad: Geometry;
   private readonly frameBuffer: RenderTarget;
-  private readonly noiseTexture = new Map<number, Texture2d>();
   private readonly butterflyTexture = new Map<number, Texture2d>();
   private readonly h0Program: ShaderProgram;
 
@@ -73,44 +77,53 @@ export class OceanFieldBuilder {
   build(params: OceanFieldBuildParams): OceanField {
     return new OceanField(
       this.gpu,
-      this.getH0Texture(params),
+      this.createH0Textures(params),
       this.getButterflyTexture(params.resolution),
       this.quad,
       params
     );
   }
 
-  private getNoiseTexture(size: number): Texture2d {
-    if (!this.noiseTexture.has(size)) {
-      const data = this.getNoise2d(size);
-      const texture = this.gpu.createFloat4Texture(
-        size,
-        size,
-        TextureFiltering.Linear,
-        TextureMode.Mirror
-      );
-      this.gpu.updateTexture(
-        texture,
-        size,
-        size,
-        WebGL2RenderingContext.RGBA,
-        WebGL2RenderingContext.FLOAT,
-        data
-      );
-      this.noiseTexture.set(size, texture);
-    }
-    return this.noiseTexture.get(size);
-  }
-
-  private getH0Texture(params: OceanFieldBuildParams): Texture2d {
+  private createNoiseTexture(size: number, randomSeed: number): Texture2d {
     const texture = this.gpu.createFloat4Texture(
-      params.resolution,
-      params.resolution,
-      TextureFiltering.Nearest,
-      TextureMode.Edge
+      size,
+      size,
+      TextureFiltering.Linear,
+      TextureMode.Mirror
+    );
+    this.gpu.updateTexture(
+      texture,
+      size,
+      size,
+      WebGL2RenderingContext.RGBA,
+      WebGL2RenderingContext.FLOAT,
+      this.getNoise2d(size, randomSeed)
     );
 
-    this.gpu.attachTexture(this.frameBuffer, texture, 0);
+    return texture;
+  }
+
+  private createH0Textures(
+    params: OceanFieldBuildParams
+  ): [Texture2d, Texture2d, Texture2d] {
+    const spectrum0 = this.gpu.createFloat4Texture(
+      params.resolution,
+      params.resolution
+    );
+    const spectrum1 = this.gpu.createFloat4Texture(
+      params.resolution,
+      params.resolution
+    );
+    const spectrum2 = this.gpu.createFloat4Texture(
+      params.resolution,
+      params.resolution
+    );
+
+    this.gpu.attachTextures(this.frameBuffer, [
+      spectrum0,
+      spectrum1,
+      spectrum2,
+    ]);
     this.gpu.setRenderTarget(this.frameBuffer);
     this.gpu.setViewport(0, 0, params.resolution, params.resolution);
     this.gpu.clearRenderTarget();
@@ -119,7 +132,7 @@ export class OceanFieldBuilder {
     this.gpu.setProgramTexture(
       this.h0Program,
       'noise',
-      this.getNoiseTexture(params.resolution),
+      this.createNoiseTexture(params.resolution, params.randomSeed),
       0
     );
     this.gpu.setProgramVariable(
@@ -129,6 +142,7 @@ export class OceanFieldBuilder {
       params.resolution
     );
     this.gpu.setProgramVariable(this.h0Program, 'size', 'float', params.size);
+
     this.gpu.setProgramVariable(this.h0Program, 'wind', 'vec2', params.wind);
     this.gpu.setProgramVariable(
       this.h0Program,
@@ -146,13 +160,13 @@ export class OceanFieldBuilder {
       this.h0Program,
       'A',
       'float',
-      params.strength * 0.081 / (params.size * params.size)
+      (params.strength * 0.081) / (params.size * params.size)
     );
 
     this.gpu.drawGeometry(this.quad);
     this.gpu.setRenderTarget(null);
 
-    return texture;
+    return [spectrum0, spectrum1, spectrum2];
   }
 
   private getButterflyTexture(size: number) {
@@ -171,7 +185,10 @@ export class OceanFieldBuilder {
     return this.butterflyTexture.get(size);
   }
 
-  private getNoise2d(size: number) {
+  private getNoise2d(size: number, randomSeed: number) {
+    /**
+     * @todo: leverage randomSeed in noise generation
+     */
     return Float32Array.from(
       [...Array(size * size * 4)].map(() => Math.random())
     );

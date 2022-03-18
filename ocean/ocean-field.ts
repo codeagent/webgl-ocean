@@ -43,7 +43,7 @@ export class OceanField {
 
   constructor(
     private readonly gpu: Gpu,
-    private readonly h0Texture: Texture2d,
+    private readonly h0Textures: [Texture2d, Texture2d, Texture2d],
     private readonly butterflyTexture: Texture2d,
     private readonly quad: Geometry,
     public readonly params: OceanFieldBuildParams
@@ -154,7 +154,12 @@ export class OceanField {
 
   private generateSpectrumTextures(time: number) {
     this.gpu.setProgram(this.hkProgram);
-    this.gpu.setProgramTexture(this.hkProgram, 'h0Texture', this.h0Texture, 0);
+    this.gpu.setProgramTexture(
+      this.hkProgram,
+      'h0Texture',
+      this.h0Textures[0],
+      0
+    );
     this.gpu.setProgramVariable(this.hkProgram, 't', 'float', time);
     this.gpu.setRenderTarget(this.spectrumFramebuffer);
     this.gpu.drawGeometry(this.quad);

@@ -11,15 +11,19 @@ export const fs = `#version 300 es
 
 precision highp float;
 
-out vec4 outColor; 
+layout(location = 0) out vec4 spectrum0; 
+layout(location = 1) out vec4 spectrum1; 
+layout(location = 2) out vec4 spectrum2; 
 
 uniform sampler2D noise;
 uniform uint resolution;  // N
-uniform float size;       // L
+uniform float size;      // L
 uniform float A;
 uniform vec2 wind;
 uniform float alignment;
 uniform float minWave;
+
+const float RATIO = 0.618033989036f;
 
 vec2 gauss() {
   vec2 uv = 2.0f * vec2(ivec2(gl_FragCoord.xy)) / float(resolution) - vec2(1.0f);
@@ -36,14 +40,12 @@ vec2 gauss() {
   return vec2(v0 * cos(u0), v0 * sin(u0));
 }
 
-void main() {
-  vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2]
+vec4 h0(in vec2 x, float size) {
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
   float k2 = dot(k, k);
 
   if(k2 == 0.0f) {
-    outColor = vec4(0.0f);
-    return;
+    return vec4(0.0f);
   }
 
   float L = dot(wind, wind) / g;
@@ -57,7 +59,16 @@ void main() {
     h0mk *=  pow(max(0.0f, dot(normalize(wind), normalize(-k))), alignment);
   }
 
+  return sqrt(vec4(h0k, h0k, h0mk, h0mk));
+}
+
+void main() {
+  vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2]
   vec2 rnd = gauss();
-  outColor =  sqrt(vec4(h0k, h0k, h0mk, h0mk)) * vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
+  vec4 mult = vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
+
+  spectrum0 = h0(x, size) * mult;
+  spectrum1 = h0(x, size * RATIO) * mult;
+  spectrum2 = h0(x, size * RATIO * RATIO) * mult;
 }
 `;

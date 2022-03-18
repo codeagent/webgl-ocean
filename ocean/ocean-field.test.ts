@@ -16,6 +16,7 @@ export const testOceanFieldIfft2 = () => {
     geometryResolution: 256,
     wind: vec2.fromValues(28.0, 28.0),
     strength: 1,
+    randomSeed: 0
   });
 
   // Arrange
@@ -87,7 +88,9 @@ export const testOceanFieldIfft2 = () => {
   }
 };
 
-// @todo: fix test
+/**
+ * @todo: fix test
+ */
 export const testOceanFieldIfft2HermitianProperty = () => {
   const gpu = createMockGpu();
   const factory = new OceanFieldBuilder(gpu);
@@ -100,6 +103,7 @@ export const testOceanFieldIfft2HermitianProperty = () => {
     geometryResolution: 256,
     wind: vec2.fromValues(28.0, 28.0),
     strength: 1,
+    randomSeed: 0
   });
 
   // Arrange
