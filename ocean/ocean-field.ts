@@ -14,24 +14,19 @@ import { vs as postfft2vs, fs as postfft2fs } from './programs/post-fft2';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
 
 export class OceanField {
-  get displacement(): Texture2d {
-    return this.displacementTexture;
+  get displacementFoam(): Texture2d {
+    return this.displacementFoamTextures[0];
   }
 
   get normals(): Texture2d {
-    return this.normalsTexture;
-  }
-
-  get foam(): Texture2d {
-    return this.foamTexture;
+    return this.normalTextures[0];
   }
 
   private spectrumTextures: Texture2d[];
   private pingPongTextures: Texture2d[];
   private ifftTextures: Texture2d[];
-  private displacementTexture: Texture2d;
-  private normalsTexture: Texture2d;
-  private foamTexture: Texture2d;
+  private displacementFoamTextures: Texture2d[];
+  private normalTextures: Texture2d[];
 
   private spectrumFramebuffer: RenderTarget;
   private pingPongFramebuffer: RenderTarget;
@@ -150,23 +145,41 @@ export class OceanField {
       ),
     ];
 
-    this.displacementTexture = this.gpu.createFloat4Texture(
-      this.params.resolution,
-      this.params.resolution,
-      TextureFiltering.Linear
-    );
+    this.displacementFoamTextures = [
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution,
+        TextureFiltering.Linear
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution,
+        TextureFiltering.Linear
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution,
+        TextureFiltering.Linear
+      ),
+    ];
 
-    this.normalsTexture = this.gpu.createFloat4Texture(
-      this.params.resolution,
-      this.params.resolution,
-      TextureFiltering.Linear
-    );
-
-    this.foamTexture = this.gpu.createFloatTexture(
-      this.params.resolution,
-      this.params.resolution,
-      TextureFiltering.Linear
-    );
+    this.normalTextures = [
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution,
+        TextureFiltering.Linear
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution,
+        TextureFiltering.Linear
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution,
+        TextureFiltering.Linear
+      ),
+    ];
   }
 
   private createFramebuffers() {
@@ -178,9 +191,8 @@ export class OceanField {
 
     this.postIfft2Framebuffer = this.gpu.createRenderTarget();
     this.gpu.attachTextures(this.postIfft2Framebuffer, [
-      this.displacementTexture,
-      this.normalsTexture,
-      this.foamTexture,
+      ...this.displacementFoamTextures,
+      ...this.normalTextures,
     ]);
   }
 
@@ -272,8 +284,8 @@ export class OceanField {
     this.gpu.setProgram(this.postfft2Program);
     this.gpu.setProgramTextures(
       this.postfft2Program,
-      ['ifft0', 'ifft1'],
-      this.ifftTextures.slice(0, 2)
+      ['ifft0', 'ifft1', 'ifft2', 'ifft3', 'ifft4', 'ifft5'],
+      this.ifftTextures
     );
     this.gpu.drawGeometry(this.quad);
   }

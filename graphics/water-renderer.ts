@@ -14,9 +14,8 @@ export class WaterRenderer {
     geometry: Geometry,
     transform: mat4,
     camera: Camera,
-    displacementMap: Texture2d,
-    normalMap: Texture2d,
-    foamMap: Texture2d
+    displacementFoamMap: Texture2d,
+    normalMap: Texture2d
   ) {
     this.gpu.setViewport(
       0,
@@ -28,12 +27,12 @@ export class WaterRenderer {
     this.gpu.setProgram(this.waterShader);
     this.gpu.setProgramTexture(
       this.waterShader,
-      'displacementMap',
-      displacementMap,
+      'displacementFoamMap',
+      displacementFoamMap,
       0
     );
     this.gpu.setProgramTexture(this.waterShader, 'normalMap', normalMap, 1);
-    this.gpu.setProgramTexture(this.waterShader, 'foamMap', foamMap, 2);
+    // this.gpu.setProgramTexture(this.waterShader, 'foamMap', foamMap, 2);
     this.gpu.setProgramVariable(
       this.waterShader,
       'viewMat',

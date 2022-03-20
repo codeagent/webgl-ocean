@@ -6,7 +6,7 @@ layout(location = 1) in vec2 uv;
 uniform mat4 viewMat;
 uniform mat4 worldMat;
 uniform mat4 projMat;
-uniform sampler2D displacementMap;
+uniform sampler2D displacementFoamMap;
 
 out vec3 _position;
 out vec2 _uv;
@@ -14,7 +14,7 @@ out vec2 _uv;
 
 void main()
 {
-  _position = position + texture(displacementMap, uv).xyz;
+  _position = position + texture(displacementFoamMap, uv).xyz;
   _position = vec3(worldMat * vec4(_position, 1.0f));
   _uv = uv;
   gl_Position = projMat * viewMat * vec4(_position, 1.0f);
@@ -30,12 +30,12 @@ in vec3 _position;
 in vec2 _uv;
 
 uniform sampler2D normalMap;
-uniform sampler2D foamMap;
+uniform sampler2D displacementFoamMap;
 uniform vec3 pos;
 
 void main()
 {
-  vec4 foam = vec4(1.0f) * texture(foamMap, _uv).r;
+  vec4 foam = vec4(1.0f) * texture(displacementFoamMap, _uv).a;
   vec4 albedo = vec4(0, 0.62, 0.77, 1.0);
   vec3 n = texture(normalMap, _uv).xyz;
   vec3 l = normalize(pos - _position);

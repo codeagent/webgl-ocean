@@ -27,7 +27,7 @@ export const testOceanFieldIfft2 = () => {
       4
   );
 
-  for (let slot of [0, 1]) {
+  for (let slot of [0, 1, 2, 3, 4, 5]) {
     for (let couple of [0, 1]) {
       displacementField['generateSpectrumTextures'](performance.now());
       gpu.readValues(

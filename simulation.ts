@@ -69,9 +69,8 @@ export class Simulation {
             geometry,
             transform,
             this.camera,
-            field.displacement,
+            field.displacementFoam,
             field.normals,
-            field.foam
           );
         }
       }
@@ -110,14 +109,14 @@ export class Simulation {
       // Displacement X
       this.textureRenderer.render(
         vec2.fromValues(10, 400),
-        field.displacement,
+        field.displacementFoam,
         TextureType.DX
       );
 
       // Displacement Z
       this.textureRenderer.render(
         vec2.fromValues(10, 500),
-        field.displacement,
+        field.displacementFoam,
         TextureType.DZ
       );
 
@@ -131,7 +130,7 @@ export class Simulation {
       // Foam
       this.textureRenderer.render(
         vec2.fromValues(210, 500),
-        field.foam,
+        field.displacementFoam,
         TextureType.Foam
       );
 
