@@ -262,7 +262,7 @@ export class Gpu {
     width: number,
     height: number,
     filter: TextureFiltering = TextureFiltering.Nearest,
-    mode: TextureMode = TextureMode.Repeat,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);

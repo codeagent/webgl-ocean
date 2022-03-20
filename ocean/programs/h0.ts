@@ -40,7 +40,7 @@ vec2 gauss() {
   return vec2(v0 * cos(u0), v0 * sin(u0));
 }
 
-vec4 h0(in vec2 x, float size) {
+vec4 phillips(in vec2 x, float size) {
   vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
   float k2 = dot(k, k);
 
@@ -67,8 +67,8 @@ void main() {
   vec2 rnd = gauss();
   vec4 mult = vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
 
-  spectrum0 = h0(x, size) * mult;
-  spectrum1 = h0(x, size * RATIO) * mult;
-  spectrum2 = h0(x, size * RATIO * RATIO) * mult;
+  spectrum0 = phillips(x, size) * mult;
+  spectrum1 = phillips(x, size * RATIO) * mult;
+  spectrum2 = phillips(x, size * RATIO * RATIO) * mult;
 }
 `;

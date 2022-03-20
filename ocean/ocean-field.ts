@@ -105,9 +105,41 @@ export class OceanField {
         this.params.resolution,
         this.params.resolution
       ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
     ];
 
     this.pingPongTextures = [
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
+      this.gpu.createFloat4Texture(
+        this.params.resolution,
+        this.params.resolution
+      ),
       this.gpu.createFloat4Texture(
         this.params.resolution,
         this.params.resolution
@@ -154,11 +186,10 @@ export class OceanField {
 
   private generateSpectrumTextures(time: number) {
     this.gpu.setProgram(this.hkProgram);
-    this.gpu.setProgramTexture(
+    this.gpu.setProgramTextures(
       this.hkProgram,
-      'h0Texture',
-      this.h0Textures[0],
-      0
+      ['h0Texture0', 'h0Texture1', 'h0Texture2'],
+      this.h0Textures
     );
     this.gpu.setProgramVariable(this.hkProgram, 't', 'float', time);
     this.gpu.setRenderTarget(this.spectrumFramebuffer);
@@ -183,7 +214,7 @@ export class OceanField {
       this.fft2hProgram,
       'butterfly',
       this.butterflyTexture,
-      4
+      6
     );
 
     for (let phase = 0; phase < phases; phase++) {
@@ -191,7 +222,14 @@ export class OceanField {
       this.gpu.setProgramVariable(this.fft2hProgram, 'phase', 'uint', phase);
       this.gpu.setProgramTextures(
         this.fft2hProgram,
-        ['spectrum0', 'spectrum1'],
+        [
+          'spectrum0',
+          'spectrum1',
+          'spectrum2',
+          'spectrum3',
+          'spectrum4',
+          'spectrum5',
+        ],
         pingPongTextures[pingPong]
       );
       this.gpu.drawGeometry(this.quad);
@@ -204,7 +242,7 @@ export class OceanField {
       this.fft2vProgram,
       'butterfly',
       this.butterflyTexture,
-      4
+      6
     );
 
     for (let phase = 0; phase < phases; phase++) {
@@ -212,7 +250,14 @@ export class OceanField {
       this.gpu.setProgramVariable(this.fft2vProgram, 'phase', 'uint', phase);
       this.gpu.setProgramTextures(
         this.fft2vProgram,
-        ['spectrum0', 'spectrum1'],
+        [
+          'spectrum0',
+          'spectrum1',
+          'spectrum2',
+          'spectrum3',
+          'spectrum4',
+          'spectrum5',
+        ],
         pingPongTextures[pingPong]
       );
       this.gpu.drawGeometry(this.quad);
@@ -228,7 +273,7 @@ export class OceanField {
     this.gpu.setProgramTextures(
       this.postfft2Program,
       ['ifft0', 'ifft1'],
-      this.ifftTextures
+      this.ifftTextures.slice(0, 2)
     );
     this.gpu.drawGeometry(this.quad);
   }
