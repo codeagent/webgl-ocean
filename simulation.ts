@@ -2,7 +2,7 @@ import { mat4, vec2, vec3 } from 'gl-matrix';
 
 import {
   Gpu,
-  WaterRenderer,
+  OceanRenderer,
   Camera,
   ArcRotationCameraController,
   GizmoRenderer,
@@ -10,7 +10,6 @@ import {
   TextureType,
   createGrid,
 } from './graphics';
-
 import { OceanFieldBuildParams, OceanFieldBuilder } from './ocean';
 
 export class Simulation {
@@ -18,7 +17,7 @@ export class Simulation {
   private readonly fieldFactory: OceanFieldBuilder;
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
-  private readonly waterRenderer: WaterRenderer;
+  private readonly oceanRenderer: OceanRenderer;
   private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
 
@@ -29,7 +28,7 @@ export class Simulation {
     this.fieldFactory = new OceanFieldBuilder(this.gpu);
     this.camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100);
     this.controller = new ArcRotationCameraController(this.canvas, this.camera);
-    this.waterRenderer = new WaterRenderer(this.gpu);
+    this.oceanRenderer = new OceanRenderer(this.gpu);
     this.gizmoRenderer = new GizmoRenderer(this.gpu);
     this.textureRenderer = new TextureRenderer(this.gpu);
   }
@@ -65,7 +64,7 @@ export class Simulation {
             transform,
             vec3.fromValues(i * params.size, (i + j) * 0.0, j * params.size)
           );
-          this.waterRenderer.render(geometry, transform, this.camera, field);
+          this.oceanRenderer.render(geometry, transform, this.camera, field);
         }
       }
 

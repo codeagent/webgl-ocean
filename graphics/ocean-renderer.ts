@@ -2,14 +2,14 @@ import { mat4 } from 'gl-matrix';
 
 import { Geometry, Gpu, ShaderProgram } from './gpu';
 import { Camera } from './camera';
-import { vs as watervs, fs as waterfs } from './programs/water';
+import { vs as oceanvs, fs as oceanfs } from './programs/ocean';
 import { OceanField } from '../ocean';
 
-export class WaterRenderer {
+export class OceanRenderer {
   private readonly waterShader: ShaderProgram;
 
   public constructor(private readonly gpu: Gpu) {
-    this.waterShader = this.gpu.createShaderProgram(watervs, waterfs);
+    this.waterShader = this.gpu.createShaderProgram(oceanvs, oceanfs);
   }
 
   render(

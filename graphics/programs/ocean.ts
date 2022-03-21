@@ -19,7 +19,7 @@ out vec3 _position;
 out vec2 _uv;
 
 vec3 getDisplacement(in vec2 uv) {
-  return position + texture(dx_hy_dz_dxdz0, uv).xyz * vec3(croppiness, 1.0f, croppiness);
+  return texture(dx_hy_dz_dxdz0, uv).xyz * vec3(croppiness, 1.0f, croppiness);
 }
 
 void main()
