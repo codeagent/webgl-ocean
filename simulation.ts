@@ -65,13 +65,7 @@ export class Simulation {
             transform,
             vec3.fromValues(i * params.size, (i + j) * 0.0, j * params.size)
           );
-          this.waterRenderer.render(
-            geometry,
-            transform,
-            this.camera,
-            field.displacementFoam,
-            field.normals,
-          );
+          this.waterRenderer.render(geometry, transform, this.camera, field);
         }
       }
 
@@ -106,33 +100,33 @@ export class Simulation {
         TextureType.H0_STAR
       );
 
-      // Displacement X
-      this.textureRenderer.render(
-        vec2.fromValues(10, 400),
-        field.displacementFoam,
-        TextureType.DX
-      );
+      // // Displacement X
+      // this.textureRenderer.render(
+      //   vec2.fromValues(10, 400),
+      //   field.displacementFoam,
+      //   TextureType.DX
+      // );
 
-      // Displacement Z
-      this.textureRenderer.render(
-        vec2.fromValues(10, 500),
-        field.displacementFoam,
-        TextureType.DZ
-      );
+      // // Displacement Z
+      // this.textureRenderer.render(
+      //   vec2.fromValues(10, 500),
+      //   field.displacementFoam,
+      //   TextureType.DZ
+      // );
 
-      // Normals
-      this.textureRenderer.render(
-        vec2.fromValues(110, 500),
-        field.normals,
-        TextureType.Normals
-      );
+      // // Normals
+      // this.textureRenderer.render(
+      //   vec2.fromValues(110, 500),
+      //   field.normals,
+      //   TextureType.Normals
+      // );
 
-      // Foam
-      this.textureRenderer.render(
-        vec2.fromValues(210, 500),
-        field.displacementFoam,
-        TextureType.Foam
-      );
+      // // Foam
+      // this.textureRenderer.render(
+      //   vec2.fromValues(210, 500),
+      //   field.displacementFoam,
+      //   TextureType.Foam
+      // );
 
       requestAnimationFrame(() => step());
     };

@@ -1,7 +1,9 @@
-import { Geometry, Gpu, ShaderProgram, Texture2d } from './gpu';
+import { mat4 } from 'gl-matrix';
+
+import { Geometry, Gpu, ShaderProgram } from './gpu';
 import { Camera } from './camera';
 import { vs as watervs, fs as waterfs } from './programs/water';
-import { mat4 } from 'gl-matrix';
+import { OceanField } from '../ocean';
 
 export class WaterRenderer {
   private readonly waterShader: ShaderProgram;
@@ -14,8 +16,7 @@ export class WaterRenderer {
     geometry: Geometry,
     transform: mat4,
     camera: Camera,
-    displacementFoamMap: Texture2d,
-    normalMap: Texture2d
+    oceanField: OceanField
   ) {
     this.gpu.setViewport(
       0,
@@ -23,16 +24,25 @@ export class WaterRenderer {
       this.gpu.context.canvas.width,
       this.gpu.context.canvas.height
     );
-
     this.gpu.setProgram(this.waterShader);
-    this.gpu.setProgramTexture(
+    this.gpu.setProgramTextures(
       this.waterShader,
-      'displacementFoamMap',
-      displacementFoamMap,
-      0
+      [
+        'dx_hy_dz_dxdz0',
+        'sx_sz_dxdx_dzdz0',
+        // 'dx_hy_dz_dxdz1',
+        // 'sx_sz_dxdx_dzdz1',
+        // 'dx_hy_dz_dxdz2',
+        // 'sx_sz_dxdx_dzdz2',
+      ],
+      oceanField.dataMaps
     );
-    this.gpu.setProgramTexture(this.waterShader, 'normalMap', normalMap, 1);
-    // this.gpu.setProgramTexture(this.waterShader, 'foamMap', foamMap, 2);
+    this.gpu.setProgramVariable(
+      this.waterShader,
+      'croppiness',
+      'float',
+      oceanField.params.croppiness
+    );
     this.gpu.setProgramVariable(
       this.waterShader,
       'viewMat',

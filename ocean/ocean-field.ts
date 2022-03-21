@@ -14,20 +14,14 @@ import { vs as postfft2vs, fs as postfft2fs } from './programs/post-fft2';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
 
 export class OceanField {
-  get displacementFoam(): Texture2d {
-    return this.displacementFoamTextures[0];
-  }
-
-  get normals(): Texture2d {
-    return this.normalTextures[0];
+  get dataMaps(): Texture2d[] {
+    return this._dataMaps;
   }
 
   private spectrumTextures: Texture2d[];
   private pingPongTextures: Texture2d[];
   private ifftTextures: Texture2d[];
-  private displacementFoamTextures: Texture2d[];
-  private normalTextures: Texture2d[];
-
+  private _dataMaps: Texture2d[];
   private spectrumFramebuffer: RenderTarget;
   private pingPongFramebuffer: RenderTarget;
   private postIfft2Framebuffer: RenderTarget;
@@ -55,7 +49,7 @@ export class OceanField {
     this.postIfft2();
   }
 
-  private createPrograms() {
+  private createPrograms(): void {
     this.hkProgram = this.gpu.createShaderProgram(hkvs, hkfs);
     this.gpu.setProgram(this.hkProgram);
     this.gpu.setProgramVariable(
@@ -78,19 +72,13 @@ export class OceanField {
     this.gpu.setProgram(this.postfft2Program);
     this.gpu.setProgramVariable(
       this.postfft2Program,
-      'croppiness',
-      'float',
-      this.params.croppiness
-    );
-    this.gpu.setProgramVariable(
-      this.postfft2Program,
       'N2',
       'float',
       this.params.resolution * this.params.resolution
     );
   }
 
-  private createTextures() {
+  private createTextures(): void {
     this.spectrumTextures = [
       this.gpu.createFloat4Texture(
         this.params.resolution,
@@ -145,7 +133,7 @@ export class OceanField {
       ),
     ];
 
-    this.displacementFoamTextures = [
+    this._dataMaps = [
       this.gpu.createFloat4Texture(
         this.params.resolution,
         this.params.resolution,
@@ -161,9 +149,6 @@ export class OceanField {
         this.params.resolution,
         TextureFiltering.Linear
       ),
-    ];
-
-    this.normalTextures = [
       this.gpu.createFloat4Texture(
         this.params.resolution,
         this.params.resolution,
@@ -182,7 +167,7 @@ export class OceanField {
     ];
   }
 
-  private createFramebuffers() {
+  private createFramebuffers(): void {
     this.spectrumFramebuffer = this.gpu.createRenderTarget();
     this.gpu.attachTextures(this.spectrumFramebuffer, this.spectrumTextures);
 
@@ -190,13 +175,10 @@ export class OceanField {
     this.gpu.attachTextures(this.pingPongFramebuffer, this.pingPongTextures);
 
     this.postIfft2Framebuffer = this.gpu.createRenderTarget();
-    this.gpu.attachTextures(this.postIfft2Framebuffer, [
-      ...this.displacementFoamTextures,
-      ...this.normalTextures,
-    ]);
+    this.gpu.attachTextures(this.postIfft2Framebuffer, this._dataMaps);
   }
 
-  private generateSpectrumTextures(time: number) {
+  private generateSpectrumTextures(time: number): void {
     this.gpu.setProgram(this.hkProgram);
     this.gpu.setProgramTextures(
       this.hkProgram,
@@ -279,7 +261,7 @@ export class OceanField {
     this.ifftTextures = pingPongTextures[pingPong];
   }
 
-  private postIfft2() {
+  private postIfft2(): void {
     this.gpu.setRenderTarget(this.postIfft2Framebuffer);
     this.gpu.setProgram(this.postfft2Program);
     this.gpu.setProgramTextures(
