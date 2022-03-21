@@ -30,10 +30,10 @@ export class OceanRenderer {
       [
         'dx_hy_dz_dxdz0',
         'sx_sz_dxdx_dzdz0',
-        // 'dx_hy_dz_dxdz1',
-        // 'sx_sz_dxdx_dzdz1',
-        // 'dx_hy_dz_dxdz2',
-        // 'sx_sz_dxdx_dzdz2',
+        'dx_hy_dz_dxdz1',
+        'sx_sz_dxdx_dzdz1',
+        'dx_hy_dz_dxdz2',
+        'sx_sz_dxdx_dzdz2',
       ],
       oceanField.dataMaps
     );
@@ -42,6 +42,12 @@ export class OceanRenderer {
       'croppiness',
       'float',
       oceanField.params.croppiness
+    );
+    this.gpu.setProgramVariable(
+      this.waterShader,
+      'size',
+      'float',
+      oceanField.params.size
     );
     this.gpu.setProgramVariable(
       this.waterShader,

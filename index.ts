@@ -35,7 +35,7 @@ simulation.start({
   geometryResolution: 256,
   resolution: 512,
   wind: vec2.fromValues(5.0, 2.0),
-  strength: 4.0,
+  strength: 1.0,
   croppiness: -1.0,
   randomSeed: 0,
 });
