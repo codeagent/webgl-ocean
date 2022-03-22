@@ -1,5 +1,3 @@
-import { vec2 } from 'gl-matrix';
-
 import { createButterflyTexture } from './butterfly';
 import {
   Gpu,
@@ -9,58 +7,14 @@ import {
   Geometry,
   quad,
   TextureFiltering,
+  TextureMode,
 } from '../graphics';
 import { OceanField } from './ocean-field';
-
+import {
+  defaultBuildParams,
+  OceanFieldBuildParams,
+} from './ocean-field-build-params';
 import { vs as h0vs, fs as h0fs } from './programs/h0';
-import { TextureMode } from '../graphics/gpu';
-
-export interface OceanFieldBuildParams {
-  /**
-   * The dimension of displacement field block in meters
-   */
-  size: number;
-
-  /**
-   * Size of generated texture. Must be power of 2
-   */
-  resolution: number;
-
-  /**
-   * Size of generated mesh.
-   */
-  geometryResolution: number;
-
-  /**
-   * Wind vector. Module correspond to wind force.
-   */
-  wind: vec2;
-
-  /**
-   * Importance of waves displacement. Should be <= 0.
-   */
-  croppiness: number;
-
-  /**
-   * Parameter for waves motion. 0 means no wave motion
-   */
-  alignment: number;
-
-  /**
-   * Acts as wave frequency flter. Waves with wavelength less than this quantity aren't synthesize
-   */
-  minWave: number;
-
-  /**
-   * Variable for adjusting. Value should be between [0, 1]
-   */
-  strength: number;
-
-  /**
-   * Seed of random generator
-   */
-  randomSeed: number;
-}
 
 export class OceanFieldBuilder {
   private readonly quad: Geometry;
@@ -75,6 +29,7 @@ export class OceanFieldBuilder {
   }
 
   build(params: OceanFieldBuildParams): OceanField {
+    params = { ...defaultBuildParams, ...params };
     return new OceanField(
       this.gpu,
       this.createH0Textures(params),

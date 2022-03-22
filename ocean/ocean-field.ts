@@ -6,7 +6,7 @@ import {
   Texture2d,
   TextureFiltering,
 } from '../graphics';
-import { OceanFieldBuildParams } from './ocean-field-builder';
+import { OceanFieldBuildParams } from './ocean-field-build-params';
 
 import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
 import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';

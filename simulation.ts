@@ -10,32 +10,33 @@ import {
   TextureType,
   createGrid,
 } from './graphics';
-import { OceanFieldBuildParams, OceanFieldBuilder } from './ocean';
+import { OceanFieldBuilder, OceanField } from './ocean';
 
 export class Simulation {
-  private readonly gpu: Gpu;
-  private readonly fieldFactory: OceanFieldBuilder;
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
   private readonly oceanRenderer: OceanRenderer;
   private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
-    this.gpu = new Gpu(
-      canvas.getContext('webgl2', { preserveDrawingBuffer: true })
+  constructor(private readonly gpu: Gpu) {
+    this.camera = new Camera(
+      45.0,
+      gpu.context.canvas.width / gpu.context.canvas.height,
+      0.01,
+      100
     );
-    this.fieldFactory = new OceanFieldBuilder(this.gpu);
-    this.camera = new Camera(45.0, canvas.width / canvas.height, 0.01, 100);
-    this.controller = new ArcRotationCameraController(this.canvas, this.camera);
+    this.controller = new ArcRotationCameraController(
+      gpu.context.canvas as HTMLCanvasElement,
+      this.camera
+    );
     this.oceanRenderer = new OceanRenderer(this.gpu);
     this.gizmoRenderer = new GizmoRenderer(this.gpu);
     this.textureRenderer = new TextureRenderer(this.gpu);
   }
 
-  start(params: OceanFieldBuildParams) {
-    const field = this.fieldFactory.build(params);
-    const geometry = this.createWaterGeometry(params);
+  start(field: OceanField, size: number, resolution: number) {
+    const geometry = this.createWaterGeometry(size, resolution);
     const grid = this.gpu.createGeometry(
       createGrid(5.0),
       WebGL2RenderingContext.LINES
@@ -49,24 +50,21 @@ export class Simulation {
     this.controller.sync();
 
     const step = () => {
+      const { width, height } = this.gpu.context.canvas;
       field.update(performance.now() / 1e3 + 36000);
       this.controller.update();
-      this.gpu.setViewport(0, 0, this.canvas.width, this.canvas.height);
+      this.gpu.setViewport(0, 0, width, height);
       this.gpu.setRenderTarget(null);
       this.gpu.clearRenderTarget();
 
       // Water
-      const instances = 5;
+      const instances = 1;
       for (let i = 0; i < instances; i++) {
         for (let j = 0; j < instances; j++) {
           const transform = mat4.create();
           mat4.fromTranslation(
             transform,
-            vec3.fromValues(
-              i * params.size * 0.66,
-              (i + j) * 0.0,
-              j * params.size * 0.66
-            )
+            vec3.fromValues(i * size, 0.0, j * size)
           );
           this.oceanRenderer.render(geometry, transform, this.camera, field);
         }
@@ -83,25 +81,25 @@ export class Simulation {
       // );
 
       // Butterfly
-      this.textureRenderer.render(
-        vec2.fromValues(10, 100),
-        this.fieldFactory['butterflyTexture'].get(params.resolution),
-        TextureType.Butterfly
-      );
+      // this.textureRenderer.render(
+      //   vec2.fromValues(10, 100),
+      //   this.fieldFactory['butterflyTexture'].get(field.params.resolution),
+      //   TextureType.Butterfly
+      // );
 
       // H0
-      this.textureRenderer.render(
-        vec2.fromValues(10, 200),
-        field['h0Textures'][0],
-        TextureType.H0
-      );
+      // this.textureRenderer.render(
+      //   vec2.fromValues(10, 200),
+      //   field['h0Textures'][0],
+      //   TextureType.H0
+      // );
 
-      // H0
-      this.textureRenderer.render(
-        vec2.fromValues(10, 300),
-        field['h0Textures'][0],
-        TextureType.H0_STAR
-      );
+      // // H0
+      // this.textureRenderer.render(
+      //   vec2.fromValues(10, 300),
+      //   field['h0Textures'][0],
+      //   TextureType.H0_STAR
+      // );
 
       // // Displacement X
       // this.textureRenderer.render(
@@ -137,13 +135,13 @@ export class Simulation {
     step();
   }
 
-  private createWaterGeometry(params: OceanFieldBuildParams) {
+  private createWaterGeometry(size: number, resolution: number) {
     const vertices: vec3[] = [];
     const indices: number[] = [];
-    const N = params.geometryResolution;
-    const L = params.size;
+    const N = resolution;
+    const L = size;
     const delta = L / (N - 1);
-    const offset = vec3.fromValues(-L * 0.33 , 0.0, -L * 0.33);
+    const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
 
     for (let i = 0; i < N - 1; i++) {
       for (let j = 0; j < N - 1; j++) {

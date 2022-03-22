@@ -14,6 +14,8 @@ import {
 } from './test';
 
 import { Simulation } from './simulation';
+import { Gpu } from './graphics';
+import { OceanFieldBuilder } from './ocean';
 
 // testButterflyTexture();
 // testDft();
@@ -25,17 +27,19 @@ import { Simulation } from './simulation';
 // testOceanFieldIfft2();
 // testOceanFieldIfft2HermitianProperty();
 
-const simulation = new Simulation(
-  document.getElementById('viewport') as HTMLCanvasElement
+const canvas = document.getElementById('viewport') as HTMLCanvasElement;
+const gpu = new Gpu(
+  canvas.getContext('webgl2', { preserveDrawingBuffer: true })
 );
-simulation.start({
+const oceanBuilder = new OceanFieldBuilder(gpu);
+const oceanField = oceanBuilder.build({
   size: 10,
-  alignment: 0.01,
-  minWave: 0.0,
-  geometryResolution: 256,
+  scales: [1, 0.054, 0.001],
   resolution: 512,
   wind: vec2.fromValues(5.0, 2.0),
   strength: 2.0,
   croppiness: -1.0,
-  randomSeed: 0,
 });
+const simulation = new Simulation(gpu);
+
+simulation.start(oceanField, oceanField.params.size, 256);
