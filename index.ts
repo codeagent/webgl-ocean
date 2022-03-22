@@ -1,5 +1,8 @@
 import './style.css';
 import { vec2 } from 'gl-matrix';
+import { Simulation } from './simulation';
+import { Gpu } from './graphics';
+import { OceanFieldBuilder } from './ocean';
 
 import {
   testButterflyTexture,
@@ -12,10 +15,6 @@ import {
   testOceanFieldIfft2HermitianProperty,
   testFft2Combined,
 } from './test';
-
-import { Simulation } from './simulation';
-import { Gpu } from './graphics';
-import { OceanFieldBuilder } from './ocean';
 
 // testButterflyTexture();
 // testDft();
@@ -33,13 +32,14 @@ const gpu = new Gpu(
 );
 const oceanBuilder = new OceanFieldBuilder(gpu);
 const oceanField = oceanBuilder.build({
-  size: 10,
-  scales: [1, 0.054, 0.001],
+  size: 100,
+  scales: [1.0, 0.054, 0.01],
   resolution: 512,
-  wind: vec2.fromValues(5.0, 2.0),
-  strength: 2.0,
+  wind: vec2.fromValues(4.5, 4.5),
+  strength: 1.0,
   croppiness: -1.0,
+  alignment: 0.01
 });
 const simulation = new Simulation(gpu);
 
-simulation.start(oceanField, oceanField.params.size, 256);
+simulation.start(oceanField, 100, 256);

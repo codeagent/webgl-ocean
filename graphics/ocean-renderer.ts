@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 
 import { Geometry, Gpu, ShaderProgram } from './gpu';
 import { Camera } from './camera';
@@ -48,6 +48,16 @@ export class OceanRenderer {
       'size',
       'float',
       oceanField.params.size
+    );
+    this.gpu.setProgramVariable(
+      this.waterShader,
+      'scales',
+      'vec3',
+      vec3.fromValues(
+        1.0 / oceanField.params.scales[0],
+        1.0 / oceanField.params.scales[1],
+        1.0 / oceanField.params.scales[2]
+      )
     );
     this.gpu.setProgramVariable(
       this.waterShader,

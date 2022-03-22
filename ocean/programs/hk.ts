@@ -20,6 +20,7 @@ layout(location = 5) out vec4 spectrum5;
 
 uniform uint resolution;  // N
 uniform float size;       // L
+uniform vec3 scales;
 uniform float t;
 uniform sampler2D h0Texture0;
 uniform sampler2D h0Texture1;
@@ -125,8 +126,12 @@ void compressSpectrum(in spectrum spec, out vec4 part0, out vec4 part1) {
 void main() {
   vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2)
 
-  compressSpectrum(getSpectrum(h0Texture0, x, size), spectrum0, spectrum1);
-  compressSpectrum(getSpectrum(h0Texture1, x, size * RATIO), spectrum2, spectrum3);
-  compressSpectrum(getSpectrum(h0Texture2, x, size * RATIO * RATIO), spectrum4, spectrum5);
+  spectrum spec0 = getSpectrum(h0Texture0, x, size * scales.x);
+  spectrum spec1 = getSpectrum(h0Texture1, x, size * scales.y);
+  spectrum spec2 = getSpectrum(h0Texture2, x, size * scales.z);
+
+  compressSpectrum(spec0, spectrum0, spectrum1);
+  compressSpectrum(spec1, spectrum2, spectrum3);
+  compressSpectrum(spec2, spectrum4, spectrum5);
 }
 `;

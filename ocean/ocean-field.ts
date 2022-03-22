@@ -12,6 +12,7 @@ import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
 import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
 import { vs as postfft2vs, fs as postfft2fs } from './programs/post-fft2';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
+import { vec3 } from 'gl-matrix';
 
 export class OceanField {
   get dataMaps(): Texture2d[] {
@@ -63,6 +64,16 @@ export class OceanField {
       'size',
       'float',
       this.params.size
+    );
+    this.gpu.setProgramVariable(
+      this.hkProgram,
+      'scales',
+      'vec3',
+      vec3.fromValues(
+        this.params.scales[0],
+        this.params.scales[1],
+        this.params.scales[2]
+      )
     );
 
     this.fft2hProgram = this.gpu.createShaderProgram(fft2hvs, fft2hfs);

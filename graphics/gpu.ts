@@ -7,14 +7,6 @@ export type VertexBuffer = WebGLBuffer;
 export type IndexBuffer = WebGLBuffer;
 export type RenderTarget = WebGLFramebuffer;
 
-export type ShaderProgramVariableType =
-  | 'uint'
-  | 'int'
-  | 'float'
-  | 'vec2'
-  | 'vec3'
-  | 'mat4';
-
 export interface VertexAttribute {
   semantics: string;
   slot: number;
@@ -174,9 +166,33 @@ export class Gpu {
   setProgramVariable(
     program: ShaderProgram,
     name: string,
-    type: ShaderProgramVariableType,
-    value: number | vec2 | vec3 | mat4
-  ) {
+    type: 'uint' | 'int' | 'float',
+    value: number
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: 'vec2',
+    value: vec2
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: 'vec3',
+    value: vec3
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: 'mat4',
+    value: mat4
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: any,
+    value: any
+  ): void {
     const loc: WebGLUniformLocation = this._gl.getUniformLocation(
       program,
       name
@@ -186,17 +202,17 @@ export class Gpu {
       return;
     }
     if (type === 'uint') {
-      this._gl.uniform1ui(loc, value as number);
+      this._gl.uniform1ui(loc, value);
     } else if (type === 'int') {
-      this._gl.uniform1i(loc, value as number);
+      this._gl.uniform1i(loc, value);
     } else if (type === 'float') {
-      this._gl.uniform1f(loc, value as number);
+      this._gl.uniform1f(loc, value);
     } else if (type === 'vec2') {
-      this._gl.uniform2fv(loc, value as vec2);
+      this._gl.uniform2fv(loc, value);
     } else if (type === 'vec3') {
-      this._gl.uniform3fv(loc, value as vec3);
+      this._gl.uniform3fv(loc, value);
     } else if (type === 'mat4') {
-      this._gl.uniformMatrix4fv(loc, false, value as mat4);
+      this._gl.uniformMatrix4fv(loc, false, value);
     }
   }
 

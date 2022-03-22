@@ -18,12 +18,11 @@ layout(location = 2) out vec4 spectrum2;
 uniform sampler2D noise;
 uniform uint resolution;  // N
 uniform float size;      // L
+uniform vec3 scales; 
 uniform float A;
 uniform vec2 wind;
 uniform float alignment;
 uniform float minWave;
-
-const float RATIO = 0.618033989036f;
 
 vec2 gauss() {
   vec2 uv = 2.0f * vec2(ivec2(gl_FragCoord.xy)) / float(resolution) - vec2(1.0f);
@@ -63,12 +62,12 @@ vec4 phillips(in vec2 x, float size) {
 }
 
 void main() {
-  vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2]
+  vec2 x = vec2(ivec2(gl_FragCoord.xy) - ivec2(resolution / 2u)); //  [-N/2, N/2]
   vec2 rnd = gauss();
   vec4 mult = vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
 
-  spectrum0 = phillips(x, size) * mult;
-  spectrum1 = phillips(x, size * RATIO) * mult;
-  spectrum2 = phillips(x, size * RATIO * RATIO) * mult;
+  spectrum0 = phillips(x, size * scales.x) * mult;
+  spectrum1 = phillips(x, size * scales.y) * mult;
+  spectrum2 = phillips(x, size * scales.z) * mult;
 }
 `;

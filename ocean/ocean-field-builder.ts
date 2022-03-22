@@ -15,6 +15,7 @@ import {
   OceanFieldBuildParams,
 } from './ocean-field-build-params';
 import { vs as h0vs, fs as h0fs } from './programs/h0';
+import { vec3 } from 'gl-matrix';
 
 export class OceanFieldBuilder {
   private readonly quad: Geometry;
@@ -97,7 +98,12 @@ export class OceanFieldBuilder {
       params.resolution
     );
     this.gpu.setProgramVariable(this.h0Program, 'size', 'float', params.size);
-
+    this.gpu.setProgramVariable(
+      this.h0Program,
+      'scales',
+      'vec3',
+      vec3.fromValues(params.scales[0], params.scales[1], params.scales[2])
+    );
     this.gpu.setProgramVariable(this.h0Program, 'wind', 'vec2', params.wind);
     this.gpu.setProgramVariable(
       this.h0Program,

@@ -8,6 +8,7 @@ uniform mat4 projMat;
 
 uniform float croppiness;
 uniform float size;
+uniform vec3 scales;
 uniform sampler2D dx_hy_dz_dxdz0;
 uniform sampler2D sx_sz_dxdx_dzdz0;
 uniform sampler2D dx_hy_dz_dxdz1;
@@ -18,12 +19,10 @@ uniform sampler2D sx_sz_dxdx_dzdz2;
 out vec3 _position;
 out vec2 _uv;
 
-const float RATIO = 0.618033989036f;
-
 vec3 getDisplacement(in vec2 uv) {
-  vec2 uv0 = uv;
-  vec2 uv1 = uv / RATIO;
-  vec2 uv2 = uv / RATIO / RATIO;
+  vec2 uv0 = uv * scales.x;
+  vec2 uv1 = uv * scales.y;
+  vec2 uv2 = uv * scales.z;
   vec3 sum = 
     texture(dx_hy_dz_dxdz0, uv0).xyz + 
     texture(dx_hy_dz_dxdz1, uv1).xyz + 
@@ -57,9 +56,8 @@ uniform sampler2D dx_hy_dz_dxdz1;
 uniform sampler2D sx_sz_dxdx_dzdz1;
 uniform sampler2D dx_hy_dz_dxdz2;
 uniform sampler2D sx_sz_dxdx_dzdz2;
+uniform vec3 scales;
 uniform vec3 pos;
-
-const float RATIO = 0.618033989036f;
 
 vec4 jacobian(float dxdx, float dxdz, float dzdz) {
   float Jxx = 1.0f + croppiness * dxdx;
@@ -73,9 +71,9 @@ float det(vec4 jacobian) {
 }
 
 vec3 getNormal(in vec2 uv) {
-  vec2 uv0 = uv;
-  vec2 uv1 = uv / RATIO;
-  vec2 uv2 = uv / RATIO / RATIO;
+  vec2 uv0 = uv * scales.x;
+  vec2 uv1 = uv * scales.y;
+  vec2 uv2 = uv * scales.z;
 
   vec4 _sx_sz_dxdx_dzdz0 = texture(sx_sz_dxdx_dzdz0, uv0).xyzw;
   vec4 _sx_sz_dxdx_dzdz1 = texture(sx_sz_dxdx_dzdz1, uv1).xyzw;
@@ -92,9 +90,9 @@ vec3 getNormal(in vec2 uv) {
 }
 
 float getFoam(in vec2 uv) {
-  vec2 uv0 = uv;
-  vec2 uv1 = uv / RATIO;
-  vec2 uv2 = uv / RATIO / RATIO;
+  vec2 uv0 = uv * scales.x;
+  vec2 uv1 = uv * scales.y;
+  vec2 uv2 = uv * scales.z;
 
   vec2 dxdx_dzdz0 = texture(sx_sz_dxdx_dzdz0, uv0).zw;
   vec2 dxdx_dzdz1 = texture(sx_sz_dxdx_dzdz1, uv1).zw;
