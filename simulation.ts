@@ -44,9 +44,9 @@ export class Simulation {
 
     this.camera.near = 1.0e-1;
     this.camera.far = 1.0e4;
-    this.camera.lookAt(vec3.fromValues(size, size, -size), vec3.create());
+    this.camera.lookAt(vec3.fromValues(-10, 10, -10), vec3.create());
 
-    this.controller.moveSpeed = size * 0.1;
+    this.controller.moveSpeed = 2.5;
     this.controller.sync();
 
     const step = () => {
@@ -58,7 +58,7 @@ export class Simulation {
       this.gpu.clearRenderTarget();
 
       // Water
-      const instances = 2;
+      const instances = 3;
       for (let i = 0; i < instances; i++) {
         for (let j = 0; j < instances; j++) {
           const transform = mat4.create();

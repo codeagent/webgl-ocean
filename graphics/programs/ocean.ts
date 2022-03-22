@@ -114,7 +114,7 @@ void main()
   vec3 n = getNormal(_uv);
   vec3 l = normalize(pos - _position);
   float nol = dot(n, l) * 0.9 + 0.1;
-  color = albedo * vec4(vec3(nol), 1.0f) + getFoam(_uv);
+  color = albedo * vec4(vec3(nol), 1.0f) + getFoam(_uv) * 0.5;
   
   if(!gl_FrontFacing) {
     color = vec4(1.0f);

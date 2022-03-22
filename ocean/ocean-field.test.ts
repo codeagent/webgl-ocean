@@ -13,10 +13,10 @@ export const testOceanFieldIfft2 = () => {
     croppiness: -1.0,
     size: 100,
     resolution: 512,
-    geometryResolution: 256,
+
     wind: vec2.fromValues(28.0, 28.0),
     strength: 1,
-    randomSeed: 0
+    randomSeed: 0,
   });
 
   // Arrange
@@ -81,9 +81,7 @@ export const testOceanFieldIfft2 = () => {
         );
         return;
       }
-      console.log(
-        `testOceanFieldIfft2 [slot ${slot}-${couple}]: Test passed!`
-      );
+      console.log(`testOceanFieldIfft2 [slot ${slot}-${couple}]: Test passed!`);
     }
   }
 };
@@ -100,10 +98,10 @@ export const testOceanFieldIfft2HermitianProperty = () => {
     croppiness: -1.0,
     size: 100,
     resolution: 4,
-    geometryResolution: 256,
+
     wind: vec2.fromValues(28.0, 28.0),
     strength: 1,
-    randomSeed: 0
+    randomSeed: 0,
   });
 
   // Arrange

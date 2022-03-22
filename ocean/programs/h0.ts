@@ -39,10 +39,14 @@ vec2 gauss() {
   return vec2(v0 * cos(u0), v0 * sin(u0));
 }
 
-vec4 phillips(in vec2 x, float size) {
-  vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
-  float k2 = dot(k, k);
+vec4 phillips(in vec2 x, float sz) {
+  if(sz <= 1.0e-3) {
+    return vec4(0.0f);
+  }
 
+  vec2 k = vec2(2.0 * PI * x.x / sz, 2.0 * PI * x.y / sz);
+  float k2 = dot(k, k);
+ 
   if(k2 == 0.0f) {
     return vec4(0.0f);
   }
@@ -50,8 +54,8 @@ vec4 phillips(in vec2 x, float size) {
   float L = dot(wind, wind) / g;
   float L2 = L * L;
   float l2 = minWave * minWave;  // filter out small waves (the waves the wave length of which is less than given tolerance)
-  
-  float h0k = (A / k2 / k2) * exp(-1.0 / (k2 * L2) - (k2 * l2)) * 0.5f, h0mk = h0k;
+  float factor = size / sz; 
+  float h0k = (A * factor * factor / k2 / k2) * exp(-1.0 / (k2 * L2) - (k2 * l2)) * 0.5f, h0mk = h0k;
 
   if(alignment > 0.0f) {
     h0k *=  pow(max(0.0f, dot(normalize(wind), normalize(k))), alignment);

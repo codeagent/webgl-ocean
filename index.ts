@@ -33,13 +33,13 @@ const gpu = new Gpu(
 const oceanBuilder = new OceanFieldBuilder(gpu);
 const oceanField = oceanBuilder.build({
   size: 100,
-  scales: [1.0, 0.054, 0.01],
-  resolution: 512,
-  wind: vec2.fromValues(4.5, 4.5),
-  strength: 1.0,
-  croppiness: -1.0,
-  alignment: 0.01
+  scales: [1.0, 0.6, 0.06],
+  resolution: 256,
+  wind: vec2.fromValues(1.5, 2.5),
+  strength: 2,
+  croppiness: -1.9,
+  alignment: 1.0
 });
 const simulation = new Simulation(gpu);
 
-simulation.start(oceanField, 100, 256);
+simulation.start(oceanField, 33.33, 256);

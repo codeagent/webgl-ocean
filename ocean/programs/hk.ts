@@ -73,8 +73,6 @@ struct spectrum {
 };
 
 spectrum getSpectrum(in sampler2D h0Texture, in vec2 x, float size) {
-  vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
-  float kLen = length(k);
   complex hy = complex(0.0f, 0.0f);
   complex sx = complex(0.0f, 0.0f);
   complex sz = complex(0.0f, 0.0f);
@@ -83,6 +81,14 @@ spectrum getSpectrum(in sampler2D h0Texture, in vec2 x, float size) {
   complex dxdx = complex(0.0f, 0.0f);
   complex dzdz = complex(0.0f, 0.0f);
   complex dxdz = complex(0.0f, 0.0f);
+
+  if(size <= 1.0e-3) {
+    return spectrum(dx, hy, dz, sx, sz, dxdx, dxdz, dzdz); 
+  }
+
+  vec2 k = vec2(2.0 * PI * x.x / size, 2.0 * PI * x.y / size);
+  float kLen = length(k);
+
 
   if(kLen > 1.0e-6f) {
     float w = sqrt(g * kLen);

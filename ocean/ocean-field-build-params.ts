@@ -50,11 +50,11 @@ export interface OceanFieldBuildParams {
 export const defaultBuildParams: OceanFieldBuildParams = {
   size: 100,
   resolution: 512,
-  scales: [1, 0.054, 0.001],
-  wind: vec2.fromValues(5.0, 5.0),
-  croppiness: -1,
-  alignment: 0.001,
+  scales: [1, 0.6, 0.06],
+  wind: vec2.fromValues(1.5, 2.5),
+  croppiness: -1.5,
+  alignment: 1.0,
   minWave: 0.0,
-  strength: 1.0,
+  strength: 2.0,
   randomSeed: 0,
 };
