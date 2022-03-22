@@ -30,12 +30,12 @@ const simulation = new Simulation(
 );
 simulation.start({
   size: 10,
-  alignment: 0.0,
+  alignment: 0.01,
   minWave: 0.0,
   geometryResolution: 256,
   resolution: 512,
   wind: vec2.fromValues(5.0, 2.0),
-  strength: 1.0,
+  strength: 2.0,
   croppiness: -1.0,
   randomSeed: 0,
 });
