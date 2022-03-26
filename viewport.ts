@@ -13,16 +13,10 @@ import {
 
 import { OceanField } from './ocean';
 
-export interface OceanPatch {
-  field: OceanField;
-  geometry: Geometry;
-  length: number;
-}
-
 export class Viewport {
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
-  private readonly oceanRenderer: OceanRenderer;
+  public readonly oceanRenderer: OceanRenderer;
   private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
   private readonly grid: Geometry;
@@ -54,7 +48,6 @@ export class Viewport {
 
   render(field: OceanField, times: number = 1) {
     const { width, height } = this.gpu.context.canvas;
-    field.update(performance.now() / 1e3 + 36000);
     this.controller.update();
     this.gpu.setViewport(0, 0, width, height);
     this.gpu.setRenderTarget(null);

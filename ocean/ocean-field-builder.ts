@@ -16,7 +16,6 @@ import {
 } from './ocean-field-build-params';
 import { vs as h0vs, fs as h0fs } from './programs/h0';
 
-
 export class OceanFieldBuilder {
   private readonly quad: Geometry;
   private readonly frameBuffer: RenderTarget;
@@ -29,15 +28,16 @@ export class OceanFieldBuilder {
     this.h0Program = this.gpu.createShaderProgram(h0vs, h0fs);
   }
 
-  build(params: OceanFieldBuildParams): OceanField {
+  build(params: Partial<OceanFieldBuildParams>): OceanField {
     /** @todo: merge options */
-    params = { ...defaultBuildParams, ...params };
+    const _params: OceanFieldBuildParams = { ...defaultBuildParams, ...params };
+
     return new OceanField(
       this.gpu,
-      this.createH0Textures(params),
+      this.createH0Textures(_params),
       this.getButterflyTexture(params.resolution),
       this.quad,
-      params
+      _params
     );
   }
 

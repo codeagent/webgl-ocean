@@ -9,22 +9,22 @@ export interface OceanFieldCascade {
   /**
    * How "croppy" this pattern would be
    */
-  croppiness?: number;
+  croppiness: number;
 
   /**
    * Strength factor for this pattern
    */
-  strength?: number;
+  strength: number;
 
   /**
    * Min wave length. Kind of spectrum filter. (Waves less that this thresold are not involved in spectrum generation)
    */
-  minWave?: number;
+  minWave: number;
 
   /**
    * Max wave length. Kind of spectrum filter.
    */
-  maxWave?: number;
+  maxWave: number;
 }
 
 export interface OceanFieldBuildParams {
@@ -42,27 +42,27 @@ export interface OceanFieldBuildParams {
   /**
    * Wind vector. Module correspond to wind force.
    */
-  wind?: vec2;
+  wind: vec2;
 
   /**
    * Parameter for waves motion. 0 means no wave motion
    */
-  alignment?: number;
+  alignment: number;
 
   /**
    * How "wide" foam pattern lines will appear in water surface
    */
-  foamSpreading?: number;
+  foamSpreading: number;
 
   /**
    * Strength of foam
    */
-  foamContrast?: number;
+  foamContrast: number;
 
   /**
    * Seed of random generator
    */
-  randomSeed?: number;
+  randomSeed: number;
 }
 
 export const defaultBuildParams: OceanFieldBuildParams = {
