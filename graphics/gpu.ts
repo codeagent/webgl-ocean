@@ -554,6 +554,10 @@ export class Gpu {
     this._gl.deleteFramebuffer(target);
   }
 
+  destroyTexture(texture: Texture2d) {
+    this._gl.deleteTexture(texture);
+  }
+
   readValues(
     target: RenderTarget,
     values: Float32Array,

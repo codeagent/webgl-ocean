@@ -12,7 +12,6 @@ import { vs as fft2hvs, fs as fft2hfs } from './programs/fft2-h';
 import { vs as fft2vvs, fs as fft2vfs } from './programs/fft2-v';
 import { vs as postfft2vs, fs as postfft2fs } from './programs/post-fft2';
 import { vs as hkvs, fs as hkfs } from './programs/hk';
-import { vec3 } from 'gl-matrix';
 
 export class OceanField {
   get dataMaps(): Texture2d[] {
@@ -48,6 +47,25 @@ export class OceanField {
     this.generateSpectrumTextures(time);
     this.ifft2();
     this.postIfft2();
+  }
+
+  dispose(): void {
+    this.gpu.destroyProgram(this.hkProgram);
+    this.gpu.destroyProgram(this.fft2hProgram);
+    this.gpu.destroyProgram(this.fft2vProgram);
+    this.gpu.destroyProgram(this.postfft2Program);
+    this.gpu.destroyRenderTarget(this.spectrumFramebuffer);
+    this.gpu.destroyRenderTarget(this.pingPongFramebuffer);
+    this.gpu.destroyRenderTarget(this.postIfft2Framebuffer);
+    this.h0Textures.forEach((texture) => this.gpu.destroyTexture(texture));
+    this.spectrumTextures.forEach((texture) =>
+      this.gpu.destroyTexture(texture)
+    );
+    this.pingPongTextures.forEach((texture) =>
+      this.gpu.destroyTexture(texture)
+    );
+    this.ifftTextures.forEach((texture) => this.gpu.destroyTexture(texture));
+    this._dataMaps.forEach((texture) => this.gpu.destroyTexture(texture));
   }
 
   private createPrograms(): void {

@@ -15,7 +15,7 @@ import {
   OceanFieldBuildParams,
 } from './ocean-field-build-params';
 import { vs as h0vs, fs as h0fs } from './programs/h0';
-import { vec3 } from 'gl-matrix';
+
 
 export class OceanFieldBuilder {
   private readonly quad: Geometry;

@@ -1,7 +1,7 @@
 import './style.css';
 import './gui';
-import { vec2 } from 'gl-matrix';
-import { Simulation } from './simulation';
+import { vec2, vec3 } from 'gl-matrix';
+import { Viewport } from './viewport';
 import { Gpu } from './graphics';
 import { OceanFieldBuilder } from './ocean';
 
@@ -39,8 +39,13 @@ const oceanField = oceanBuilder.build({
   wind: vec2.fromValues(1.5, 2.5),
   strength: 2,
   croppiness: -1.9,
-  alignment: 1.0
+  alignment: 1.0,
 });
-const simulation = new Simulation(gpu);
 
-simulation.start(oceanField, 33.33, 256);
+const viewport = new Viewport(gpu);
+const step = () => {
+  viewport.render(oceanField, 1);
+  requestAnimationFrame(() => step());
+};
+
+requestAnimationFrame(() => step());
