@@ -64,7 +64,11 @@ export class Viewport {
         const transform = mat4.create();
         mat4.fromTranslation(
           transform,
-          vec3.fromValues(i * times, 0.0, j * times)
+          vec3.fromValues(
+            i * this.oceanRenderer.geometrySize,
+            0.0,
+            j * this.oceanRenderer.geometrySize
+          )
         );
         this.oceanRenderer.render(transform, this.camera, field);
       }

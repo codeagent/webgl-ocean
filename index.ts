@@ -38,22 +38,19 @@ const gui = new Gui(document.getElementById('gui'));
 const oceanBuilder = new OceanFieldBuilder(gpu);
 
 let oceanField: OceanField = null;
-
-
-
+let tiles: number = 1;
 gui.onChange$.subscribe((params) => {
   oceanField?.dispose();
   oceanField = oceanBuilder.build(params);
   viewport.oceanRenderer.geometryResolution = params.geometryResolution;
   viewport.oceanRenderer.geometrySize = params.geometrySize;
-
-  console.log(params);
+  tiles = params.times;
 });
 
 const step = () => {
   if (oceanField) {
     oceanField.update(performance.now() / 1e3 + 36000);
-    viewport.render(oceanField, 1);
+    viewport.render(oceanField, tiles);
   }
   requestAnimationFrame(() => step());
 };

@@ -22,22 +22,22 @@ export class Gui {
         size: 100.0,
         strength: 2.0,
         croppiness: -1.5,
-        minWave: 1.0e-6,
-        maxWave: 1.0e6,
+        minWave: 1.0e-3,
+        maxWave: 1.0e3,
       },
       {
         size: 60.0,
         strength: 2.0,
         croppiness: -1.5,
-        minWave: 1.0e-6,
-        maxWave: 1.0e6,
+        minWave: 1.0e-3,
+        maxWave: 1.0e3,
       },
       {
         size: 6.0,
         strength: 2.0,
         croppiness: -1.5,
-        minWave: 1.0e-6,
-        maxWave: 1.0e6,
+        minWave: 1.0e-3,
+        maxWave: 1.0e3,
       },
     ],
     resolution: 256,
@@ -56,14 +56,18 @@ export class Gui {
   constructor(container: HTMLElement) {
     this.gui = new GUI({ container });
     this.addControls(this.gui);
-    this.gui.onChange(() => this._onChange$.next(this.params));
+    this.gui.onFinishChange(() => this._onChange$.next(this.params));
   }
 
   private addControls(gui: GUI) {
     gui.add(this.params, 'resolution', 8, 1024).step(1).name('Map Resolution');
+    gui.add(this.params, 'geometryResolution', 8, 1024).step(1).name('Geometry resolution');
+    gui.add(this.params, 'geometrySize', 0, 1000).step(1).name('Geometry size');
+    gui.add(this.params, 'times', 1, 5).step(1).name('Tiles');
+
     const wind = gui.addFolder('Wind');
-    wind.add(this.params.wind, '0', 0, 31).step(0.1).name('X');
-    wind.add(this.params.wind, '1', 0, 31).step(0.1).name('Y');
+    wind.add(this.params.wind, '0', 0, 31).step(1).name('X');
+    wind.add(this.params.wind, '1', 0, 31).step(1).name('Y');
     gui.add(this.params, 'alignment', 0, 4).step(0.1).name('Alignment');
     gui
       .add(this.params, 'foamSpreading', 0, 2)
@@ -81,8 +85,8 @@ export class Gui {
       group.add(cascade, 'size', 0, 1000.0).step(1).name('Size');
       group.add(cascade, 'croppiness', -2, 2).step(0.1).name('Croppiness');
       group.add(cascade, 'strength', 0, 10).step(0.1).name('Strength');
-      group.add(cascade, 'minWave').min(0).step(1).name('Min wave');
-      group.add(cascade, 'maxWave').min(0).step(1).name('Max wave');
+      group.add(cascade, 'minWave', 0, 1e3).step(1).name('Min wave length');
+      group.add(cascade, 'maxWave', 0, 1e3).step(1).name('Max wave length');
     }
   }
 }
