@@ -7,6 +7,7 @@ void main() {
 
 export const fs = `#version 300 es
 #define PI 3.141592653f
+#define PI2 6.2831853071f
 #define g 9.81f
 
 precision highp float;
@@ -17,12 +18,16 @@ layout(location = 2) out vec4 spectrum2;
 
 uniform sampler2D noise;
 uniform uint resolution;  // N
-uniform float size;      // L
-uniform vec3 scales; 
-uniform float A;
 uniform vec2 wind;
 uniform float alignment;
-uniform float minWave;
+
+uniform struct FieldCascade {
+  float size;
+  float croppiness;
+  float strength;
+  float minK;
+  float maxK;
+} cascades[3];
 
 vec2 gauss() {
   vec2 uv = 2.0f * vec2(ivec2(gl_FragCoord.xy)) / float(resolution) - vec2(1.0f);
@@ -39,23 +44,16 @@ vec2 gauss() {
   return vec2(v0 * cos(u0), v0 * sin(u0));
 }
 
-vec4 phillips(in vec2 x, float sz) {
-  if(sz <= 1.0e-3) {
-    return vec4(0.0f);
-  }
-
-  vec2 k = vec2(2.0 * PI * x.x / sz, 2.0 * PI * x.y / sz);
+vec4 phillips(in vec2 k, float A, float minK, float maxK) {
   float k2 = dot(k, k);
- 
-  if(k2 == 0.0f) {
+  
+  if(k2 <= minK * minK || k2 >= maxK * maxK) {
     return vec4(0.0f);
   }
 
   float L = dot(wind, wind) / g;
   float L2 = L * L;
-  float l2 = minWave * minWave;  // filter out small waves (the waves the wave length of which is less than given tolerance)
-  float factor = size / sz; 
-  float h0k = (A * factor * factor / k2 / k2) * exp(-1.0 / (k2 * L2) - (k2 * l2)) * 0.5f, h0mk = h0k;
+  float h0k = (A / k2 / k2) * exp(-1.0 / (k2 * L2)) * 0.5f, h0mk = h0k;
 
   if(alignment > 0.0f) {
     h0k *=  pow(max(0.0f, dot(normalize(wind), normalize(k))), alignment);
@@ -67,11 +65,12 @@ vec4 phillips(in vec2 x, float sz) {
 
 void main() {
   vec2 x = vec2(ivec2(gl_FragCoord.xy) - ivec2(resolution / 2u)); //  [-N/2, N/2]
+  vec2 k = vec2(PI2) * x;
   vec2 rnd = gauss();
   vec4 mult = vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
-
-  spectrum0 = phillips(x, size * scales.x) * mult;
-  spectrum1 = phillips(x, size * scales.y) * mult;
-  spectrum2 = phillips(x, size * scales.z) * mult;
+  
+  spectrum0 = phillips(k / cascades[0].size, cascades[0].strength, cascades[0].minK, cascades[0].maxK) * mult;
+  spectrum1 = phillips(k / cascades[1].size, cascades[1].strength, cascades[1].minK, cascades[1].maxK) * mult;
+  spectrum2 = phillips(k / cascades[2].size, cascades[2].strength, cascades[2].minK, cascades[2].maxK) * mult;
 }
 `;

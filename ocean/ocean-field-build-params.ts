@@ -1,20 +1,43 @@
 import { vec2 } from 'gl-matrix';
 
-export interface OceanFieldBuildParams {
+export interface OceanFieldCascade {
   /**
-   * The dimension of displacement field block in meters
+   * The size of simulated patch of field. (in meters)
    */
   size: number;
 
+  /**
+   * How "croppy" this pattern would be
+   */
+  croppiness?: number;
+
+  /**
+   * Strength factor for this pattern
+   */
+  strength?: number;
+
+  /**
+   * Min wave length. Kind of spectrum filter. (Waves less that this thresold are not involved in spectrum generation)
+   */
+  minWave?: number;
+
+  /**
+   * Max wave length. Kind of spectrum filter.
+   */
+  maxWave?: number;
+}
+
+export interface OceanFieldBuildParams {
   /**
    * Size of generated texture. Must be power of 2
    */
   resolution: number;
 
   /**
-   * Cascade scales
+   * Ocean field sub-pattern options.
+   * @see OceanFieldCascade
    */
-  scales?: number[];
+  cascades: [OceanFieldCascade, OceanFieldCascade, OceanFieldCascade];
 
   /**
    * Wind vector. Module correspond to wind force.
@@ -22,24 +45,9 @@ export interface OceanFieldBuildParams {
   wind?: vec2;
 
   /**
-   * Importance of waves displacement. Should be <= 0.
-   */
-  croppiness?: number;
-
-  /**
    * Parameter for waves motion. 0 means no wave motion
    */
   alignment?: number;
-
-  /**
-   * Acts as wave frequency flter. Waves with wavelength less than this quantity aren't synthesize
-   */
-  minWave?: number;
-
-  /**
-   * Variable for adjusting. Value should be between [0, 1]
-   */
-  strength?: number;
 
   /**
    * Seed of random generator
@@ -48,13 +56,31 @@ export interface OceanFieldBuildParams {
 }
 
 export const defaultBuildParams: OceanFieldBuildParams = {
-  size: 100,
+  cascades: [
+    {
+      size: 100.0,
+      strength: 1.0,
+      croppiness: -1.5,
+      minWave: 1.0e-6,
+      maxWave: 1.0e6,
+    },
+    {
+      size: 60.0,
+      strength: 1.0,
+      croppiness: -1.5,
+      minWave: 1.0e-6,
+      maxWave: 1.0e6,
+    },
+    {
+      size: 6.0,
+      strength: 1.0,
+      croppiness: -1.5,
+      minWave: 1.0e-6,
+      maxWave: 1.0e6,
+    },
+  ],
   resolution: 512,
-  scales: [1, 0.6, 0.06],
   wind: vec2.fromValues(1.5, 2.5),
-  croppiness: -1.5,
   alignment: 1.0,
-  minWave: 0.0,
-  strength: 2.0,
   randomSeed: 0,
 };

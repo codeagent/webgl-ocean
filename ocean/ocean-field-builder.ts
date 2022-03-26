@@ -30,6 +30,7 @@ export class OceanFieldBuilder {
   }
 
   build(params: OceanFieldBuildParams): OceanField {
+    /** @todo: merge options */
     params = { ...defaultBuildParams, ...params };
     return new OceanField(
       this.gpu,
@@ -97,13 +98,6 @@ export class OceanFieldBuilder {
       'uint',
       params.resolution
     );
-    this.gpu.setProgramVariable(this.h0Program, 'size', 'float', params.size);
-    this.gpu.setProgramVariable(
-      this.h0Program,
-      'scales',
-      'vec3',
-      vec3.fromValues(params.scales[0], params.scales[1], params.scales[2])
-    );
     this.gpu.setProgramVariable(this.h0Program, 'wind', 'vec2', params.wind);
     this.gpu.setProgramVariable(
       this.h0Program,
@@ -111,18 +105,39 @@ export class OceanFieldBuilder {
       'float',
       params.alignment
     );
-    this.gpu.setProgramVariable(
-      this.h0Program,
-      'minWave',
-      'float',
-      params.minWave
-    );
-    this.gpu.setProgramVariable(
-      this.h0Program,
-      'A',
-      'float',
-      (params.strength * 0.081) / (params.size * params.size)
-    );
+
+    for (let i = 0; i < params.cascades.length; i++) {
+      this.gpu.setProgramVariable(
+        this.h0Program,
+        `cascades[${i}].size`,
+        'float',
+        params.cascades[i].size
+      );
+      this.gpu.setProgramVariable(
+        this.h0Program,
+        `cascades[${i}].croppiness`,
+        'float',
+        params.cascades[i].croppiness
+      );
+      this.gpu.setProgramVariable(
+        this.h0Program,
+        `cascades[${i}].strength`,
+        'float',
+        (params.cascades[i].strength * 0.081) / params.cascades[i].size ** 2
+      );
+      this.gpu.setProgramVariable(
+        this.h0Program,
+        `cascades[${i}].minK`,
+        'float',
+        (2.0 * Math.PI) / params.cascades[i].maxWave
+      );
+      this.gpu.setProgramVariable(
+        this.h0Program,
+        `cascades[${i}].maxK`,
+        'float',
+        (2.0 * Math.PI) / params.cascades[i].minWave
+      );
+    }
 
     this.gpu.drawGeometry(this.quad);
     this.gpu.setRenderTarget(null);

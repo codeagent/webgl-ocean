@@ -59,22 +59,15 @@ export class OceanField {
       'uint',
       this.params.resolution
     );
-    this.gpu.setProgramVariable(
-      this.hkProgram,
-      'size',
-      'float',
-      this.params.size
-    );
-    this.gpu.setProgramVariable(
-      this.hkProgram,
-      'scales',
-      'vec3',
-      vec3.fromValues(
-        this.params.scales[0],
-        this.params.scales[1],
-        this.params.scales[2]
-      )
-    );
+
+    for (let i = 0; i < this.params.cascades.length; i++) {
+      this.gpu.setProgramVariable(
+        this.hkProgram,
+        `sizes[${i}]`,
+        'float',
+        this.params.cascades[i].size
+      );
+    }
 
     this.fft2hProgram = this.gpu.createShaderProgram(fft2hvs, fft2hfs);
     this.fft2vProgram = this.gpu.createShaderProgram(fft2vvs, fft2vfs);

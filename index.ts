@@ -1,4 +1,5 @@
 import './style.css';
+import './gui';
 import { vec2 } from 'gl-matrix';
 import { Simulation } from './simulation';
 import { Gpu } from './graphics';
