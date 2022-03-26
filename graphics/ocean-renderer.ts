@@ -37,28 +37,36 @@ export class OceanRenderer {
       ],
       oceanField.dataMaps
     );
+
+    for (let i = 0; i < oceanField.params.cascades.length; i++) {
+      this.gpu.setProgramVariable(
+        this.waterShader,
+        `sizes[${i}]`,
+        'float',
+        oceanField.params.cascades[i].size
+      );
+      this.gpu.setProgramVariable(
+        this.waterShader,
+        `croppinesses[${i}]`,
+        'float',
+        oceanField.params.cascades[i].croppiness
+      );
+    }
+
     this.gpu.setProgramVariable(
       this.waterShader,
-      'croppiness',
+      'foamSpreading',
       'float',
-      oceanField.params.croppiness
+      oceanField.params.foamSpreading
     );
+
     this.gpu.setProgramVariable(
       this.waterShader,
-      'size',
+      'foamContrast',
       'float',
-      oceanField.params.size
+      oceanField.params.foamContrast
     );
-    this.gpu.setProgramVariable(
-      this.waterShader,
-      'scales',
-      'vec3',
-      vec3.fromValues(
-        1.0 / oceanField.params.scales[0],
-        1.0 / oceanField.params.scales[1],
-        1.0 / oceanField.params.scales[2]
-      )
-    );
+
     this.gpu.setProgramVariable(
       this.waterShader,
       'viewMat',

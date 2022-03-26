@@ -23,7 +23,6 @@ uniform float alignment;
 
 uniform struct FieldCascade {
   float size;
-  float croppiness;
   float strength;
   float minK;
   float maxK;
@@ -70,7 +69,12 @@ void main() {
   vec4 mult = vec4(rnd.x, rnd.y, rnd.x, -rnd.y);
   
   spectrum0 = phillips(k / cascades[0].size, cascades[0].strength, cascades[0].minK, cascades[0].maxK) * mult;
+  // spectrum0 = vec4(0.0f);
+
   spectrum1 = phillips(k / cascades[1].size, cascades[1].strength, cascades[1].minK, cascades[1].maxK) * mult;
+  // spectrum1 = vec4(0.0f);
+
   spectrum2 = phillips(k / cascades[2].size, cascades[2].strength, cascades[2].minK, cascades[2].maxK) * mult;
+  // spectrum2 = vec4(0.0f);
 }
 `;

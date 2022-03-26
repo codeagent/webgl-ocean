@@ -25,10 +25,6 @@ uniform sampler2D h0Texture0;
 uniform sampler2D h0Texture1;
 uniform sampler2D h0Texture2;
 
-uniform struct FieldCascade {
-  float size;
-} cascades[3];
-
 // --
 struct complex {
   float re;

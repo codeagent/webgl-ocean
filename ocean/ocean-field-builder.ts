@@ -115,12 +115,6 @@ export class OceanFieldBuilder {
       );
       this.gpu.setProgramVariable(
         this.h0Program,
-        `cascades[${i}].croppiness`,
-        'float',
-        params.cascades[i].croppiness
-      );
-      this.gpu.setProgramVariable(
-        this.h0Program,
         `cascades[${i}].strength`,
         'float',
         (params.cascades[i].strength * 0.081) / params.cascades[i].size ** 2
