@@ -2,18 +2,25 @@
   font-family: Calibri;
 }
 
+
+:root {
+  --viewport-width: 1200px;
+  --viewport-height: 800px;
+}
+
+
 canvas {
-  width: 800px;
-  height: 600px;
+  width: var(--viewport-width);
+  height: var(--viewport-height);
   box-sizing: content-box;
-  min-width: 800px;
+  min-width: var(--viewport-width);
   background-color: black;
   margin: 0 auto;
 }
 
 .container {
   display: grid;
-  grid-template-columns: 800px 1fr;
+  grid-template-columns: var(--viewport-width) 1fr;
   grid-template-rows: 1fr;
   grid-gap: 16px;
 }

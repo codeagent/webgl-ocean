@@ -7,14 +7,6 @@ export type VertexBuffer = WebGLBuffer;
 export type IndexBuffer = WebGLBuffer;
 export type RenderTarget = WebGLFramebuffer;
 
-export type ShaderProgramVariableType =
-  | 'uint'
-  | 'int'
-  | 'float'
-  | 'vec2'
-  | 'vec3'
-  | 'mat4';
-
 export interface VertexAttribute {
   semantics: string;
   slot: number;
@@ -41,6 +33,12 @@ export interface Mesh {
 export enum TextureFiltering {
   Nearest = WebGL2RenderingContext.NEAREST,
   Linear = WebGL2RenderingContext.LINEAR,
+}
+
+export enum TextureMode {
+  Repeat = WebGL2RenderingContext.REPEAT,
+  Edge = WebGL2RenderingContext.CLAMP_TO_EDGE,
+  Mirror = WebGL2RenderingContext.MIRRORED_REPEAT,
 }
 
 export class Gpu {
@@ -168,9 +166,33 @@ export class Gpu {
   setProgramVariable(
     program: ShaderProgram,
     name: string,
-    type: ShaderProgramVariableType,
-    value: number | vec2 | vec3 | mat4
-  ) {
+    type: 'uint' | 'int' | 'float',
+    value: number
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: 'vec2',
+    value: vec2
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: 'vec3',
+    value: vec3
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: 'mat4',
+    value: mat4
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
+    type: any,
+    value: any
+  ): void {
     const loc: WebGLUniformLocation = this._gl.getUniformLocation(
       program,
       name
@@ -180,17 +202,17 @@ export class Gpu {
       return;
     }
     if (type === 'uint') {
-      this._gl.uniform1ui(loc, value as number);
+      this._gl.uniform1ui(loc, value);
     } else if (type === 'int') {
-      this._gl.uniform1i(loc, value as number);
+      this._gl.uniform1i(loc, value);
     } else if (type === 'float') {
-      this._gl.uniform1f(loc, value as number);
+      this._gl.uniform1f(loc, value);
     } else if (type === 'vec2') {
-      this._gl.uniform2fv(loc, value as vec2);
+      this._gl.uniform2fv(loc, value);
     } else if (type === 'vec3') {
-      this._gl.uniform3fv(loc, value as vec3);
+      this._gl.uniform3fv(loc, value);
     } else if (type === 'mat4') {
-      this._gl.uniformMatrix4fv(loc, false, value as mat4);
+      this._gl.uniformMatrix4fv(loc, false, value);
     }
   }
 
@@ -255,7 +277,8 @@ export class Gpu {
   createFloatTexture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -283,12 +306,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -298,7 +321,8 @@ export class Gpu {
   createFloat2Texture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -326,12 +350,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -341,7 +365,8 @@ export class Gpu {
   createFloat3Texture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -369,12 +394,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -384,7 +409,8 @@ export class Gpu {
   createFloat4Texture(
     width: number,
     height: number,
-    filter: TextureFiltering = TextureFiltering.Nearest
+    filter: TextureFiltering = TextureFiltering.Nearest,
+    mode: TextureMode = TextureMode.Repeat
   ): WebGLTexture {
     const texture = this._gl.createTexture();
     this._gl.bindTexture(this._gl.TEXTURE_2D, texture);
@@ -412,12 +438,12 @@ export class Gpu {
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_S,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.texParameteri(
       WebGL2RenderingContext.TEXTURE_2D,
       WebGL2RenderingContext.TEXTURE_WRAP_T,
-      WebGL2RenderingContext.REPEAT
+      mode
     );
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, null);
 
@@ -526,6 +552,10 @@ export class Gpu {
 
   destroyRenderTarget(target: RenderTarget) {
     this._gl.deleteFramebuffer(target);
+  }
+
+  destroyTexture(texture: Texture2d) {
+    this._gl.deleteTexture(texture);
   }
 
   readValues(

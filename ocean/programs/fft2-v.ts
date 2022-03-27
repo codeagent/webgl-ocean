@@ -8,15 +8,19 @@ void main() {
 export const fs = `#version 300 es
 precision highp float;
 
-layout(location = 0) out vec4 ifft0; // height
-layout(location = 1) out vec4 ifft1; // slope
-layout(location = 2) out vec4 ifft2; // displacement
-layout(location = 3) out vec4 ifft3; // ddisplacement
+layout(location = 0) out vec4 ifft0;
+layout(location = 1) out vec4 ifft1;
+layout(location = 2) out vec4 ifft2;
+layout(location = 3) out vec4 ifft3;
+layout(location = 4) out vec4 ifft4;
+layout(location = 5) out vec4 ifft5;
 
-uniform sampler2D spectrum0;  // height
-uniform sampler2D spectrum1;  // slope
-uniform sampler2D spectrum2;  // displacement
-uniform sampler2D spectrum3;  // ddisplacement
+uniform sampler2D spectrum0;
+uniform sampler2D spectrum1;
+uniform sampler2D spectrum2;
+uniform sampler2D spectrum3;
+uniform sampler2D spectrum4;
+uniform sampler2D spectrum5;
 uniform sampler2D butterfly;
 uniform uint phase;
 
@@ -65,5 +69,7 @@ void main() {
   ifft1 = vec4(twiddleXY(spectrum1, texelButt), twiddleZW(spectrum1, texelButt));
   ifft2 = vec4(twiddleXY(spectrum2, texelButt), twiddleZW(spectrum2, texelButt));
   ifft3 = vec4(twiddleXY(spectrum3, texelButt), twiddleZW(spectrum3, texelButt));
+  ifft4 = vec4(twiddleXY(spectrum4, texelButt), twiddleZW(spectrum4, texelButt));
+  ifft5 = vec4(twiddleXY(spectrum5, texelButt), twiddleZW(spectrum5, texelButt));
 }
 `;
