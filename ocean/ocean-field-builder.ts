@@ -1,3 +1,5 @@
+import { merge } from 'lodash-es';
+
 import { createButterflyTexture } from './butterfly';
 import {
   Gpu,
@@ -20,6 +22,7 @@ export class OceanFieldBuilder {
   private readonly quad: Geometry;
   private readonly frameBuffer: RenderTarget;
   private readonly butterflyTexture = new Map<number, Texture2d>();
+  private readonly noiseTexture = new Map<number, Texture2d>();
   private readonly h0Program: ShaderProgram;
 
   constructor(private readonly gpu: Gpu) {
@@ -29,58 +32,81 @@ export class OceanFieldBuilder {
   }
 
   build(params: Partial<OceanFieldBuildParams>): OceanField {
-    /** @todo: merge options */
-    const _params: OceanFieldBuildParams = { ...defaultBuildParams, ...params };
+    const _params: OceanFieldBuildParams = merge(
+      {},
+      defaultBuildParams,
+      params
+    );
+
+    const h0Textures = this.createH0Textures(_params.resolution);
+    this.generateInitialSpectrum(h0Textures, _params);
+
+    const butterflyTexture = this.getButterflyTexture(_params.resolution);
 
     return new OceanField(
       this.gpu,
-      this.createH0Textures(_params),
-      this.getButterflyTexture(params.resolution),
+      h0Textures,
+      butterflyTexture,
       this.quad,
       _params
     );
   }
 
-  private createNoiseTexture(size: number, randomSeed: number): Texture2d {
-    const texture = this.gpu.createFloat4Texture(
-      size,
-      size,
-      TextureFiltering.Linear,
-      TextureMode.Mirror
-    );
-    this.gpu.updateTexture(
-      texture,
-      size,
-      size,
-      WebGL2RenderingContext.RGBA,
-      WebGL2RenderingContext.FLOAT,
-      this.getNoise2d(size, randomSeed)
-    );
-
-    return texture;
+  update(field: OceanField, params: Partial<OceanFieldBuildParams>): void {
+    const _params: OceanFieldBuildParams = merge({}, field.params, params);
+    this.generateInitialSpectrum(field['h0Textures'], _params);
+    this.updateFieldPrograms(field, _params);
+    Object.assign(field, { params: _params });
   }
 
-  private createH0Textures(
+  private updateFieldPrograms(
+    field: OceanField,
     params: OceanFieldBuildParams
-  ): [Texture2d, Texture2d, Texture2d] {
-    const spectrum0 = this.gpu.createFloat4Texture(
-      params.resolution,
-      params.resolution
-    );
-    const spectrum1 = this.gpu.createFloat4Texture(
-      params.resolution,
-      params.resolution
-    );
-    const spectrum2 = this.gpu.createFloat4Texture(
-      params.resolution,
-      params.resolution
-    );
+  ) {
+    if (params.resolution !== field.params.resolution) {
+      this.gpu.setProgram(field['hkProgram']);
+      this.gpu.setProgramVariable(
+        field['hkProgram'],
+        'resolution',
+        'uint',
+        params.resolution
+      );
 
-    this.gpu.attachTextures(this.frameBuffer, [
-      spectrum0,
-      spectrum1,
-      spectrum2,
-    ]);
+      this.gpu.setProgram(field['postfft2Program']);
+      this.gpu.setProgramVariable(
+        field['postfft2Program'],
+        'N2',
+        'float',
+        params.resolution * params.resolution
+      );
+    }
+
+    this.gpu.setProgram(field['hkProgram']);
+    for (let i = 0; i < params.cascades.length; i++) {
+      if (params.cascades[i].size !== field.params.cascades[i].size) {
+        this.gpu.setProgramVariable(
+          field['hkProgram'],
+          `sizes[${i}]`,
+          'float',
+          params.cascades[i].size
+        );
+      }
+    }
+  }
+
+  private createH0Textures(size: number): [Texture2d, Texture2d, Texture2d] {
+    return [
+      this.gpu.createFloat4Texture(size, size),
+      this.gpu.createFloat4Texture(size, size),
+      this.gpu.createFloat4Texture(size, size),
+    ];
+  }
+
+  private generateInitialSpectrum(
+    h0Textures: [Texture2d, Texture2d, Texture2d],
+    params: OceanFieldBuildParams
+  ): void {
+    this.gpu.attachTextures(this.frameBuffer, h0Textures);
     this.gpu.setRenderTarget(this.frameBuffer);
     this.gpu.setViewport(0, 0, params.resolution, params.resolution);
     this.gpu.clearRenderTarget();
@@ -89,7 +115,7 @@ export class OceanFieldBuilder {
     this.gpu.setProgramTexture(
       this.h0Program,
       'noise',
-      this.createNoiseTexture(params.resolution, params.randomSeed),
+      this.getNoiseTexture(params.resolution, params.randomSeed),
       0
     );
     this.gpu.setProgramVariable(
@@ -135,8 +161,32 @@ export class OceanFieldBuilder {
 
     this.gpu.drawGeometry(this.quad);
     this.gpu.setRenderTarget(null);
+  }
 
-    return [spectrum0, spectrum1, spectrum2];
+  private getNoiseTexture(size: number, randomSeed: number): Texture2d {
+    if (!this.noiseTexture.has(size)) {
+      this.noiseTexture.set(
+        size,
+        this.gpu.createFloat4Texture(
+          size,
+          size,
+          TextureFiltering.Linear,
+          TextureMode.Mirror
+        )
+      );
+    }
+
+    const texture = this.noiseTexture.get(size);
+    this.gpu.updateTexture(
+      texture,
+      size,
+      size,
+      WebGL2RenderingContext.RGBA,
+      WebGL2RenderingContext.FLOAT,
+      this.getNoise2d(size, randomSeed)
+    );
+
+    return texture;
   }
 
   private getButterflyTexture(size: number) {

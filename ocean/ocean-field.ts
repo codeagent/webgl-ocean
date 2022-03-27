@@ -44,7 +44,7 @@ export class OceanField {
 
   update(time: number): void {
     this.gpu.setViewport(0, 0, this.params.resolution, this.params.resolution);
-    this.generateSpectrumTextures(time);
+    this.generateSpectrum(time);
     this.ifft2();
     this.postIfft2();
   }
@@ -200,7 +200,7 @@ export class OceanField {
     this.gpu.attachTextures(this.postIfft2Framebuffer, this._dataMaps);
   }
 
-  private generateSpectrumTextures(time: number): void {
+  private generateSpectrum(time: number): void {
     this.gpu.setProgram(this.hkProgram);
     this.gpu.setProgramTextures(
       this.hkProgram,

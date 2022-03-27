@@ -4,9 +4,12 @@
   "private": true,
   "dependencies": {
     "@types/gl-matrix": "^3.2.0",
+    "@types/lodash": "^4.14.180",
+    "@types/lodash-es": "^4.17.6",
     "gl-matrix": "^3.4.3",
     "https:": "*",
     "lil-gui": "^0.16.1",
+    "lodash-es": "^4.17.21",
     "rxjs": "7.5.2"
   }
 }

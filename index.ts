@@ -1,5 +1,4 @@
 import './style.css';
-import { vec2 } from 'gl-matrix';
 
 import { Viewport } from './viewport';
 import { Gpu } from './graphics';
@@ -36,12 +35,11 @@ const gpu = new Gpu(
 const viewport = new Viewport(gpu);
 const gui = new Gui(document.getElementById('gui'));
 const oceanBuilder = new OceanFieldBuilder(gpu);
+let oceanField: OceanField = oceanBuilder.build(gui.params);
 
-let oceanField: OceanField = null;
 let tiles: number = 1;
 gui.onChange$.subscribe((params) => {
-  oceanField?.dispose();
-  oceanField = oceanBuilder.build(params);
+  oceanBuilder.update(oceanField, params);
   viewport.oceanRenderer.geometryResolution = params.geometryResolution;
   viewport.oceanRenderer.geometrySize = params.geometrySize;
   tiles = params.times;
