@@ -49,7 +49,7 @@ export const defaultParams: GuiParams = {
 
 export class Gui {
   public get onChange$() {
-    return this._onChange$.asObservable().pipe(debounceTime(10));
+    return this._onChange$.asObservable().pipe(debounceTime(1));
   }
 
   public readonly params: GuiParams = cloneDeep(defaultParams);

@@ -6,46 +6,32 @@ import { vs as oceanvs, fs as oceanfs } from './programs/ocean';
 import { OceanField } from '../ocean';
 
 export class OceanRenderer {
+  private readonly geometry = new Map<number, Geometry>();
+
   public get geometryResolution(): number {
     return this._geometryResolution;
   }
 
   public set geometryResolution(geometryResolution: number) {
-    if (geometryResolution !== this._geometryResolution) {
-      this.gpu.destroyGeometry(this.oceanGeometry);
-      this.oceanGeometry = this.createOceanGeometry(
-        this.geometrySize,
-        geometryResolution
-      );
-      this._geometryResolution = geometryResolution;
+    if (!this.geometry.has(geometryResolution)) {
+      const geometry = this.createOceanGeometry(geometryResolution);
+      this.geometry.set(geometryResolution, geometry);
     }
+    this.oceanGeometry = this.geometry.get(geometryResolution);
+    this._geometryResolution = geometryResolution;
   }
 
-  public get geometrySize(): number {
-    return this._geometrySize;
-  }
-
-  public set geometrySize(geometrySize: number) {
-    if (geometrySize !== this._geometrySize) {
-      this.gpu.destroyGeometry(this.oceanGeometry);
-      this.oceanGeometry = this.createOceanGeometry(
-        geometrySize,
-        this.geometryResolution
-      );
-      this._geometrySize = geometrySize;
-    }
-  }
+  public geometrySize: number = 100.0;
 
   private readonly waterShader: ShaderProgram;
   private _geometryResolution: number = 256;
-  private _geometrySize: number = 100.0;
   private oceanGeometry: Geometry;
 
   public constructor(private readonly gpu: Gpu) {
     this.waterShader = this.gpu.createShaderProgram(oceanvs, oceanfs);
-    this.oceanGeometry = this.createOceanGeometry(
-      this.geometrySize,
-      this.geometryResolution
+    this.geometry.set(
+      this._geometryResolution,
+      (this.oceanGeometry = this.createOceanGeometry(this._geometryResolution))
     );
   }
 
@@ -84,6 +70,13 @@ export class OceanRenderer {
         oceanField.params.cascades[i].croppiness
       );
     }
+
+    this.gpu.setProgramVariable(
+      this.waterShader,
+      'geometrySize',
+      'float',
+      this.geometrySize
+    );
 
     this.gpu.setProgramVariable(
       this.waterShader,
@@ -127,11 +120,11 @@ export class OceanRenderer {
     this.gpu.drawGeometry(this.oceanGeometry);
   }
 
-  private createOceanGeometry(size: number, resolution: number) {
+  private createOceanGeometry(resolution: number) {
     const vertices: vec3[] = [];
     const indices: number[] = [];
     const N = resolution;
-    const L = size;
+    const L = 1.0;
     const delta = L / (N - 1);
     const offset = vec3.fromValues(-L * 0.5, 0.0, -L * 0.5);
 

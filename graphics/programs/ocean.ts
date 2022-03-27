@@ -7,6 +7,7 @@ uniform mat4 worldMat;
 uniform mat4 projMat;
 uniform float sizes[3];   
 uniform float croppinesses[3];   
+uniform float geometrySize;   
 
 uniform sampler2D dx_hy_dz_dxdz0;
 uniform sampler2D sx_sz_dxdx_dzdz0;
@@ -31,8 +32,8 @@ vec3 getDisplacement(in vec2 xz) {
 
 void main()
 {
-  vec2 xz = vec3(worldMat * vec4(position, 1.0f)).xz;
-  _position = position + getDisplacement(xz);
+  vec2 xz = vec3(worldMat * vec4(position * geometrySize, 1.0f)).xz;
+  _position = position * geometrySize + getDisplacement(xz);
   _position = vec3(worldMat * vec4(_position, 1.0f));
   _xz = xz;
   gl_Position = projMat * viewMat * vec4(_position, 1.0f);
