@@ -16,7 +16,6 @@ import {
   testOceanFieldIfft2HermitianProperty,
   testFft2Combined,
 } from './test';
-import { tap } from 'rxjs/operators';
 
 // testButterflyTexture();
 // testDft();

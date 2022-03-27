@@ -18,7 +18,12 @@ Ocean Water simulation based on Phillips spectrum and fourier transform.
 - [ ] Import / Export
 - [ ] Other spectrums
 - [ ] Skybox
-- [ ] Optimisations
+- [ ] Optimisations: 
+  - Uniform blocks, 
+  - CPU Gauss noise
+  - ...
+- [ ] Debug: textures, log
+- [ ] Strong tests
 - [ ] Wrap up in package
 - [ ] Make plugins for third-party web-engines (Tree.js, Babylon, ...)
 
