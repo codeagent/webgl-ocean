@@ -1,50 +1,74 @@
 import { vec2 } from 'gl-matrix';
-import { cloneDeep, isEqual } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import GUI from 'lil-gui';
 import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 import { OceanFieldBuildParams } from './ocean';
-import { distinctUntilChanged, debounceTime } from 'rxjs/operators';
+
+export interface GuiTileRendererParams {
+  resolution: number;
+  size: number;
+  tiles: number;
+}
+
+export interface GuiPlateRendererParams {
+  steep: number;
+  offset: number;
+  delta: number;
+  rings: number;
+  segments: number;
+}
 
 export interface GuiParams extends OceanFieldBuildParams {
-  geometryResolution: number;
-  geometrySize: number;
-  times: number;
+  renderer: 'tile' | 'plate';
+  tileRenderer: GuiTileRendererParams;
+  plateRenderer: GuiPlateRendererParams;
 }
 
 export const defaultParams: GuiParams = {
   cascades: [
     {
-      size: 100.0,
-      strength: 2.0,
-      croppiness: -1.5,
-      minWave: 1.0e-3,
-      maxWave: 1.0e3,
+      size: 450.0,
+      strength: 0.8,
+      croppiness: -1.2,
+      minWave: 0,
+      maxWave: 1.0e2,
     },
     {
-      size: 60.0,
-      strength: 2.0,
+      size: 103.0,
+      strength: 0.8,
       croppiness: -1.5,
-      minWave: 1.0e-3,
-      maxWave: 1.0e3,
+      minWave: 0,
+      maxWave: 1.0e2,
     },
     {
-      size: 6.0,
-      strength: 2.0,
+      size: 13,
+      strength: 0.9,
       croppiness: -1.5,
-      minWave: 1.0e-3,
-      maxWave: 1.0e3,
+      minWave: 0,
+      maxWave: 7,
     },
   ],
   resolution: 256,
-  wind: vec2.fromValues(4.5, 2.5),
-  alignment: 1.0,
+  wind: vec2.fromValues(4, 11),
+  alignment: 0.0,
   foamSpreading: 1.0,
   foamContrast: 2.0,
   randomSeed: 0,
-  geometryResolution: 256,
-  geometrySize: 100,
-  times: 1,
+  tileRenderer: {
+    resolution: 256,
+    size: 100,
+    tiles: 1,
+  },
+  plateRenderer: {
+    rings: 512,
+    segments: 512,
+    delta: 0.1,
+    steep: 6,
+    offset: 0.45,
+  },
+  renderer: 'plate',
 };
 
 export class Gui {
@@ -69,16 +93,55 @@ export class Gui {
 
   private addControls(gui: GUI) {
     const tiles = [1, 2, 3, 4, 5];
-    const resolutons = [...Array(6).keys()].map((r) => 1 << (r + 5));
+    const resolutions = [...Array(6).keys()].map((r) => 1 << (r + 5));
     const colors = ['#c74440', '#388c46', '#2d70b3'];
+    const renderers = ['tile', 'plate'];
 
     gui.add(this, 'reset').name('Reset');
-    gui.add(this.params, 'resolution', resolutons).name('Map Resolution');
+    gui.add(this.params, 'resolution', resolutions).name('Map Resolution');
     gui
-      .add(this.params, 'geometryResolution', resolutons)
+      .add(this.params, 'renderer', renderers)
+      .name('Renderer')
+      .onChange((e: GuiParams['renderer']) => {
+        if (e === 'tile') {
+          tileGroup.show();
+          plateGroup.hide();
+        } else {
+          plateGroup.show();
+          tileGroup.hide();
+        }
+      });
+
+    const tileGroup = gui.addFolder('Renderer options').hide();
+    tileGroup
+      .add(this.params.tileRenderer, 'resolution', resolutions)
       .name('Geometry resolution');
-    gui.add(this.params, 'geometrySize', 0, 1000).step(1).name('Geometry size');
-    gui.add(this.params, 'times', tiles).name('Tiles');
+    tileGroup
+      .add(this.params.tileRenderer, 'size', 0, 1000)
+      .step(1)
+      .name('Geometry size');
+    tileGroup.add(this.params.tileRenderer, 'tiles', tiles).name('Tiles');
+
+    const plateGroup = gui.addFolder('Renderer options');
+    plateGroup
+      .add(this.params.plateRenderer, 'rings', 1, 512)
+      .step(1)
+      .name('Geometry rings');
+    plateGroup
+      .add(this.params.plateRenderer, 'segments', 0, 512)
+      .step(1)
+      .name('Geometry segments');
+    plateGroup
+      .add(this.params.plateRenderer, 'delta', 0.0, 1)
+      .step(0.01)
+      .name('Geometry delta');
+    plateGroup
+      .add(this.params.plateRenderer, 'steep', 0.0, 32)
+      .name('Geometry steep');
+    plateGroup
+      .add(this.params.plateRenderer, 'offset', 0.0, 1.0)
+      .step(0.01)
+      .name('Geometry offset');
 
     const wind = gui.addFolder('Wind');
     wind.add(this.params.wind, '0', 0, 31).step(1).name('X');
@@ -99,8 +162,8 @@ export class Gui {
       group.add(cascade, 'size', 0, 1000.0).step(1).name('Size');
       group.add(cascade, 'croppiness', -2, 2).step(0.1).name('Croppiness');
       group.add(cascade, 'strength', 0, 10).step(0.1).name('Strength');
-      group.add(cascade, 'minWave', 0, 1e3).step(1).name('Min wave length');
-      group.add(cascade, 'maxWave', 0, 1e3).step(1).name('Max wave length');
+      group.add(cascade, 'minWave', 0, 100).step(1).name('Min wave length');
+      group.add(cascade, 'maxWave', 0, 100).step(1).name('Max wave length');
     }
   }
 }

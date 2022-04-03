@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
-    "target": "esnext"
+    "removeComments": false,
+    "lib": ["es2020", "es2017", "dom"],
+    "module": "amd",
+    "target": "ES2018"
   }
 }

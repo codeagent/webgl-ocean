@@ -1,8 +1,9 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 
 import {
   Gpu,
-  OceanRenderer,
+  TileOceanRenderer,
+  PlateOceanRenderer,
   Camera,
   ArcRotationCameraController,
   GizmoRenderer,
@@ -16,7 +17,8 @@ import { OceanField } from './ocean';
 export class Viewport {
   private readonly camera: Camera;
   private readonly controller: ArcRotationCameraController;
-  public readonly oceanRenderer: OceanRenderer;
+  public readonly tileRenderer: TileOceanRenderer;
+  public readonly plateRenderer: PlateOceanRenderer;
   private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
   private readonly grid: Geometry;
@@ -32,7 +34,8 @@ export class Viewport {
       gpu.context.canvas as HTMLCanvasElement,
       this.camera
     );
-    this.oceanRenderer = new OceanRenderer(this.gpu);
+    this.tileRenderer = new TileOceanRenderer(this.gpu);
+    this.plateRenderer = new PlateOceanRenderer(this.gpu);
     this.gizmoRenderer = new GizmoRenderer(this.gpu);
     this.textureRenderer = new TextureRenderer(this.gpu);
     this.grid = this.gpu.createGeometry(
@@ -41,12 +44,12 @@ export class Viewport {
     );
     this.camera.near = 1.0e-1;
     this.camera.far = 1.0e4;
-    this.camera.lookAt(vec3.fromValues(-10, 10, -10), vec3.create());
+    this.camera.lookAt(vec3.fromValues(-10, 2.5, -10), vec3.create());
     this.controller.moveSpeed = 2.5;
     this.controller.sync();
   }
 
-  render(field: OceanField, times: number = 1) {
+  render(field: OceanField, type: 'tile' | 'plate') {
     const { width, height } = this.gpu.context.canvas;
     this.controller.update();
     this.gpu.setViewport(0, 0, width, height);
@@ -54,24 +57,15 @@ export class Viewport {
     this.gpu.clearRenderTarget();
 
     this.gizmoRenderer.render(this.grid, this.camera);
-    this.renderOcean(field, times);
+    this.renderOcean(field, type);
     this.renderTextures();
   }
 
-  private renderOcean(field: OceanField, times: number) {
-    for (let i = 0; i < times; i++) {
-      for (let j = 0; j < times; j++) {
-        const transform = mat4.create();
-        mat4.fromTranslation(
-          transform,
-          vec3.fromValues(
-            i * this.oceanRenderer.geometrySize,
-            0.0,
-            j * this.oceanRenderer.geometrySize
-          )
-        );
-        this.oceanRenderer.render(transform, this.camera, field);
-      }
+  private renderOcean(field: OceanField, type: 'tile' | 'plate') {
+    if (type === 'tile') {
+      this.tileRenderer.render(this.camera, field);
+    } else {
+      this.plateRenderer.render(this.camera, field);
     }
   }
 

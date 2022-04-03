@@ -2,8 +2,9 @@ import './style.css';
 
 import { Viewport } from './viewport';
 import { Gpu } from './graphics';
-import { OceanField, OceanFieldBuilder } from './ocean';
+import { OceanFieldBuilder } from './ocean';
 import { Gui } from './gui';
+import { registerWorkerGlobals } from './thread';
 
 import {
   testButterflyTexture,
@@ -27,6 +28,8 @@ import {
 // testOceanFieldIfft2();
 // testOceanFieldIfft2HermitianProperty();
 
+registerWorkerGlobals();
+
 const canvas = document.getElementById('viewport') as HTMLCanvasElement;
 const gpu = new Gpu(
   canvas.getContext('webgl2', { preserveDrawingBuffer: true })
@@ -34,20 +37,18 @@ const gpu = new Gpu(
 const viewport = new Viewport(gpu);
 const gui = new Gui(document.getElementById('gui'));
 const oceanBuilder = new OceanFieldBuilder(gpu);
-let oceanField: OceanField = oceanBuilder.build(gui.params);
+const oceanField = oceanBuilder.build(gui.params);
 
-let tiles: number = 1;
 gui.onChange$.subscribe((params) => {
   oceanBuilder.update(oceanField, params);
-  viewport.oceanRenderer.geometryResolution = params.geometryResolution;
-  viewport.oceanRenderer.geometrySize = params.geometrySize;
-  tiles = params.times;
+  viewport.tileRenderer.setSettings(params.tileRenderer);
+  viewport.plateRenderer.setSettings(params.plateRenderer);
 });
 
 const step = () => {
   if (oceanField) {
     oceanField.update(performance.now() / 1e3 + 36000);
-    viewport.render(oceanField, tiles);
+    viewport.render(oceanField, gui.params.renderer);
   }
   requestAnimationFrame(() => step());
 };

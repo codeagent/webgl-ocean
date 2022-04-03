@@ -12,9 +12,17 @@ export class Camera extends Transform {
     return this._projection;
   }
 
+  get fov(): number {
+    return this._fov;
+  }
+
   set fov(fov: number) {
     this._fov = fov;
     this.updateProjection();
+  }
+
+  get aspect(): number {
+    return this._aspect;
   }
 
   set aspect(aspect: number) {
@@ -22,9 +30,17 @@ export class Camera extends Transform {
     this.updateProjection();
   }
 
+  get near(): number {
+    return this._near;
+  }
+
   set near(near: number) {
     this._near = near;
     this.updateProjection();
+  }
+
+  get far(): number {
+    return this._far;
   }
 
   set far(far: number) {

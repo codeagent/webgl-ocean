@@ -7,7 +7,7 @@ import {
   ShaderProgram,
   Texture2d,
   Geometry,
-  quad,
+  createQuad,
   TextureFiltering,
   TextureMode,
 } from '../graphics';
@@ -26,7 +26,7 @@ export class OceanFieldBuilder {
   private readonly h0Program: ShaderProgram;
 
   constructor(private readonly gpu: Gpu) {
-    this.quad = this.gpu.createGeometry(quad);
+    this.quad = this.gpu.createGeometry(createQuad());
     this.frameBuffer = this.gpu.createRenderTarget();
     this.h0Program = this.gpu.createShaderProgram(h0vs, h0fs);
   }

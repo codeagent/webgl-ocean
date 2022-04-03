@@ -1,8 +1,9 @@
 import { vec2 } from 'gl-matrix';
 
 import { Geometry, Gpu, ShaderProgram, Texture2d } from './gpu';
+import { createQuad } from './mesh';
+
 import { vs as texturevs, fs as texturefs } from './programs/texture';
-import quad from './quad';
 
 export enum TextureType {
   Noise = 0,
@@ -26,7 +27,7 @@ export class TextureRenderer {
 
   public constructor(private readonly gpu: Gpu) {
     this.textureShader = this.gpu.createShaderProgram(texturevs, texturefs);
-    this.quad = this.gpu.createGeometry(quad);
+    this.quad = this.gpu.createGeometry(createQuad());
   }
 
   render(pos: vec2, texture: Texture2d, type: TextureType) {
