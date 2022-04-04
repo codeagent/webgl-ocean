@@ -52,9 +52,9 @@ export const defaultParams: GuiParams = {
   ],
   resolution: 256,
   wind: vec2.fromValues(4, 11),
-  alignment: 0.0,
-  foamSpreading: 1.0,
-  foamContrast: 2.0,
+  alignment: 1.0e-2,
+  foamSpreading: 1.2,
+  foamContrast: 6.5,
   randomSeed: 0,
   tileRenderer: {
     resolution: 256,
@@ -151,7 +151,7 @@ export class Gui {
       .add(this.params, 'foamSpreading', 0, 2)
       .step(0.1)
       .name('Foam spreading');
-    gui.add(this.params, 'foamContrast', 0, 2).step(0.1).name('Foam contrast');
+    gui.add(this.params, 'foamContrast', 0, 8).step(0.1).name('Foam contrast');
     gui.add(this.params, 'randomSeed', 0, 1024).step(1).name('Random seed');
 
     let i = 0;
@@ -162,8 +162,8 @@ export class Gui {
       group.add(cascade, 'size', 0, 1000.0).step(1).name('Size');
       group.add(cascade, 'croppiness', -2, 2).step(0.1).name('Croppiness');
       group.add(cascade, 'strength', 0, 10).step(0.1).name('Strength');
-      group.add(cascade, 'minWave', 0, 100).step(1).name('Min wave length');
-      group.add(cascade, 'maxWave', 0, 100).step(1).name('Max wave length');
+      group.add(cascade, 'minWave', 0, 1000).step(1).name('Min wave length');
+      group.add(cascade, 'maxWave', 0, 1000).step(1).name('Max wave length');
     }
   }
 }

@@ -106,21 +106,47 @@ float getFoam(in vec2 xz) {
   
   vec2 dxdx_dzdz = dxdx_dzdz0 * croppinesses[0] + dxdx_dzdz1 * croppinesses[1] + dxdx_dzdz2 * croppinesses[2];
   float dxdz = dxdz0 * croppinesses[0] + dxdz1 * croppinesses[1] + dxdz2 * croppinesses[2];
-  
-  return pow(-min(0.0f, det(jacobian(dxdx_dzdz.x, dxdz, dxdx_dzdz.y)) - foamSpreading), foamContrast);
+
+  float val = det(jacobian(dxdx_dzdz.x, dxdz, dxdx_dzdz.y));
+  return pow(-min(0.0f, val - foamSpreading), foamContrast);
+}
+
+vec3 surface(in vec3 normal, in vec3 view) {
+  const vec3 upwelling = vec3(0.0, 0.2, 0.3);
+  const vec3 sky = vec3(0.69, 0.84, 1.0);
+  const vec3 mist = vec3(0.34, 0.42, 0.5);
+  const float nShell = 1.34f;
+  const float kDiffuse = 0.91f;
+
+  float reflectivity;
+  float costhetai = abs(dot(normal, normalize(view)));
+  float thetai = acos(costhetai);
+  float sinthetat = sin(thetai) / nShell;
+  float thetat = asin(sinthetat);
+
+  if(thetai == 0.0)
+  {
+    reflectivity = (nShell - 1.0f) / (nShell + 1.0f);
+    reflectivity = reflectivity * reflectivity;
+  }
+  else
+  {
+    float fs = sin(thetat - thetai)  / sin(thetat + thetai);
+    float ts = tan(thetat - thetai)  / tan(thetat + thetai);
+    reflectivity = 0.5 * (fs * fs + ts * ts );
+  }
+
+  float falloff = exp(-length(view) * 1.0e-3) * kDiffuse;
+  vec3 surf =  reflectivity * sky + (1.0f - reflectivity) * upwelling;
+  return falloff * surf  + (1.0f - falloff) * mist;
 }
 
 void main()
 {
-  vec4 albedo = vec4(0, 0.62, 0.77, 1.0);
+  float f = getFoam(_xz);
   vec3 n = getNormal(_xz);
-  vec3 l = normalize(pos - _position);
-  float nol = dot(n, l) * 0.9 + 0.1;
-  color = albedo * vec4(vec3(nol), 1.0f) + getFoam(_xz) * 0.5;
-  
-  if(!gl_FrontFacing) {
-    color = vec4(1.0f);
-  }
-  
+  const vec3 foam = vec3(1.0f);
+  vec3 water = surface(n, pos - _position);
+  color = vec4(mix(water, foam, f), 1.0f); 
 }
 `;
