@@ -1,4 +1,3 @@
-export * from './camera-controller';
 export * from './camera';
 export * from './transform';
 export * from './plate-ocean-renderer';

@@ -10,6 +10,7 @@
     "https:": "*",
     "lil-gui": "^0.16.1",
     "lodash-es": "^4.17.21",
-    "rxjs": "7.5.2"
+    "rxjs": "7.5.2",
+    "ts-keycode-enum": "^1.0.6"
   }
 }

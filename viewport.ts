@@ -1,39 +1,29 @@
-import { vec3 } from 'gl-matrix';
-
+import { CameraControllerInterface } from './controller';
 import {
   Gpu,
   TileOceanRenderer,
   PlateOceanRenderer,
   Camera,
-  ArcRotationCameraController,
   GizmoRenderer,
   TextureRenderer,
   createGrid,
   Geometry,
 } from './graphics';
-
 import { OceanField } from './ocean';
 
 export class Viewport {
-  private readonly camera: Camera;
-  private readonly controller: ArcRotationCameraController;
   public readonly tileRenderer: TileOceanRenderer;
   public readonly plateRenderer: PlateOceanRenderer;
   private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
   private readonly grid: Geometry;
 
-  constructor(private readonly gpu: Gpu) {
-    this.camera = new Camera(
-      45.0,
-      gpu.context.canvas.width / gpu.context.canvas.height,
-      0.01,
-      100
-    );
-    this.controller = new ArcRotationCameraController(
-      gpu.context.canvas as HTMLCanvasElement,
-      this.camera
-    );
+  private lastFrameTime: number = 0;
+
+  constructor(
+    private readonly gpu: Gpu,
+    private readonly cameraController: CameraControllerInterface
+  ) {
     this.tileRenderer = new TileOceanRenderer(this.gpu);
     this.plateRenderer = new PlateOceanRenderer(this.gpu);
     this.gizmoRenderer = new GizmoRenderer(this.gpu);
@@ -42,30 +32,27 @@ export class Viewport {
       createGrid(5.0),
       WebGL2RenderingContext.LINES
     );
-    this.camera.near = 1.0e-1;
-    this.camera.far = 1.0e4;
-    this.camera.lookAt(vec3.fromValues(-10, 2.5, -10), vec3.create());
-    this.controller.moveSpeed = 2.5;
-    this.controller.sync();
   }
 
   render(field: OceanField, type: 'tile' | 'plate') {
     const { width, height } = this.gpu.context.canvas;
-    this.controller.update();
+    const t = performance.now();
+    this.cameraController.update((t - this.lastFrameTime) * 1.0e-3);
     this.gpu.setViewport(0, 0, width, height);
     this.gpu.setRenderTarget(null);
     this.gpu.clearRenderTarget();
 
-    this.gizmoRenderer.render(this.grid, this.camera);
+    this.gizmoRenderer.render(this.grid, this.cameraController.camera);
     this.renderOcean(field, type);
     this.renderTextures();
+    this.lastFrameTime = t;
   }
 
   private renderOcean(field: OceanField, type: 'tile' | 'plate') {
     if (type === 'tile') {
-      this.tileRenderer.render(this.camera, field);
+      this.tileRenderer.render(this.cameraController.camera, field);
     } else {
-      this.plateRenderer.render(this.camera, field);
+      this.plateRenderer.render(this.cameraController.camera, field);
     }
   }
 

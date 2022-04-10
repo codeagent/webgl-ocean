@@ -2,26 +2,11 @@ import { vec2, vec3 } from 'gl-matrix';
 import { fromEvent, Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
-import { Camera } from './camera';
+import { Camera } from '../graphics';
+import { CameraControllerInterface } from './camera-controller-interface';
+import { MouseButton } from './mouse-button';
 
-enum MouseButton {
-  Left = 0,
-  Middle = 1,
-}
-
-const sphericalToCartesian = (phi: number, tetta: number): vec3 => {
-  const sinTetta = Math.sin(tetta);
-  return [sinTetta * Math.sin(phi), Math.cos(tetta), sinTetta * Math.cos(phi)];
-};
-
-const cartesianToSpherical = (p: vec3): vec2 => [
-  Math.atan2(p[0], p[2]),
-  Math.acos(p[1]),
-];
-
-const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(v, b));
-
-export class ArcRotationCameraController {
+export class ArcRotationCameraController implements CameraControllerInterface {
   private distance: number;
   private lastPhi = 0.0;
   private lastTetta = 0.0;
@@ -129,3 +114,15 @@ export class ArcRotationCameraController {
     vec3.add(this.r, this.r, this.lookAt);
   }
 }
+
+const sphericalToCartesian = (phi: number, tetta: number): vec3 => {
+  const sinTetta = Math.sin(tetta);
+  return [sinTetta * Math.sin(phi), Math.cos(tetta), sinTetta * Math.cos(phi)];
+};
+
+const cartesianToSpherical = (p: vec3): vec2 => [
+  Math.atan2(p[0], p[2]),
+  Math.acos(p[1]),
+];
+
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(v, b));
