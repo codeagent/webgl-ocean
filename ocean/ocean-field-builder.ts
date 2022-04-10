@@ -170,8 +170,8 @@ export class OceanFieldBuilder {
         this.gpu.createFloat4Texture(
           size,
           size,
-          TextureFiltering.Linear,
-          TextureMode.Mirror
+          TextureFiltering.Nearest,
+          TextureMode.Repeat
         )
       );
     }

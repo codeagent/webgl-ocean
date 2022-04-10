@@ -14,8 +14,8 @@ import {
   testFft2,
   testOceanFieldIfft2,
   testFft2Hermitian,
-  testOceanFieldIfft2HermitianProperty,
   testFft2Combined,
+  testOceanFieldBuilderHermitianSpectrum
 } from './test';
 
 // testButterflyTexture();
@@ -26,7 +26,7 @@ import {
 // testFft2Hermitian();
 // testFft2Combined();
 // testOceanFieldIfft2();
-// testOceanFieldIfft2HermitianProperty();
+// testOceanFieldBuilderHermitianSpectrum();
 
 registerWorkerGlobals();
 

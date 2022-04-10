@@ -129,7 +129,7 @@ void compressSpectrum(in spectrum spec, out vec4 part0, out vec4 part1) {
 }
 
 void main() {
-  vec2 x = vec2(ivec2(gl_FragCoord.xy)) - float(resolution) * 0.5; //  [-N/2, N/2)
+  vec2 x = vec2(ivec2(gl_FragCoord.xy) - ivec2(resolution / 2u)); //  [-N/2, N/2)
 
   spectrum spec0 = getSpectrum(h0Texture0, x, sizes[0]);
   spectrum spec1 = getSpectrum(h0Texture1, x, sizes[1]);

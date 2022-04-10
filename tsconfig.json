@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "removeComments": false,
-    "lib": ["es2020", "es2017", "dom"],
+    "lib": ["ES2020", "ES2017", "DOM"],
     "module": "amd",
     "target": "ES2018"
   }
