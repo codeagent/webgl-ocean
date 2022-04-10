@@ -167,7 +167,7 @@ export class OceanFieldBuilder {
     if (!this.noiseTexture.has(size)) {
       this.noiseTexture.set(
         size,
-        this.gpu.createFloat4Texture(
+        this.gpu.createFloat2Texture(
           size,
           size,
           TextureFiltering.Nearest,
@@ -181,7 +181,7 @@ export class OceanFieldBuilder {
       texture,
       size,
       size,
-      WebGL2RenderingContext.RGBA,
+      WebGL2RenderingContext.RG,
       WebGL2RenderingContext.FLOAT,
       this.getNoise2d(size, randomSeed)
     );
@@ -215,6 +215,6 @@ export class OceanFieldBuilder {
       };
     };
     const random = mulberry32(randomSeed);
-    return Float32Array.from([...Array(size * size * 4)].map(() => random()));
+    return Float32Array.from([...Array(size * size * 2)].map(() => random()));
   }
 }
