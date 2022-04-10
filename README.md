@@ -12,7 +12,7 @@ Ocean Water simulation based on Phillips spectrum and fourier transform.
 
 ### todo:
 - [ ] Treemap, Halfplane renderer(s)
-- [ ] Free motion controller
+- [x] Free motion controller
 - [ ] Water shader
 - [ ] Buoyancy !
 - [ ] Weather conditions presets
