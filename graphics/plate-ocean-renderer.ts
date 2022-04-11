@@ -21,7 +21,7 @@ export interface PlateOceanRendererSettings {
   offset: number;
 }
 
-export const defaultSettings: Readonly<PlateOceanRendererSettings> = {
+export const plateDefaultSettings: Readonly<PlateOceanRendererSettings> = {
   rings: 512,
   segments: 512,
   delta: 0.1,
@@ -35,14 +35,14 @@ export class PlateOceanRenderer {
   private readonly shader: ShaderProgram;
   private readonly worker: ThreadWorker<ThreadWorkerInput, Mesh>;
   private readonly settings$ = new BehaviorSubject<PlateOceanRendererSettings>({
-    ...defaultSettings,
+    ...plateDefaultSettings,
   });
   private geometry: Geometry;
 
   public constructor(private readonly gpu: Gpu) {
     this.shader = this.gpu.createShaderProgram(oceanvs, oceanfs);
-    this.worker = new ThreadWorker<ThreadWorkerInput, Mesh>((input) => 
-     createDisc(
+    this.worker = new ThreadWorker<ThreadWorkerInput, Mesh>((input) =>
+      createDisc(
         input.rings,
         input.segments,
         input.delta,

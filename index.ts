@@ -36,7 +36,7 @@ const canvas = document.getElementById('viewport') as HTMLCanvasElement;
 const gpu = new Gpu(
   canvas.getContext('webgl2', { preserveDrawingBuffer: true })
 );
-const camera = new Camera(45.0, canvas.width / canvas.height, 1.0e-1, 1.0e4);
+const camera = new Camera(45.0, canvas.width / canvas.height, 1.0e-1, 1.0e6);
 camera.lookAt(vec3.fromValues(-10, 2.5, -10), vec3.create());
 
 const cameraController = new FpsCameraController(canvas, camera);

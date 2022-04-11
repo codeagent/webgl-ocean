@@ -21,7 +21,7 @@ export interface GuiPlateRendererParams {
 }
 
 export interface GuiParams extends OceanFieldBuildParams {
-  renderer: 'tile' | 'plate';
+  renderer: 'tile' | 'plate' | 'grid';
   tileRenderer: GuiTileRendererParams;
   plateRenderer: GuiPlateRendererParams;
 }
@@ -68,7 +68,7 @@ export const defaultParams: GuiParams = {
     steep: 6,
     offset: 0.45,
   },
-  renderer: 'plate',
+  renderer: 'grid',
 };
 
 export class Gui {
@@ -95,7 +95,7 @@ export class Gui {
     const tiles = [1, 2, 3, 4, 5];
     const resolutions = [...Array(6).keys()].map((r) => 1 << (r + 5));
     const colors = ['#c74440', '#388c46', '#2d70b3'];
-    const renderers = ['tile', 'plate'];
+    const renderers = ['tile', 'plate', 'grid'];
 
     gui.add(this, 'reset').name('Reset');
     gui.add(this.params, 'resolution', resolutions).name('Map Resolution');

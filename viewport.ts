@@ -8,12 +8,14 @@ import {
   TextureRenderer,
   createGrid,
   Geometry,
+  ProjectedGridRenderer,
 } from './graphics';
 import { OceanField } from './ocean';
 
 export class Viewport {
   public readonly tileRenderer: TileOceanRenderer;
   public readonly plateRenderer: PlateOceanRenderer;
+  public readonly projectedGridRenderer: ProjectedGridRenderer;
   private readonly gizmoRenderer: GizmoRenderer;
   private readonly textureRenderer: TextureRenderer;
   private readonly grid: Geometry;
@@ -26,6 +28,7 @@ export class Viewport {
   ) {
     this.tileRenderer = new TileOceanRenderer(this.gpu);
     this.plateRenderer = new PlateOceanRenderer(this.gpu);
+    this.projectedGridRenderer = new ProjectedGridRenderer(this.gpu);
     this.gizmoRenderer = new GizmoRenderer(this.gpu);
     this.textureRenderer = new TextureRenderer(this.gpu);
     this.grid = this.gpu.createGeometry(
@@ -34,7 +37,7 @@ export class Viewport {
     );
   }
 
-  render(field: OceanField, type: 'tile' | 'plate') {
+  render(field: OceanField, type: 'tile' | 'plate' | 'grid') {
     const { width, height } = this.gpu.context.canvas;
     const t = performance.now();
     this.cameraController.update((t - this.lastFrameTime) * 1.0e-3);
@@ -48,9 +51,11 @@ export class Viewport {
     this.lastFrameTime = t;
   }
 
-  private renderOcean(field: OceanField, type: 'tile' | 'plate') {
+  private renderOcean(field: OceanField, type: 'tile' | 'plate' | 'grid') {
     if (type === 'tile') {
       this.tileRenderer.render(this.cameraController.camera, field);
+    } else if (type === 'grid') {
+      this.projectedGridRenderer.render(this.cameraController.camera, field);
     } else {
       this.plateRenderer.render(this.cameraController.camera, field);
     }

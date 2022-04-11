@@ -2,7 +2,13 @@ import { glMatrix, vec3 } from 'gl-matrix';
 import { firstValueFrom, fromEvent, Observable, race, throwError } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
-import { createDisc, createGrid, createPlane, createQuad } from './graphics';
+import {
+  createDisc,
+  createGrid,
+  createNDCGrid,
+  createPlane,
+  createQuad,
+} from './graphics';
 
 export interface ThreadWorkerProcedure<I, O> {
   (input: I): O;
@@ -89,4 +95,5 @@ export const registerWorkerGlobals = () => {
   ThreadWorker.registerGlobal('createQuad', createQuad);
   ThreadWorker.registerGlobal('createPlane', createPlane);
   ThreadWorker.registerGlobal('createDisc', createDisc);
+  ThreadWorker.registerGlobal('createNDCGrid', createNDCGrid);
 };

@@ -19,7 +19,7 @@ export interface TileOceanRendererSettings {
   size: number;
 }
 
-export const defaultSettings: Readonly<TileOceanRendererSettings> = {
+export const tileDefaultSettings: Readonly<TileOceanRendererSettings> = {
   tiles: 1,
   resolution: 256,
   size: 100.0,
@@ -29,7 +29,7 @@ export class TileOceanRenderer {
   private readonly shader: ShaderProgram;
   private readonly worker: ThreadWorker<number, Mesh>;
   private readonly settings$ = new BehaviorSubject<TileOceanRendererSettings>({
-    ...defaultSettings,
+    ...tileDefaultSettings,
   });
   private geometry: Geometry;
 
