@@ -3,6 +3,6 @@
     "removeComments": false,
     "lib": ["ES2019", "ES2017", "DOM"],
     "module": "amd",
-    "target": "ES2016"
+    "target": "ES2019"
   }
 }

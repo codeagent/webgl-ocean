@@ -1,16 +1,18 @@
 import { CameraControllerInterface } from './controller';
 import {
   Gpu,
-  TileOceanRenderer,
-  PlateOceanRenderer,
   Camera,
   GizmoRenderer,
   TextureRenderer,
   createGrid,
   Geometry,
-  ProjectedGridRenderer,
 } from './graphics';
 import { OceanField } from './ocean';
+import {
+  PlateOceanRenderer,
+  ProjectedGridRenderer,
+  TileOceanRenderer,
+} from './renderer';
 
 export class Viewport {
   public readonly tileRenderer: TileOceanRenderer;

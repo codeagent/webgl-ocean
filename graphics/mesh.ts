@@ -147,26 +147,33 @@ export const createPlane = (resolution: number): Mesh => {
   };
 };
 
-export const createNDCGrid = (resolution: number): Mesh => {
+export const createNDCGrid = (
+  resolutionX: number,
+  resolutionY: number,
+  marginX = 1.0,
+  marginY = 1.0
+): Mesh => {
   const vertices: vec3[] = [];
   const indices: number[] = [];
-  const N = resolution;
-  const L = 1.0;
-  const delta = (2.0 * L) / (N - 1);
-  const offset = vec3.fromValues(-L, -L, -1.0);
 
-  for (let i = 0; i < N - 1; i++) {
-    for (let j = 0; j < N - 1; j++) {
-      let v0 = vec3.fromValues(j * delta, i * delta, 0.0);
+  const Lx = 1.0 + marginX;
+  const Ly = 1.0 + marginY;
+  const deltaX = (2.0 * Lx) / (resolutionX - 1);
+  const deltaY = (2.0 * Ly) / (resolutionY - 1);
+  const offset = vec3.fromValues(-Lx, -Ly, -1.0);
+
+  for (let i = 0; i < resolutionY - 1; i++) {
+    for (let j = 0; j < resolutionX - 1; j++) {
+      let v0 = vec3.fromValues(j * deltaX, i * deltaY, 0.0);
       vec3.add(v0, v0, offset);
 
-      let v1 = vec3.fromValues((j + 1) * delta, i * delta, 0.0);
+      let v1 = vec3.fromValues((j + 1) * deltaX, i * deltaY, 0.0);
       vec3.add(v1, v1, offset);
 
-      let v2 = vec3.fromValues((j + 1) * delta, (i + 1) * delta, 0.0);
+      let v2 = vec3.fromValues((j + 1) * deltaX, (i + 1) * deltaY, 0.0);
       vec3.add(v2, v2, offset);
 
-      let v3 = vec3.fromValues(j * delta, (i + 1) * delta, 0.0);
+      let v3 = vec3.fromValues(j * deltaX, (i + 1) * deltaY, 0.0);
       vec3.add(v3, v3, offset);
 
       // indices.push(vertices.length + 1, vertices.length, vertices.length + 2);

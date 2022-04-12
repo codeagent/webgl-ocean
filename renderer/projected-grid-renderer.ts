@@ -3,51 +3,45 @@ import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, switchMap, debounceTime } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
-import { Geometry, Gpu, Mesh, ShaderProgram } from './gpu';
-import { Camera } from './camera';
-import { vs as oceanvs, fs as oceanfs } from './programs/ocean';
+import { Geometry, Gpu, Mesh, ShaderProgram, Camera } from '../graphics';
+import { vs as gridvs, fs as gridfs } from './programs/projected-grid';
 import { OceanField } from '../ocean';
 import { ThreadWorker } from '../thread';
+
 // @ts-ignore:
-import { createDisc } from './mesh';
+import { createNDCGrid } from './mesh';
 
-declare const createDisc: (...args: number[]) => Mesh;
+declare const createNDCGrid: (...args: number[]) => Mesh;
 
-export interface PlateOceanRendererSettings {
-  rings: number;
-  segments: number;
-  delta: number;
-  steep: number;
-  offset: number;
+export interface ProjectedGridRendererSettings {
+  resolution: number;
+  aspect: number;
+  margin: number;
 }
 
-export const plateDefaultSettings: Readonly<PlateOceanRendererSettings> = {
-  rings: 512,
-  segments: 512,
-  delta: 0.1,
-  steep: 6,
-  offset: 0.45,
+const defaultSettings: Readonly<ProjectedGridRendererSettings> = {
+  resolution: 512,
+  aspect: 1.2,
+  margin: 1.0,
 };
 
-type ThreadWorkerInput = PlateOceanRendererSettings;
+type ThreadWorkerInput = ProjectedGridRendererSettings;
 
-export class PlateOceanRenderer {
+export class ProjectedGridRenderer {
   private readonly shader: ShaderProgram;
   private readonly worker: ThreadWorker<ThreadWorkerInput, Mesh>;
-  private readonly settings$ = new BehaviorSubject<PlateOceanRendererSettings>({
-    ...plateDefaultSettings,
-  });
+  private readonly settings$ =
+    new BehaviorSubject<ProjectedGridRendererSettings>({ ...defaultSettings });
   private geometry: Geometry;
 
   public constructor(private readonly gpu: Gpu) {
-    this.shader = this.gpu.createShaderProgram(oceanvs, oceanfs);
+    this.shader = this.gpu.createShaderProgram(gridvs, gridfs);
     this.worker = new ThreadWorker<ThreadWorkerInput, Mesh>((input) =>
-      createDisc(
-        input.rings,
-        input.segments,
-        input.delta,
-        input.steep,
-        input.offset
+      createNDCGrid(
+        input.resolution,
+        input.resolution / input.aspect,
+        input.margin,
+        input.margin / input.aspect
       )
     );
 
@@ -61,7 +55,10 @@ export class PlateOceanRenderer {
         if (this.geometry) {
           this.gpu.destroyGeometry(this.geometry);
         }
-        this.geometry = this.gpu.createGeometry(mesh);
+        this.geometry = this.gpu.createGeometry(
+          mesh,
+          WebGL2RenderingContext.LINES
+        );
       });
   }
 
@@ -73,7 +70,29 @@ export class PlateOceanRenderer {
       this.gpu.context.canvas.height
     );
 
+    const transform = mat4.create();
+    mat4.copy(transform, camera.transform);
+    transform[12] = transform[13] = transform[14] = 0.0;
+
+    const invProjView = mat4.create();
+    mat4.invert(invProjView, camera.projection);
+    mat4.multiply(invProjView, transform, invProjView);
+
     this.gpu.setProgram(this.shader);
+    this.gpu.setProgramVariable(
+      this.shader,
+      'invProjView',
+      'mat4',
+      invProjView
+    );
+    this.gpu.setProgramVariable(this.shader, 'viewMat', 'mat4', camera.view);
+    this.gpu.setProgramVariable(
+      this.shader,
+      'projMat',
+      'mat4',
+      camera.projection
+    );
+    this.gpu.setProgramVariable(this.shader, 'pos', 'vec3', camera.position);
     this.gpu.setProgramTextures(
       this.shader,
       [
@@ -100,6 +119,7 @@ export class PlateOceanRenderer {
         oceanField.params.cascades[i].croppiness
       );
     }
+
     this.gpu.setProgramVariable(
       this.shader,
       'foamSpreading',
@@ -112,40 +132,17 @@ export class PlateOceanRenderer {
       'float',
       oceanField.params.foamContrast
     );
-    this.gpu.setProgramVariable(
-      this.shader,
-      'scale',
-      'float',
-      Math.max(1.0, camera.position[1] * 0.1)
-    );
-    this.gpu.setProgramVariable(this.shader, 'viewMat', 'mat4', camera.view);
-    this.gpu.setProgramVariable(
-      this.shader,
-      'projMat',
-      'mat4',
-      camera.projection
-    );
-    this.gpu.setProgramVariable(
-      this.shader,
-      'worldMat',
-      'mat4',
-      mat4.fromTranslation(
-        mat4.create(),
-        vec3.fromValues(camera.position[0], 0.0, camera.position[2])
-      )
-    );
-    this.gpu.setProgramVariable(this.shader, 'pos', 'vec3', camera.position);
 
     if (this.geometry) {
       this.gpu.drawGeometry(this.geometry);
     }
   }
 
-  public getSettings(): Readonly<PlateOceanRendererSettings> {
+  public getSettings(): Readonly<ProjectedGridRendererSettings> {
     return this.settings$.value;
   }
 
-  public setSettings(settings: Partial<PlateOceanRendererSettings>): void {
+  public setSettings(settings: Partial<ProjectedGridRendererSettings>): void {
     this.settings$.next({ ...this.settings$.value, ...settings });
   }
 }

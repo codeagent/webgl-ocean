@@ -3,57 +3,62 @@ import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, switchMap, debounceTime } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
-import { Geometry, Gpu, Mesh, ShaderProgram } from './gpu';
-import { Camera } from './camera';
+import { Geometry, Gpu, Mesh, ShaderProgram, Camera } from '../graphics';
+import { OceanRendererInterface } from './ocean-renderer-interface';
 import { vs as oceanvs, fs as oceanfs } from './programs/ocean';
 import { OceanField } from '../ocean';
 import { ThreadWorker } from '../thread';
+
 // @ts-ignore:
-import { createPlane } from './mesh';
+import { createDisc } from './mesh';
 
-declare const createPlane: (arg: number) => Mesh;
+declare const createDisc: (...args: number[]) => Mesh;
 
-export interface TileOceanRendererSettings {
-  tiles: number;
-  resolution: number;
-  size: number;
+export interface PlateOceanRendererSettings {
+  rings: number;
+  segments: number;
+  delta: number;
+  steep: number;
+  offset: number;
 }
 
-export const tileDefaultSettings: Readonly<TileOceanRendererSettings> = {
-  tiles: 1,
-  resolution: 256,
-  size: 100.0,
+const defaultSettings: Readonly<PlateOceanRendererSettings> = {
+  rings: 512,
+  segments: 512,
+  delta: 0.1,
+  steep: 6,
+  offset: 0.45,
 };
 
-export class TileOceanRenderer {
+type ThreadWorkerInput = PlateOceanRendererSettings;
+
+export class PlateOceanRenderer
+  implements OceanRendererInterface<PlateOceanRendererSettings>
+{
   private readonly shader: ShaderProgram;
-  private readonly worker: ThreadWorker<number, Mesh>;
-  private readonly settings$ = new BehaviorSubject<TileOceanRendererSettings>({
-    ...tileDefaultSettings,
+  private readonly worker: ThreadWorker<ThreadWorkerInput, Mesh>;
+  private readonly settings$ = new BehaviorSubject<PlateOceanRendererSettings>({
+    ...defaultSettings,
   });
   private geometry: Geometry;
 
   public constructor(private readonly gpu: Gpu) {
     this.shader = this.gpu.createShaderProgram(oceanvs, oceanfs);
-    this.worker = new ThreadWorker<number, Mesh>((resolution) => {
-      const cache: Map<number, Mesh> =
-        self['tileOceanRendererCache'] ??
-        (self['tileOceanRendererCache'] = new Map<number, Mesh>());
-
-      if (!cache.has(resolution)) {
-        cache.set(resolution, createPlane(resolution));
-      }
-
-      return cache.get(resolution);
-    });
+    this.worker = new ThreadWorker<ThreadWorkerInput, Mesh>((input) =>
+      createDisc(
+        input.rings,
+        input.segments,
+        input.delta,
+        input.steep,
+        input.offset
+      )
+    );
 
     this.settings$
       .pipe(
         debounceTime(10),
         distinctUntilChanged(isEqual),
-        switchMap((e: TileOceanRendererSettings) =>
-          this.worker.process(e.resolution)
-        )
+        switchMap((e) => this.worker.process(e))
       )
       .subscribe((mesh: Mesh) => {
         if (this.geometry) {
@@ -64,13 +69,13 @@ export class TileOceanRenderer {
   }
 
   public render(camera: Camera, oceanField: OceanField) {
-    const settings = this.getSettings();
     this.gpu.setViewport(
       0,
       0,
       this.gpu.context.canvas.width,
       this.gpu.context.canvas.height
     );
+
     this.gpu.setProgram(this.shader);
     this.gpu.setProgramTextures(
       this.shader,
@@ -98,7 +103,6 @@ export class TileOceanRenderer {
         oceanField.params.cascades[i].croppiness
       );
     }
-    this.gpu.setProgramVariable(this.shader, 'scale', 'float', settings.size);
     this.gpu.setProgramVariable(
       this.shader,
       'foamSpreading',
@@ -111,6 +115,12 @@ export class TileOceanRenderer {
       'float',
       oceanField.params.foamContrast
     );
+    this.gpu.setProgramVariable(
+      this.shader,
+      'scale',
+      'float',
+      Math.max(1.0, camera.position[1] * 0.1)
+    );
     this.gpu.setProgramVariable(this.shader, 'viewMat', 'mat4', camera.view);
     this.gpu.setProgramVariable(
       this.shader,
@@ -118,33 +128,27 @@ export class TileOceanRenderer {
       'mat4',
       camera.projection
     );
+    this.gpu.setProgramVariable(
+      this.shader,
+      'worldMat',
+      'mat4',
+      mat4.fromTranslation(
+        mat4.create(),
+        vec3.fromValues(camera.position[0], 0.0, camera.position[2])
+      )
+    );
     this.gpu.setProgramVariable(this.shader, 'pos', 'vec3', camera.position);
 
     if (this.geometry) {
-      const transform = mat4.create();
-      for (let i = 0; i < settings.tiles; i++) {
-        for (let j = 0; j < settings.tiles; j++) {
-          mat4.fromTranslation(
-            transform,
-            vec3.fromValues(i * settings.size, 0.0, j * settings.size)
-          );
-          this.gpu.setProgramVariable(
-            this.shader,
-            'worldMat',
-            'mat4',
-            transform
-          );
-          this.gpu.drawGeometry(this.geometry);
-        }
-      }
+      this.gpu.drawGeometry(this.geometry);
     }
   }
 
-  public getSettings(): Readonly<TileOceanRendererSettings> {
+  public getSettings(): Readonly<PlateOceanRendererSettings> {
     return this.settings$.value;
   }
 
-  public setSettings(settings: Partial<TileOceanRendererSettings>): void {
+  public setSettings(settings: Partial<PlateOceanRendererSettings>): void {
     this.settings$.next({ ...this.settings$.value, ...settings });
   }
 }
