@@ -1,14 +1,13 @@
-export const vs = `#version 300 es
-
+export default `#version 300 es
 layout(location = 0) in vec3 position;
 
-uniform mat4 invProjView;
 uniform mat4 viewMat;
 uniform mat4 projMat;
-uniform vec3 pos;
 uniform float sizes[3];   
 uniform float croppinesses[3];   
 uniform float scale;   
+
+uniform mat4 worldMat;
 
 uniform sampler2D dx_hy_dz_dxdz0;
 uniform sampler2D sx_sz_dxdx_dzdz0;
@@ -30,31 +29,13 @@ vec3 getDisplacement(in vec2 xz) {
     texture(dx_hy_dz_dxdz1, uv1).xyz * vec3(croppinesses[1], 1.0f, croppinesses[1]) + 
     texture(dx_hy_dz_dxdz2, uv2).xyz * vec3(croppinesses[2], 1.0f, croppinesses[2]);
 }
-void main()
-{
-   vec4 homogeneous = invProjView * vec4(position, 1.0f);
-   vec3 ray = normalize(homogeneous.xyz / homogeneous.w);
-
-  if(ray.y >= 0.0f) {  // beyond horizon
-    gl_Position = vec4(position.x, position.y, 2.0f, 1.0f);
-  } else {
-    _position = ray * -pos.y / ray.y + pos;
-    _xz = _position.xz;
-    _position = _position + getDisplacement(_xz);
-    gl_Position = projMat * viewMat * vec4(_position, 1.0f);
-  }
-}
-`;
-
-export const fs = `#version 300 es
-precision highp float;
-
-layout(location = 0) out vec4 color;	
-
-in highp vec2 _xz;
 
 void main()
 {
-  color = vec4(_xz.x, 0.25f, _xz.y, 1.0);
+  vec2 xz = vec3(worldMat * vec4(position * scale, 1.0f)).xz;
+  _position = position * scale + getDisplacement(xz);
+  _position = vec3(worldMat * vec4(_position, 1.0f));
+  _xz = xz;
+  gl_Position = projMat * viewMat * vec4(_position, 1.0f);
 }
 `;

@@ -49,11 +49,12 @@ gui.onChange$.subscribe((params) => {
   oceanBuilder.update(oceanField, params);
   viewport.tileRenderer.setSettings(params.tileRenderer);
   viewport.plateRenderer.setSettings(params.plateRenderer);
+  viewport.projectedGridRenderer.setSettings(params.gridRenderer)
 });
 
 const step = () => {
   if (oceanField) {
-    oceanField.update(performance.now() / 1e3 + 36000);
+    oceanField.update(performance.now() / 1e3);
     viewport.render(oceanField, gui.params.renderer);
   }
   requestAnimationFrame(() => step());

@@ -51,14 +51,18 @@ export class FpsCameraController implements CameraControllerInterface {
         takeUntil(this.release$),
         filter((e: KeyboardEvent) => !this.keys.has(e.keyCode))
       )
-      .subscribe((e: KeyboardEvent) => this.keys.set(e.keyCode, true));
+      .subscribe((e: KeyboardEvent) => {
+        this.keys.set(e.keyCode, true);
+      });
 
     fromEvent(document, 'keyup')
       .pipe(
         takeUntil(this.release$),
         filter((e: KeyboardEvent) => this.keys.has(e.keyCode))
       )
-      .subscribe((e: KeyboardEvent) => this.keys.delete(e.keyCode));
+      .subscribe((e: KeyboardEvent) => {
+        this.keys.delete(e.keyCode);
+      });
   }
 
   update(dt: number) {

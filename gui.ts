@@ -20,10 +20,17 @@ export interface GuiPlateRendererParams {
   segments: number;
 }
 
+export interface GuiProjectedGridRendererParams {
+  resolution: number;
+  aspect: number;
+  margin: number;
+}
+
 export interface GuiParams extends OceanFieldBuildParams {
   renderer: 'tile' | 'plate' | 'grid';
   tileRenderer: GuiTileRendererParams;
   plateRenderer: GuiPlateRendererParams;
+  gridRenderer: GuiProjectedGridRendererParams;
 }
 
 export const defaultParams: GuiParams = {
@@ -68,6 +75,11 @@ export const defaultParams: GuiParams = {
     steep: 6,
     offset: 0.45,
   },
+  gridRenderer: {
+    resolution: 512,
+    aspect: 1.2,
+    margin: 1.0,
+  },
   renderer: 'grid',
 };
 
@@ -97,6 +109,7 @@ export class Gui {
     const colors = ['#c74440', '#388c46', '#2d70b3'];
     const renderers = ['tile', 'plate', 'grid'];
 
+
     gui.add(this, 'reset').name('Reset');
     gui.add(this.params, 'resolution', resolutions).name('Map Resolution');
     gui
@@ -106,8 +119,14 @@ export class Gui {
         if (e === 'tile') {
           tileGroup.show();
           plateGroup.hide();
-        } else {
+          gridGroup.hide();
+        } else if (e === 'plate') {
           plateGroup.show();
+          tileGroup.hide();
+          gridGroup.hide();
+        } else {
+          gridGroup.show();
+          plateGroup.hide();
           tileGroup.hide();
         }
       });
@@ -122,7 +141,7 @@ export class Gui {
       .name('Geometry size');
     tileGroup.add(this.params.tileRenderer, 'tiles', tiles).name('Tiles');
 
-    const plateGroup = gui.addFolder('Renderer options');
+    const plateGroup = gui.addFolder('Renderer options').hide();
     plateGroup
       .add(this.params.plateRenderer, 'rings', 1, 512)
       .step(1)
@@ -142,6 +161,20 @@ export class Gui {
       .add(this.params.plateRenderer, 'offset', 0.0, 1.0)
       .step(0.01)
       .name('Geometry offset');
+
+    const gridGroup = gui.addFolder('Renderer options');
+    gridGroup
+      .add(this.params.gridRenderer, 'resolution', 1, 512)
+      .step(1)
+      .name('Resolution');
+    gridGroup
+      .add(this.params.gridRenderer, 'aspect', 1, 3)
+      .step(0.1)
+      .name('Aspect');
+    gridGroup
+      .add(this.params.gridRenderer, 'margin', 0.0, 6.0)
+      .step(0.1)
+      .name('NDC margin');
 
     const wind = gui.addFolder('Wind');
     wind.add(this.params.wind, '0', 0, 31).step(1).name('X');

@@ -4,9 +4,11 @@ import { distinctUntilChanged, switchMap, debounceTime } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
 import { Geometry, Gpu, Mesh, ShaderProgram, Camera } from '../graphics';
-import { vs as gridvs, fs as gridfs } from './programs/projected-grid';
 import { OceanField } from '../ocean';
 import { ThreadWorker } from '../thread';
+
+import vs from './programs/grid-vertex.glsl';
+import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createNDCGrid } from './mesh';
@@ -35,7 +37,7 @@ export class ProjectedGridRenderer {
   private geometry: Geometry;
 
   public constructor(private readonly gpu: Gpu) {
-    this.shader = this.gpu.createShaderProgram(gridvs, gridfs);
+    this.shader = this.gpu.createShaderProgram(vs, fs);
     this.worker = new ThreadWorker<ThreadWorkerInput, Mesh>((input) =>
       createNDCGrid(
         input.resolution,
@@ -55,10 +57,7 @@ export class ProjectedGridRenderer {
         if (this.geometry) {
           this.gpu.destroyGeometry(this.geometry);
         }
-        this.geometry = this.gpu.createGeometry(
-          mesh,
-          WebGL2RenderingContext.LINES
-        );
+        this.geometry = this.gpu.createGeometry(mesh);
       });
   }
 

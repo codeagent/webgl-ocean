@@ -1,14 +1,14 @@
-export const vs = `#version 300 es
-
+export default `#version 300 es
 layout(location = 0) in vec3 position;
 
-uniform mat4 invProjView;
 uniform mat4 viewMat;
 uniform mat4 projMat;
-uniform vec3 pos;
 uniform float sizes[3];   
 uniform float croppinesses[3];   
-uniform float scale;   
+uniform float scale; 
+
+uniform mat4 invProjView;  
+uniform vec3 pos;
 
 uniform sampler2D dx_hy_dz_dxdz0;
 uniform sampler2D sx_sz_dxdx_dzdz0;
@@ -17,8 +17,8 @@ uniform sampler2D sx_sz_dxdx_dzdz1;
 uniform sampler2D dx_hy_dz_dxdz2;
 uniform sampler2D sx_sz_dxdx_dzdz2;
 
-out vec3 _position;
-out vec2 _xz;
+out highp vec3 _position;
+out highp vec2 _xz;
 
 vec3 getDisplacement(in vec2 xz) {
   vec2 uv0 = xz / sizes[0];
@@ -43,18 +43,5 @@ void main()
     _position = _position + getDisplacement(_xz);
     gl_Position = projMat * viewMat * vec4(_position, 1.0f);
   }
-}
-`;
-
-export const fs = `#version 300 es
-precision highp float;
-
-layout(location = 0) out vec4 color;	
-
-in highp vec2 _xz;
-
-void main()
-{
-  color = vec4(_xz.x, 0.25f, _xz.y, 1.0);
 }
 `;

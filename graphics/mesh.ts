@@ -176,15 +176,8 @@ export const createNDCGrid = (
       let v3 = vec3.fromValues(j * deltaX, (i + 1) * deltaY, 0.0);
       vec3.add(v3, v3, offset);
 
-      // indices.push(vertices.length + 1, vertices.length, vertices.length + 2);
-      // indices.push(vertices.length + 3, vertices.length + 2, vertices.length);
-
-      indices.push(
-        vertices.length,
-        vertices.length + 1,
-        vertices.length + 1,
-        vertices.length + 2
-      );
+      indices.push(vertices.length + 1, vertices.length, vertices.length + 2);
+      indices.push(vertices.length + 3, vertices.length + 2, vertices.length);
 
       vertices.push(v0, v1, v2, v3);
     }

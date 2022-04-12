@@ -4,9 +4,11 @@ import { distinctUntilChanged, switchMap, debounceTime } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
 
 import { Geometry, Gpu, Mesh, ShaderProgram, Camera } from '../graphics';
-import { vs as oceanvs, fs as oceanfs } from './programs/ocean';
 import { OceanField } from '../ocean';
 import { ThreadWorker } from '../thread';
+
+import vs from './programs/tile-vertex.glsl';
+import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createPlane } from './mesh';
@@ -34,7 +36,7 @@ export class TileOceanRenderer {
   private geometry: Geometry;
 
   public constructor(private readonly gpu: Gpu) {
-    this.shader = this.gpu.createShaderProgram(oceanvs, oceanfs);
+    this.shader = this.gpu.createShaderProgram(vs, fs);
     this.worker = new ThreadWorker<number, Mesh>((resolution) => {
       const cache: Map<number, Mesh> =
         self['tileOceanRendererCache'] ??
