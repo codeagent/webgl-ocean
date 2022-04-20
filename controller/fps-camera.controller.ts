@@ -23,7 +23,7 @@ export class FpsCameraController implements CameraControllerInterface {
   constructor(
     private canvas: HTMLCanvasElement,
     public readonly camera: Camera,
-    private speed = 1.0e2,
+    private speed = 1.0e1,
     public sensibility = 1.0e-2
   ) {
     this.canvas = canvas;

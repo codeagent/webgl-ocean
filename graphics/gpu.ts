@@ -1,11 +1,12 @@
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { animationFrames, lastValueFrom, takeWhile } from 'rxjs';
+import { finalize, tap } from 'rxjs/operators';
 
-export type ShaderProgram = WebGLProgram;
-export type Cubemap = WebGLTexture;
 export type Texture2d = WebGLTexture;
 export type VertexBuffer = WebGLBuffer;
 export type IndexBuffer = WebGLBuffer;
 export type RenderTarget = WebGLFramebuffer;
+export type Sync = WebGLSync;
 
 export interface VertexAttribute {
   semantics: string;
@@ -19,15 +20,25 @@ export interface VertexAttribute {
 export interface Geometry {
   vao: WebGLVertexArrayObject;
   vbo: VertexBuffer;
-  ebo: IndexBuffer;
+  ebo?: IndexBuffer;
   length: number;
   type: GLenum;
 }
 
+export interface TransformFeedback {
+  tfo: WebGLTransformFeedback;
+  buffers: VertexBuffer[];
+}
+
+export interface ShaderProgram {
+  program: WebGLProgram;
+  shaders: WebGLShader[];
+}
+
 export interface Mesh {
   vertexFormat: VertexAttribute[];
-  vertexData: ArrayBufferView;
-  indexData: Uint32Array;
+  vertexData: ArrayBufferView & { length: number };
+  indexData?: Uint32Array;
 }
 
 export enum TextureFiltering {
@@ -65,14 +76,17 @@ export class Gpu {
     mesh: Mesh,
     type: GLenum = WebGL2RenderingContext.TRIANGLES
   ): Geometry {
-    const vBuffer = this.createVertexBuffer(mesh.vertexData);
-    const iBuffer = this.createIndexBuffer(mesh.indexData);
-
     const vao = this._gl.createVertexArray();
     this._gl.bindVertexArray(vao);
+
+    const vbo = this.createVertexBuffer(
+      mesh.vertexData,
+      WebGL2RenderingContext.STATIC_DRAW
+    );
+
     for (const attribute of mesh.vertexFormat) {
       this._gl.enableVertexAttribArray(attribute.slot);
-      this._gl.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, vBuffer);
+      this._gl.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, vbo);
       if (attribute.type === WebGL2RenderingContext.FLOAT) {
         this._gl.vertexAttribPointer(
           attribute.slot,
@@ -92,21 +106,40 @@ export class Gpu {
         );
       }
     }
-    this._gl.bindBuffer(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, iBuffer);
-    this._gl.bindVertexArray(null);
-    return {
+
+    const geometry: Geometry = {
       vao,
-      vbo: vBuffer,
-      ebo: iBuffer,
-      length: mesh.indexData.length,
+      vbo,
+      length: 0,
       type,
     };
+
+    if (mesh.indexData) {
+      const ebo = this.createIndexBuffer(mesh.indexData);
+      geometry.length = mesh.indexData.length;
+      geometry.ebo = ebo;
+      this._gl.bindBuffer(WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER, ebo);
+    } else {
+      const components = mesh.vertexFormat.reduce(
+        (components, attribute) => components + attribute.size,
+        0
+      );
+      geometry.length = mesh.vertexData.length / components;
+    }
+
+    this._gl.bindVertexArray(null);
+    return geometry;
   }
 
-  createShaderProgram(vs: string, fs: string) {
+  createShaderProgram(
+    vs: string,
+    fs: string,
+    feedbackVars?: string[]
+  ): ShaderProgram {
     const gl = this._gl;
     const program = gl.createProgram();
-    let shaders = [];
+
+    let shaders: WebGLShader[] = [];
     try {
       for (const shader of [
         { type: WebGL2RenderingContext.VERTEX_SHADER, sourceCode: vs },
@@ -115,15 +148,15 @@ export class Gpu {
         const shaderObject = gl.createShader(shader.type);
         gl.shaderSource(shaderObject, shader.sourceCode);
         gl.compileShader(shaderObject);
-        if (
-          !gl.getShaderParameter(
-            shaderObject,
-            WebGL2RenderingContext.COMPILE_STATUS
-          )
-        ) {
+        const compileStatus = gl.getShaderParameter(
+          shaderObject,
+          WebGL2RenderingContext.COMPILE_STATUS
+        );
+
+        if (!compileStatus) {
           const source = shader.sourceCode
             .split(/\n/)
-            .map((line, no) => `${no + 1}:\t${line}`)
+            .map((line: string, no: number) => `${no + 1}:\t${line}`)
             .join('\n');
 
           throw new Error(
@@ -136,8 +169,17 @@ export class Gpu {
             )}' \n${source}\n`
           );
         }
+
         gl.attachShader(program, shaderObject);
         shaders.push(shaderObject);
+      }
+
+      if (feedbackVars) {
+        this._gl.transformFeedbackVaryings(
+          program,
+          feedbackVars,
+          WebGL2RenderingContext.SEPARATE_ATTRIBS
+        );
       }
 
       gl.linkProgram(program);
@@ -156,11 +198,11 @@ export class Gpu {
       throw e;
     }
 
-    return program;
+    return { program, shaders };
   }
 
   setProgram(program: ShaderProgram) {
-    this._gl.useProgram(program);
+    this._gl.useProgram(program.program);
   }
 
   setProgramVariable(
@@ -184,6 +226,12 @@ export class Gpu {
   setProgramVariable(
     program: ShaderProgram,
     name: string,
+    type: 'vec4',
+    value: vec4
+  ): void;
+  setProgramVariable(
+    program: ShaderProgram,
+    name: string,
     type: 'mat4',
     value: mat4
   ): void;
@@ -194,7 +242,7 @@ export class Gpu {
     value: any
   ): void {
     const loc: WebGLUniformLocation = this._gl.getUniformLocation(
-      program,
+      program.program,
       name
     );
     if (!loc) {
@@ -211,6 +259,8 @@ export class Gpu {
       this._gl.uniform2fv(loc, value);
     } else if (type === 'vec3') {
       this._gl.uniform3fv(loc, value);
+    } else if (type === 'vec4') {
+      this._gl.uniform4fv(loc, value);
     } else if (type === 'mat4') {
       this._gl.uniformMatrix4fv(loc, false, value);
     }
@@ -223,7 +273,7 @@ export class Gpu {
     slot: number
   ) {
     const loc: WebGLUniformLocation = this._gl.getUniformLocation(
-      program,
+      program.program,
       name
     );
     if (!loc) {
@@ -252,26 +302,24 @@ export class Gpu {
 
   drawGeometry(geometry: Geometry) {
     this._gl.bindVertexArray(geometry.vao);
-    this._gl.bindBuffer(
-      WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER,
-      geometry.ebo
-    );
-    this._gl.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, geometry.vbo);
-
-    this._gl.drawElements(
-      geometry.type ?? WebGL2RenderingContext.TRIANGLES,
-      geometry.length,
-      WebGL2RenderingContext.UNSIGNED_INT,
-      0
-    );
+    if (geometry.ebo) {
+      this._gl.drawElements(
+        geometry.type ?? WebGL2RenderingContext.TRIANGLES,
+        geometry.length,
+        WebGL2RenderingContext.UNSIGNED_INT,
+        0
+      );
+    } else {
+      this._gl.drawArrays(
+        geometry.type ?? WebGL2RenderingContext.TRIANGLES,
+        0,
+        geometry.length
+      );
+    }
   }
 
   flush() {
     this._gl.flush();
-  }
-
-  finish() {
-    this._gl.finish();
   }
 
   createFloatTexture(
@@ -472,8 +520,93 @@ export class Gpu {
     );
   }
 
+  updateGeometry(geometry: Geometry, vertexData: ArrayBufferView) {
+    this._gl.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, geometry.vbo);
+    this._gl.bufferSubData(WebGL2RenderingContext.ARRAY_BUFFER, 0, vertexData);
+    this._gl.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, null);
+  }
+
   createRenderTarget(): RenderTarget {
     return this._gl.createFramebuffer();
+  }
+
+  createTransformFeedback(...capacity: number[]): TransformFeedback {
+    const tfo = this._gl.createTransformFeedback();
+    this._gl.bindTransformFeedback(
+      WebGL2RenderingContext.TRANSFORM_FEEDBACK,
+      tfo
+    );
+    const buffers: VertexBuffer[] = [];
+    for (let i = 0; i < capacity.length; i++) {
+      const tbo = this.createVertexBuffer(
+        capacity[i],
+        WebGL2RenderingContext.DYNAMIC_READ
+      );
+      this._gl.bindBufferBase(
+        WebGL2RenderingContext.TRANSFORM_FEEDBACK_BUFFER,
+        i,
+        tbo
+      );
+      buffers.push(tbo);
+    }
+    this._gl.bindTransformFeedback(
+      WebGL2RenderingContext.TRANSFORM_FEEDBACK,
+      null
+    );
+    return { tfo, buffers };
+  }
+
+  beginTransformFeedback(
+    transformFeedback: TransformFeedback,
+    primitive: GLenum = WebGL2RenderingContext.POINTS
+  ) {
+    this._gl.enable(WebGL2RenderingContext.RASTERIZER_DISCARD);
+    this._gl.bindTransformFeedback(
+      WebGL2RenderingContext.TRANSFORM_FEEDBACK,
+      transformFeedback.tfo
+    );
+    this._gl.beginTransformFeedback(primitive);
+  }
+
+  endTransformFeedback() {
+    this._gl.endTransformFeedback();
+    this._gl.bindTransformFeedback(
+      WebGL2RenderingContext.TRANSFORM_FEEDBACK,
+      null
+    );
+    this._gl.disable(WebGL2RenderingContext.RASTERIZER_DISCARD);
+  }
+
+  async waitAsync(timeout: number = 1000) {
+    this._gl.flush();
+    const sync = this._gl.fenceSync(
+      WebGL2RenderingContext.SYNC_GPU_COMMANDS_COMPLETE,
+      0
+    );
+
+    let result: GLenum = this._gl.getSyncParameter(
+      sync,
+      WebGL2RenderingContext.SYNC_STATUS
+    );
+    return lastValueFrom(
+      animationFrames().pipe(
+        takeWhile(() => result === WebGL2RenderingContext.UNSIGNALED),
+        tap(({ elapsed }) => {
+          if (elapsed > timeout) {
+            throw new Error('waitAsync: timeout expired');
+          }
+        }),
+        tap(() => {
+          result = this._gl.getSyncParameter(
+            sync,
+            WebGL2RenderingContext.SYNC_STATUS
+          );
+        }),
+        finalize(() => {
+          this._gl.deleteSync(sync);
+        })
+      )
+    );
   }
 
   attachTexture(target: RenderTarget, texture: Texture2d, slot: number) {
@@ -541,7 +674,8 @@ export class Gpu {
   }
 
   destroyProgram(program: ShaderProgram) {
-    this._gl.deleteProgram(program);
+    program.shaders.forEach((shader) => this._gl.deleteShader(shader));
+    this._gl.deleteProgram(program.program);
   }
 
   destroyGeometry(geometry: Geometry) {
@@ -556,6 +690,36 @@ export class Gpu {
 
   destroyTexture(texture: Texture2d) {
     this._gl.deleteTexture(texture);
+  }
+
+  destroyTransfromFeedback(transformFeedback: TransformFeedback) {
+    transformFeedback.buffers.forEach((tbo) => this._gl.deleteBuffer(tbo));
+    this._gl.deleteTransformFeedback(transformFeedback.tfo);
+  }
+
+  readTransformFeedback(
+    transformFeedback: TransformFeedback,
+    buffers: Float32Array[]
+  ): void {
+    this._gl.bindTransformFeedback(
+      WebGL2RenderingContext.TRANSFORM_FEEDBACK,
+      transformFeedback.tfo
+    );
+    for (let i = 0; i < transformFeedback.buffers.length; i++) {
+      this._gl.bindBuffer(
+        WebGL2RenderingContext.TRANSFORM_FEEDBACK_BUFFER,
+        transformFeedback.buffers[i]
+      );
+      this._gl.getBufferSubData(
+        WebGL2RenderingContext.TRANSFORM_FEEDBACK_BUFFER,
+        0,
+        buffers[i]
+      );
+    }
+    this._gl.bindTransformFeedback(
+      WebGL2RenderingContext.TRANSFORM_FEEDBACK,
+      null
+    );
   }
 
   readValues(
@@ -575,14 +739,15 @@ export class Gpu {
     this._gl.readPixels(0, 0, width, height, format, type, values);
   }
 
-  private createVertexBuffer(data: ArrayBufferView): VertexBuffer {
+  private createVertexBuffer(data: number, usage: GLenum): VertexBuffer;
+  private createVertexBuffer(
+    data: ArrayBufferView,
+    usage: GLenum
+  ): VertexBuffer;
+  private createVertexBuffer(data: any, usage: GLenum): VertexBuffer {
     const vbo = this._gl.createBuffer();
     this._gl.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, vbo);
-    this._gl.bufferData(
-      WebGL2RenderingContext.ARRAY_BUFFER,
-      data,
-      WebGL2RenderingContext.STATIC_DRAW
-    );
+    this._gl.bufferData(WebGL2RenderingContext.ARRAY_BUFFER, data, usage);
     this._gl.bindBuffer(WebGL2RenderingContext.ARRAY_BUFFER, null);
     return vbo;
   }

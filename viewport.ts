@@ -1,13 +1,10 @@
+import { vec2, vec3 } from 'gl-matrix';
+import { animationFrames } from 'rxjs';
+import { exhaustMap } from 'rxjs/operators';
+
 import { CameraControllerInterface } from './controller';
-import {
-  Gpu,
-  Camera,
-  GizmoRenderer,
-  TextureRenderer,
-  createGrid,
-  Geometry,
-} from './graphics';
-import { OceanField } from './ocean';
+import { Gpu, Gizmos } from './graphics';
+import { OceanField, OceanFieldSampler } from './ocean';
 import {
   PlateOceanRenderer,
   ProjectedGridRenderer,
@@ -18,28 +15,39 @@ export class Viewport {
   public readonly tileRenderer: TileOceanRenderer;
   public readonly plateRenderer: PlateOceanRenderer;
   public readonly projectedGridRenderer: ProjectedGridRenderer;
-  private readonly gizmoRenderer: GizmoRenderer;
-  private readonly textureRenderer: TextureRenderer;
-  private readonly grid: Geometry;
+  private readonly gizmos: Gizmos;
 
   private lastFrameTime: number = 0;
+  private readonly pointSample = vec3.create();
+  private patchSample: vec3[] = [];
 
   constructor(
     private readonly gpu: Gpu,
+    private readonly oceanField: OceanField,
+    private readonly oceanSampler: OceanFieldSampler,
     private readonly cameraController: CameraControllerInterface
   ) {
     this.tileRenderer = new TileOceanRenderer(this.gpu);
     this.plateRenderer = new PlateOceanRenderer(this.gpu);
     this.projectedGridRenderer = new ProjectedGridRenderer(this.gpu);
-    this.gizmoRenderer = new GizmoRenderer(this.gpu);
-    this.textureRenderer = new TextureRenderer(this.gpu);
-    this.grid = this.gpu.createGeometry(
-      createGrid(5.0),
-      WebGL2RenderingContext.LINES
-    );
+    this.gizmos = new Gizmos(this.gpu);
+
+    animationFrames()
+      .pipe(
+        exhaustMap(() => this.oceanSampler.samplePoint(vec2.fromValues(5, 5)))
+      )
+      .subscribe((e) => vec3.copy(this.pointSample, e));
+
+    animationFrames()
+      .pipe(
+        exhaustMap(() =>
+          this.oceanSampler.samplePatch(vec2.fromValues(12.0, 12.0), 5)
+        )
+      )
+      .subscribe((e) => (this.patchSample = e));
   }
 
-  render(field: OceanField, type: 'tile' | 'plate' | 'grid') {
+  render(type: 'tile' | 'plate' | 'grid') {
     const { width, height } = this.gpu.context.canvas;
     const t = performance.now();
     this.cameraController.update((t - this.lastFrameTime) * 1.0e-3);
@@ -47,9 +55,11 @@ export class Viewport {
     this.gpu.setRenderTarget(null);
     this.gpu.clearRenderTarget();
 
-    this.gizmoRenderer.render(this.grid, this.cameraController.camera);
-    this.renderOcean(field, type);
-    this.renderTextures();
+    this.renderOcean(this.oceanField, type);
+    this.gizmos.drawGrid(this.cameraController.camera);
+    this.gizmos.drawPointSample(this.cameraController.camera, this.pointSample);
+    this.gizmos.drawPatchSample(this.cameraController.camera, this.patchSample);
+
     this.lastFrameTime = t;
   }
 
@@ -61,56 +71,5 @@ export class Viewport {
     } else {
       this.plateRenderer.render(this.cameraController.camera, field);
     }
-  }
-
-  private renderTextures() {
-    // Noise
-    // this.textureRenderer.render(
-    //   vec2.fromValues(10, 10),
-    //   this.fieldFactory['noiseTexture'].get(params.resolution),
-    //   TextureType.Noise
-    // );
-    // Butterfly
-    // this.textureRenderer.render(
-    //   vec2.fromValues(10, 100),
-    //   this.fieldFactory['butterflyTexture'].get(field.params.resolution),
-    //   TextureType.Butterfly
-    // );
-    // H0
-    // this.textureRenderer.render(
-    //   vec2.fromValues(10, 200),
-    //   field['h0Textures'][0],
-    //   TextureType.H0
-    // );
-    // // H0
-    // this.textureRenderer.render(
-    //   vec2.fromValues(10, 300),
-    //   field['h0Textures'][0],
-    //   TextureType.H0_STAR
-    // );
-    // // Displacement X
-    // this.textureRenderer.render(
-    //   vec2.fromValues(10, 400),
-    //   field.displacementFoam,
-    //   TextureType.DX
-    // );
-    // // Displacement Z
-    // this.textureRenderer.render(
-    //   vec2.fromValues(10, 500),
-    //   field.displacementFoam,
-    //   TextureType.DZ
-    // );
-    // // Normals
-    // this.textureRenderer.render(
-    //   vec2.fromValues(110, 500),
-    //   field.normals,
-    //   TextureType.Normals
-    // );
-    // // Foam
-    // this.textureRenderer.render(
-    //   vec2.fromValues(210, 500),
-    //   field.displacementFoam,
-    //   TextureType.Foam
-    // );
   }
 }

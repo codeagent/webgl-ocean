@@ -77,4 +77,12 @@ export class Transform {
     mat4.getTranslation(this._position, view);
     mat4.getRotation(this._rotation, view);
   }
+
+  reset() {
+    mat4.identity(this._transform);
+    vec3.zero(this._position);
+    quat.identity(this._rotation);
+    vec3.set(this._scale, 1.0, 1.0, 1.0);
+    this._dirty = false;
+  }
 }

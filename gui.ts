@@ -80,7 +80,7 @@ export const defaultParams: GuiParams = {
     aspect: 1.2,
     margin: 1.0,
   },
-  renderer: 'grid',
+  renderer: 'plate',
 };
 
 export class Gui {
@@ -108,7 +108,6 @@ export class Gui {
     const resolutions = [...Array(6).keys()].map((r) => 1 << (r + 5));
     const colors = ['#c74440', '#388c46', '#2d70b3'];
     const renderers = ['tile', 'plate', 'grid'];
-
 
     gui.add(this, 'reset').name('Reset');
     gui.add(this.params, 'resolution', resolutions).name('Map Resolution');
@@ -141,7 +140,7 @@ export class Gui {
       .name('Geometry size');
     tileGroup.add(this.params.tileRenderer, 'tiles', tiles).name('Tiles');
 
-    const plateGroup = gui.addFolder('Renderer options').hide();
+    const plateGroup = gui.addFolder('Renderer options');
     plateGroup
       .add(this.params.plateRenderer, 'rings', 1, 512)
       .step(1)
@@ -162,7 +161,7 @@ export class Gui {
       .step(0.01)
       .name('Geometry offset');
 
-    const gridGroup = gui.addFolder('Renderer options');
+    const gridGroup = gui.addFolder('Renderer options').hide();
     gridGroup
       .add(this.params.gridRenderer, 'resolution', 1, 512)
       .step(1)

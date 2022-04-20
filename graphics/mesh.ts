@@ -3,11 +3,12 @@ import { vec3 } from 'gl-matrix';
 
 import { Mesh } from './gpu';
 
+
 declare const vec3: any;
 
 export const createGrid = (expansion: number = 10.0): Mesh => {
-  const PRIMARY = [0.95, 0.95, 0.95];
-  const SECONDARY = [0.75, 0.75, 0.75];
+  const PRIMARY = [1.0, 1.0, 1.0];
+  const SECONDARY = [0.55, 0.55, 0.55];
   const STEP = expansion / 2;
   const UINT = expansion / 10;
 
@@ -65,7 +66,7 @@ export const createGrid = (expansion: number = 10.0): Mesh => {
         semantics: 'color',
         size: 3,
         type: WebGL2RenderingContext.FLOAT,
-        slot: 1,
+        slot: 2,
         offset: 12,
         stride: 24,
       },
@@ -94,11 +95,29 @@ export const createQuad = (): Mesh => ({
       stride: 20,
     },
   ],
-  vertexData: Float32Array.from([
-    -1, -1, 0, 0.0, 0.0, 1, -1, 0, 1.0, 0.0, 1, 1, 0, 1.0, 1.0, -1, 1, 0, 0.0,
+  vertexData: Float32Array.of(
+    -1,
+    -1,
+    0,
+    0.0,
+    0.0,
+    1,
+    -1,
+    0,
     1.0,
-  ]),
-  indexData: Uint32Array.from([0, 1, 2, 0, 2, 3]),
+    0.0,
+    1,
+    1,
+    0,
+    1.0,
+    1.0,
+    -1,
+    1,
+    0,
+    0.0,
+    1.0
+  ),
+  indexData: Uint32Array.of(0, 1, 2, 0, 2, 3),
 });
 
 export const createPlane = (resolution: number): Mesh => {
