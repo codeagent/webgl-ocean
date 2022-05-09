@@ -35,7 +35,7 @@ uniform vec3 pos;
 void main()
 {
   if(albedo.w == 0.0f) {
-    color = vec4(_color, 1.0f);
+    color = vec4(_color * albedo.rgb, 1.0f);
   } else {
     vec3 n = normalize(_normal);
     vec3 l = normalize(pos - _position);

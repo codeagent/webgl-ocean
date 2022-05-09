@@ -58,7 +58,7 @@ export const defaultParams: GuiParams = {
     },
   ],
   resolution: 256,
-  wind: vec2.fromValues(4, 11),
+  wind: vec2.fromValues(2, 2),
   alignment: 1.0e-2,
   foamSpreading: 1.0,
   foamContrast: 6.5,
