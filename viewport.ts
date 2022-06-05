@@ -88,15 +88,16 @@ export class Viewport {
     this.renderFloatings();
   }
 
-  public renderGrid() {
+  private renderGrid() {
     this.gizmos.drawGrid(this.cameraController.camera);
   }
 
-  public renderFloatings() {
+  private renderFloatings() {
     this.floaters.forEach(([floater, geometry]) =>
       this.gizmos.drawFloatingBody(
         this.cameraController.camera,
         floater,
+        this.buoyancy,
         geometry
       )
     );

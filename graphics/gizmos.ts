@@ -5,7 +5,7 @@ import { Transform } from './transform';
 import { createGrid } from './mesh';
 import { Camera } from './camera';
 import { vs, fs } from './programs/mesh';
-import { FloatingBody } from '../ocean';
+import { FloatingBody, OceanFieldBuoyancy } from '../ocean';
 
 export class Gizmos {
   private readonly wiredSphereGeometry: Geometry;
@@ -137,6 +137,7 @@ export class Gizmos {
   drawFloatingBody(
     camera: Camera,
     body: FloatingBody,
+    boyancy: OceanFieldBuoyancy,
     geometry?: Geometry
   ): void {
     const position = vec3.create();
@@ -150,10 +151,18 @@ export class Gizmos {
       this.drawGeometry(camera, geometry, position, rotation);
     }
 
-    if (body.sampled) {
+    if (boyancy['sampled']) {
       this.gpu.context.disable(WebGL2RenderingContext.DEPTH_TEST);
-      body['world'].forEach((world, i) => {
-        const sampled = body['sampled'][i];
+      const startIndex = boyancy['bodies']
+        .slice(0, boyancy['bodies'].indexOf(body))
+        .reduce((acc, curr) => acc + curr.floaters.length, 0);
+      const endIndex = startIndex + body.floaters.length;
+
+      const bodyWorld = boyancy['world'].slice(startIndex, endIndex);
+      const bodySampled = boyancy['sampled'].slice(startIndex, endIndex);
+
+      bodyWorld.forEach((world, i) => {
+        const sampled = bodySampled[i];
         const submerged = sampled?.[1] >= world?.[1];
         const color = !submerged
           ? vec4.fromValues(0.5, 1.0, 0.5, 0.0)
