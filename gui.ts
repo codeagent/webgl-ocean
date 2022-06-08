@@ -26,11 +26,21 @@ export interface GuiProjectedGridRendererParams {
   margin: number;
 }
 
+export interface GuiQuadTreeRendererParams {
+  size: number;
+  maxTiers: number;
+  minWaterLevel: number;
+  maxWaterLevel: number;
+  tileResolution: number;
+  distanceFactor: number;
+}
+
 export interface GuiParams extends OceanFieldBuildParams {
-  renderer: 'tile' | 'plate' | 'grid';
+  renderer: 'tile' | 'plate' | 'grid' | 'quad-tree';
   tileRenderer: GuiTileRendererParams;
   plateRenderer: GuiPlateRendererParams;
   gridRenderer: GuiProjectedGridRendererParams;
+  quadTreeRenderer: GuiQuadTreeRendererParams;
 }
 
 export const defaultParams: GuiParams = {
@@ -80,6 +90,14 @@ export const defaultParams: GuiParams = {
     aspect: 1.2,
     margin: 1.0,
   },
+  quadTreeRenderer: {
+    size: 1000.0,
+    maxTiers: 8,
+    minWaterLevel: -10.0,
+    maxWaterLevel: 10.0,
+    tileResolution: 256,
+    distanceFactor: 1.0,
+  },
   renderer: 'plate',
 };
 
@@ -107,7 +125,7 @@ export class Gui {
     const tiles = [1, 2, 3, 4, 5];
     const resolutions = [...Array(6).keys()].map((r) => 1 << (r + 5));
     const colors = ['#c74440', '#388c46', '#2d70b3'];
-    const renderers = ['tile', 'plate', 'grid'];
+    const renderers = ['tile', 'plate', 'grid', 'quad-tree'];
 
     gui.add(this, 'reset').name('Reset');
     gui.add(this.params, 'resolution', resolutions).name('Map Resolution');
@@ -119,14 +137,22 @@ export class Gui {
           tileGroup.show();
           plateGroup.hide();
           gridGroup.hide();
+          treeGroup.hide();
         } else if (e === 'plate') {
           plateGroup.show();
+          tileGroup.hide();
+          gridGroup.hide();
+          treeGroup.hide();
+        } else if (e === 'quad-tree') {
+          treeGroup.show();
+          plateGroup.hide();
           tileGroup.hide();
           gridGroup.hide();
         } else {
           gridGroup.show();
           plateGroup.hide();
           tileGroup.hide();
+          treeGroup.hide();
         }
       });
 
@@ -174,6 +200,27 @@ export class Gui {
       .add(this.params.gridRenderer, 'margin', 0.0, 6.0)
       .step(0.1)
       .name('NDC margin');
+
+    const treeGroup = gui.addFolder('Renderer options').hide();
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'tileResolution', resolutions)
+      .name('Geometry resolution');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'size', 0, 1000)
+      .step(1)
+      .name('Geometry size');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'maxTiers', 1, 8)
+      .name('Max tier');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'minWaterLevel', -100, 0)
+      .name('Min water level');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'maxWaterLevel', 0, 100)
+      .name('Max water level');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'distanceFactor', 0, 1)
+      .name('Distance factor');
 
     const wind = gui.addFolder('Wind');
     wind.add(this.params.wind, '0', 0, 31).step(1).name('X');

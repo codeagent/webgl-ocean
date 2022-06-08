@@ -64,6 +64,7 @@ gui.onChange$.subscribe((params) => {
   viewport.tileRenderer.setSettings(params.tileRenderer);
   viewport.plateRenderer.setSettings(params.plateRenderer);
   viewport.projectedGridRenderer.setSettings(params.gridRenderer);
+  viewport.quadTreeRenderer.setSettings(params.quadTreeRenderer);
 });
 
 animationFrames().subscribe(({ elapsed }) => {

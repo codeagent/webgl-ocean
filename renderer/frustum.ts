@@ -1,5 +1,6 @@
 import { glMatrix, mat4, vec3, vec4 } from 'gl-matrix';
 import { Camera } from '../graphics';
+import { AABB } from './aabb';
 
 export class Frustum {
   get planes(): Readonly<[vec4, vec4, vec4, vec4, vec4, vec4]> {
@@ -59,17 +60,17 @@ export class Frustum {
 
     // Update corners
     for (let i = 0; i < 8; i++) {
-      vec3.transformMat4(this.corners[i], this.cornersLocal[i], transform);
+      vec3.transformMat4(this._corners[i], this.cornersLocal[i], transform);
     }
 
     // Update planes
     const triples = [
-      [this.corners[0], this.corners[3], this.corners[4]],
-      [this.corners[5], this.corners[2], this.corners[1]],
-      [this.corners[5], this.corners[1], this.corners[0]],
-      [this.corners[3], this.corners[6], this.corners[7]],
-      [this.corners[6], this.corners[5], this.corners[4]],
-      [this.corners[1], this.corners[2], this.corners[0]],
+      [this._corners[0], this._corners[3], this._corners[4]],
+      [this._corners[5], this._corners[2], this._corners[1]],
+      [this._corners[5], this._corners[1], this._corners[0]],
+      [this._corners[3], this._corners[6], this._corners[7]],
+      [this._corners[6], this._corners[5], this._corners[4]],
+      [this._corners[1], this._corners[2], this._corners[0]],
     ];
 
     const a = vec3.create();
@@ -91,27 +92,24 @@ export class Frustum {
     }
   }
 
-  /**
-   * @param aabb [min, max]
-   */
-  testAABB(aabb: [vec3, vec3]) {
+  testAABB(aabb: AABB) {
     const corners = [
       // 0
-      vec4.fromValues(aabb[0][0], aabb[0][1], aabb[1][2], 1.0),
+      vec4.fromValues(aabb.min[0], aabb.min[1], aabb.max[2], 1.0),
       // 1
-      vec4.fromValues(aabb[1][0], aabb[0][1], aabb[1][2], 1.0),
+      vec4.fromValues(aabb.max[0], aabb.min[1], aabb.max[2], 1.0),
       // 2
-      vec4.fromValues(aabb[1][0], aabb[1][1], aabb[1][2], 1.0),
+      vec4.fromValues(aabb.max[0], aabb.max[1], aabb.max[2], 1.0),
       // 3
-      vec4.fromValues(aabb[0][0], aabb[1][1], aabb[1][2], 1.0),
+      vec4.fromValues(aabb.min[0], aabb.max[1], aabb.max[2], 1.0),
       // 4
-      vec4.fromValues(aabb[0][0], aabb[0][1], aabb[0][2], 1.0),
+      vec4.fromValues(aabb.min[0], aabb.min[1], aabb.min[2], 1.0),
       // 5
-      vec4.fromValues(aabb[1][0], aabb[0][1], aabb[0][2], 1.0),
+      vec4.fromValues(aabb.max[0], aabb.min[1], aabb.min[2], 1.0),
       // 6
-      vec4.fromValues(aabb[1][0], aabb[1][1], aabb[0][2], 1.0),
+      vec4.fromValues(aabb.max[0], aabb.max[1], aabb.min[2], 1.0),
       // 7
-      vec4.fromValues(aabb[0][0], aabb[1][1], aabb[0][2], 1.0),
+      vec4.fromValues(aabb.min[0], aabb.max[1], aabb.min[2], 1.0),
     ];
 
     for (const plane of this.planes) {
@@ -119,7 +117,7 @@ export class Frustum {
         return false;
       }
     }
-    
+
     return true;
   }
 

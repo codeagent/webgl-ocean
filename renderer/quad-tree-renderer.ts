@@ -12,28 +12,33 @@ import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createPlane } from './mesh';
+import { AABB } from './aabb';
+import { Frustum } from './frustum';
 
 declare const createPlane: (resolution: number) => Mesh;
 
 export interface QuadTreeOceanRendererSettings {
-  minTileSize: number;
-  maxTileSize: number;
+  size: number;
+  maxTiers: number;
   minWaterLevel: number;
   maxWaterLevel: number;
   tileResolution: number;
-  minDistance: number;
-  maxDistance: number;
+  distanceFactor: number;
 }
 
 const defaultSettings: Readonly<QuadTreeOceanRendererSettings> = {
-  minTileSize: 1.0,
-  maxTileSize: 100.0,
+  size: 1000.0,
+  maxTiers: 8,
   minWaterLevel: -10.0,
   maxWaterLevel: 10.0,
   tileResolution: 256,
-  minDistance: 1.0,
-  maxDistance: 100.0,
+  distanceFactor: 1.0,
 };
+
+interface Tile {
+  aabb: AABB;
+  level: number;
+}
 
 export class QuadTreeOceanRenderer {
   private readonly shader: ShaderProgram;
@@ -43,6 +48,7 @@ export class QuadTreeOceanRenderer {
       ...defaultSettings,
     });
   private geometry: Geometry;
+  private frustum: Frustum;
 
   public constructor(private readonly gpu: Gpu) {
     this.shader = this.gpu.createShaderProgram(vs, fs);
@@ -75,7 +81,12 @@ export class QuadTreeOceanRenderer {
   }
 
   public render(camera: Camera, oceanField: OceanField) {
-    const settings = this.getSettings();
+    if (!this.frustum) {
+      this.frustum = new Frustum(camera);
+    } else {
+      this.frustum.transform(camera.transform);
+    }
+
     this.gpu.setViewport(
       0,
       0,
@@ -109,7 +120,6 @@ export class QuadTreeOceanRenderer {
         oceanField.params.cascades[i].croppiness
       );
     }
-    this.gpu.setProgramVariable(this.shader, 'scale', 'float', settings.size);
     this.gpu.setProgramVariable(
       this.shader,
       'foamSpreading',
@@ -132,23 +142,110 @@ export class QuadTreeOceanRenderer {
     this.gpu.setProgramVariable(this.shader, 'pos', 'vec3', camera.position);
 
     if (this.geometry) {
-      const transform = mat4.create();
-      for (let i = 0; i < settings.tiles; i++) {
-        for (let j = 0; j < settings.tiles; j++) {
-          mat4.fromTranslation(
-            transform,
-            vec3.fromValues(i * settings.size, 0.0, j * settings.size)
+      const tiles = this.generateTiles(this.frustum);
+      const settings = this.getSettings();
+      for (const tile of tiles) {
+        this.renderTile(tile, this.geometry, settings);
+      }
+    }
+  }
+
+  private renderTile(
+    tile: Tile,
+    geometry: Geometry,
+    settings: QuadTreeOceanRendererSettings
+  ) {
+    const { aabb, level } = tile;
+    const scale = settings.size / 2 ** level;
+    const offset = vec3.fromValues(
+      (aabb.min[0] + aabb.max[0]) * 0.5,
+      0.0,
+      (aabb.min[2] + aabb.max[2]) * 0.5
+    );
+    const transform = mat4.create();
+    mat4.fromTranslation(transform, offset);
+
+    this.gpu.setProgramVariable(this.shader, 'scale', 'float', scale);
+    this.gpu.setProgramVariable(this.shader, 'worldMat', 'mat4', transform);
+    this.gpu.drawGeometry(geometry);
+  }
+
+  private generateTiles(frustum: Frustum) {
+    const { size, minWaterLevel, maxWaterLevel, distanceFactor, maxTiers } =
+      this.getSettings();
+
+    const queue: Tile[] = [
+      {
+        aabb: new AABB(
+          vec3.fromValues(-size * 0.5, minWaterLevel, -size * 0.5),
+          vec3.fromValues(size * 0.5, maxWaterLevel, size * 0.5)
+        ),
+        level: 0,
+      },
+    ];
+    const tiles: Tile[] = [];
+
+    while (queue.length) {
+      const { aabb, level } = queue.shift();
+      if (frustum.testAABB(aabb)) {
+        const distance = aabb.distance(frustum.origin);
+        const size = Math.abs(aabb.max[0] - aabb.min[0]);
+
+        if (level === maxTiers || distance * distanceFactor > size) {
+          tiles.push({ aabb, level });
+        } else {
+          // subdivide
+          const aabb0 = new AABB(
+            aabb.min,
+            vec3.fromValues(
+              aabb.min[0] + size * 0.5,
+              maxWaterLevel,
+              aabb.min[2] + size * 0.5
+            )
           );
-          this.gpu.setProgramVariable(
-            this.shader,
-            'worldMat',
-            'mat4',
-            transform
+          const aabb1 = new AABB(
+            vec3.fromValues(
+              aabb.min[0] + size * 0.5,
+              minWaterLevel,
+              aabb.min[2]
+            ),
+            vec3.fromValues(
+              aabb.max[0],
+              maxWaterLevel,
+              aabb.min[2] + size * 0.5
+            )
           );
-          this.gpu.drawGeometry(this.geometry);
+          const aabb2 = new AABB(
+            vec3.fromValues(
+              aabb.min[0] + size * 0.5,
+              minWaterLevel,
+              aabb.min[2] + size * 0.5
+            ),
+            aabb.max
+          );
+          const aabb3 = new AABB(
+            vec3.fromValues(
+              aabb.min[0],
+              minWaterLevel,
+              aabb.min[2] + size * 0.5
+            ),
+            vec3.fromValues(
+              aabb.min[0] + size * 0.5,
+              maxWaterLevel,
+              aabb.max[2]
+            )
+          );
+          queue.push(
+            { aabb: aabb0, level: level + 1 },
+            { aabb: aabb1, level: level + 1 },
+            { aabb: aabb2, level: level + 1 },
+            { aabb: aabb3, level: level + 1 }
+          );
         }
       }
     }
+
+    return tiles;
   }
 
   public getSettings(): Readonly<QuadTreeOceanRendererSettings> {
