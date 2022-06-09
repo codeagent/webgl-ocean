@@ -92,13 +92,13 @@ export const defaultParams: GuiParams = {
   },
   quadTreeRenderer: {
     size: 1000.0,
-    maxTiers: 8,
+    maxTiers: 3,
     minWaterLevel: -10.0,
     maxWaterLevel: 10.0,
-    tileResolution: 256,
+    tileResolution: 32,
     distanceFactor: 1.0,
   },
-  renderer: 'plate',
+  renderer: 'quad-tree',
 };
 
 export class Gui {
@@ -166,7 +166,7 @@ export class Gui {
       .name('Geometry size');
     tileGroup.add(this.params.tileRenderer, 'tiles', tiles).name('Tiles');
 
-    const plateGroup = gui.addFolder('Renderer options');
+    const plateGroup = gui.addFolder('Renderer options').hide();
     plateGroup
       .add(this.params.plateRenderer, 'rings', 1, 512)
       .step(1)
@@ -201,7 +201,7 @@ export class Gui {
       .step(0.1)
       .name('NDC margin');
 
-    const treeGroup = gui.addFolder('Renderer options').hide();
+    const treeGroup = gui.addFolder('Renderer options').show();
     treeGroup
       .add(this.params.quadTreeRenderer, 'tileResolution', resolutions)
       .name('Geometry resolution');
@@ -211,7 +211,8 @@ export class Gui {
       .name('Geometry size');
     treeGroup
       .add(this.params.quadTreeRenderer, 'maxTiers', 1, 8)
-      .name('Max tier');
+      .name('Max tier')
+      .step(1);
     treeGroup
       .add(this.params.quadTreeRenderer, 'minWaterLevel', -100, 0)
       .name('Min water level');
@@ -219,7 +220,7 @@ export class Gui {
       .add(this.params.quadTreeRenderer, 'maxWaterLevel', 0, 100)
       .name('Max water level');
     treeGroup
-      .add(this.params.quadTreeRenderer, 'distanceFactor', 0, 1)
+      .add(this.params.quadTreeRenderer, 'distanceFactor', 1e-2, 10)
       .name('Distance factor');
 
     const wind = gui.addFolder('Wind');

@@ -1,7 +1,9 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, fromEvent } from 'rxjs';
 import { distinctUntilChanged, switchMap, debounceTime } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Key } from 'ts-keycode-enum';
 
 import { Geometry, Gpu, Mesh, ShaderProgram, Camera } from '../graphics';
 import { OceanField } from '../ocean';
@@ -29,10 +31,10 @@ export interface QuadTreeOceanRendererSettings {
 const defaultSettings: Readonly<QuadTreeOceanRendererSettings> = {
   size: 1000.0,
   maxTiers: 8,
-  minWaterLevel: -10.0,
-  maxWaterLevel: 10.0,
-  tileResolution: 256,
-  distanceFactor: 1.0,
+  minWaterLevel: -1.0,
+  maxWaterLevel: 1.0,
+  tileResolution: 32,
+  distanceFactor: 0.5,
 };
 
 interface Tile {
@@ -49,6 +51,7 @@ export class QuadTreeOceanRenderer {
     });
   private geometry: Geometry;
   private frustum: Frustum;
+  private camera: Camera;
 
   public constructor(private readonly gpu: Gpu) {
     this.shader = this.gpu.createShaderProgram(vs, fs);
@@ -76,11 +79,21 @@ export class QuadTreeOceanRenderer {
         if (this.geometry) {
           this.gpu.destroyGeometry(this.geometry);
         }
-        this.geometry = this.gpu.createGeometry(mesh);
+        this.geometry = this.gpu.createGeometry(
+          mesh,
+          WebGL2RenderingContext.LINES
+        );
+      });
+
+    fromEvent(document, 'mousedown')
+      .pipe(filter((e: MouseEvent) => e.button === 0))
+      .subscribe(() => {
+        this.frustum.transform(this.camera.transform);
       });
   }
 
   public render(camera: Camera, oceanField: OceanField) {
+    this.camera = camera;
     if (!this.frustum) {
       this.frustum = new Frustum(camera);
     } else {
@@ -144,6 +157,8 @@ export class QuadTreeOceanRenderer {
     if (this.geometry) {
       const tiles = this.generateTiles(this.frustum);
       const settings = this.getSettings();
+      console.log(tiles.length);
+
       for (const tile of tiles) {
         this.renderTile(tile, this.geometry, settings);
       }
@@ -205,14 +220,14 @@ export class QuadTreeOceanRenderer {
           );
           const aabb1 = new AABB(
             vec3.fromValues(
-              aabb.min[0] + size * 0.5,
+              aabb.min[0],
               minWaterLevel,
-              aabb.min[2]
+              aabb.min[2] + size * 0.5
             ),
             vec3.fromValues(
-              aabb.max[0],
+              aabb.min[0] + size * 0.5,
               maxWaterLevel,
-              aabb.min[2] + size * 0.5
+              aabb.max[2]
             )
           );
           const aabb2 = new AABB(
@@ -225,14 +240,14 @@ export class QuadTreeOceanRenderer {
           );
           const aabb3 = new AABB(
             vec3.fromValues(
-              aabb.min[0],
+              aabb.min[0] + size * 0.5,
               minWaterLevel,
-              aabb.min[2] + size * 0.5
+              aabb.min[2]
             ),
             vec3.fromValues(
-              aabb.min[0] + size * 0.5,
+              aabb.max[0],
               maxWaterLevel,
-              aabb.max[2]
+              aabb.min[2] + size * 0.5
             )
           );
           queue.push(
