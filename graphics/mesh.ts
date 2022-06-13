@@ -119,7 +119,7 @@ export const createQuad = (): Mesh => ({
   indexData: Uint32Array.of(0, 1, 2, 0, 2, 3),
 });
 
-export const createPlane = (resolution: number): Mesh => {
+export const createPlane = (resolution: number, wired = false): Mesh => {
   const vertices: vec3[] = [];
   const indices: number[] = [];
   const N = resolution;
@@ -141,15 +141,17 @@ export const createPlane = (resolution: number): Mesh => {
       let v3 = vec3.fromValues(j * delta, 0.0, (i + 1) * delta);
       vec3.add(v3, v3, offset);
 
-      indices.push(
-        vertices.length,
-        vertices.length + 1,
-        vertices.length + 1,
-        vertices.length + 2
-      );
-
-      // indices.push(vertices.length + 1, vertices.length, vertices.length + 2);
-      // indices.push(vertices.length + 3, vertices.length + 2, vertices.length);
+      if (wired) {
+        indices.push(
+          vertices.length,
+          vertices.length + 1,
+          vertices.length + 1,
+          vertices.length + 2
+        );
+      } else {
+        indices.push(vertices.length + 1, vertices.length, vertices.length + 2);
+        indices.push(vertices.length + 3, vertices.length + 2, vertices.length);
+      }
 
       vertices.push(v0, v1, v2, v3);
     }

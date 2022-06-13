@@ -5,35 +5,17 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import { OceanFieldBuildParams } from './ocean';
+import {
+  TileOceanRendererSettings,
+  PlateOceanRendererSettings,
+  ProjectedGridRendererSettings,
+  QuadTreeOceanRendererSettings,
+} from './renderer';
 
-export interface GuiTileRendererParams {
-  resolution: number;
-  size: number;
-  tiles: number;
-}
-
-export interface GuiPlateRendererParams {
-  steep: number;
-  offset: number;
-  delta: number;
-  rings: number;
-  segments: number;
-}
-
-export interface GuiProjectedGridRendererParams {
-  resolution: number;
-  aspect: number;
-  margin: number;
-}
-
-export interface GuiQuadTreeRendererParams {
-  size: number;
-  maxTiers: number;
-  minWaterLevel: number;
-  maxWaterLevel: number;
-  tileResolution: number;
-  distanceFactor: number;
-}
+export type GuiTileRendererParams = TileOceanRendererSettings;
+export type GuiPlateRendererParams = PlateOceanRendererSettings;
+export type GuiProjectedGridRendererParams = ProjectedGridRendererSettings;
+export type GuiQuadTreeRendererParams = QuadTreeOceanRendererSettings;
 
 export interface GuiParams extends OceanFieldBuildParams {
   renderer: 'tile' | 'plate' | 'grid' | 'quad-tree';
@@ -91,12 +73,14 @@ export const defaultParams: GuiParams = {
     margin: 1.0,
   },
   quadTreeRenderer: {
-    size: 1000.0,
-    maxTiers: 3,
+    size: 1e4,
+    maxTiers: 10,
     minWaterLevel: -10.0,
     maxWaterLevel: 10.0,
-    tileResolution: 32,
-    distanceFactor: 1.0,
+    tileResolution: 128,
+    distanceFactor: 2.5,
+    fixed: true,
+    wired: false,
   },
   renderer: 'quad-tree',
 };

@@ -1,23 +1,21 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { BehaviorSubject, fromEvent } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, switchMap, debounceTime } from 'rxjs/operators';
 import { isEqual } from 'lodash-es';
-import { filter, takeUntil } from 'rxjs/operators';
-import { Key } from 'ts-keycode-enum';
 
 import { Geometry, Gpu, Mesh, ShaderProgram, Camera } from '../graphics';
 import { OceanField } from '../ocean';
 import { ThreadWorker } from '../thread';
+import { AABB } from './aabb';
+import { Frustum } from './frustum';
 
 import vs from './programs/tile-vertex.glsl';
 import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createPlane } from './mesh';
-import { AABB } from './aabb';
-import { Frustum } from './frustum';
 
-declare const createPlane: (resolution: number) => Mesh;
+declare const createPlane: (resolution: number, wired: boolean) => Mesh;
 
 export interface QuadTreeOceanRendererSettings {
   size: number;
@@ -26,15 +24,19 @@ export interface QuadTreeOceanRendererSettings {
   maxWaterLevel: number;
   tileResolution: number;
   distanceFactor: number;
+  fixed: boolean;
+  wired: boolean;
 }
 
-const defaultSettings: Readonly<QuadTreeOceanRendererSettings> = {
-  size: 1000.0,
-  maxTiers: 8,
-  minWaterLevel: -1.0,
-  maxWaterLevel: 1.0,
-  tileResolution: 32,
-  distanceFactor: 0.5,
+export const defaultSettings: Readonly<QuadTreeOceanRendererSettings> = {
+  size: 1e4,
+  maxTiers: 10,
+  minWaterLevel: -10.0,
+  maxWaterLevel: 10.0,
+  tileResolution: 128,
+  distanceFactor: 2.5,
+  fixed: true,
+  wired: false,
 };
 
 interface Tile {
@@ -42,58 +44,56 @@ interface Tile {
   level: number;
 }
 
+type ThreadWorkerInput = QuadTreeOceanRendererSettings;
+
 export class QuadTreeOceanRenderer {
   private readonly shader: ShaderProgram;
-  private readonly worker: ThreadWorker<number, Mesh>;
+  private readonly worker: ThreadWorker<ThreadWorkerInput, Mesh>;
   private readonly settings$ =
     new BehaviorSubject<QuadTreeOceanRendererSettings>({
       ...defaultSettings,
     });
   private geometry: Geometry;
   private frustum: Frustum;
-  private camera: Camera;
 
   public constructor(private readonly gpu: Gpu) {
     this.shader = this.gpu.createShaderProgram(vs, fs);
-    this.worker = new ThreadWorker<number, Mesh>((resolution) => {
+    this.worker = new ThreadWorker<ThreadWorkerInput, Mesh>((input) => {
       const cache: Map<number, Mesh> =
         self['tileOceanRendererCache'] ??
         (self['tileOceanRendererCache'] = new Map<number, Mesh>());
 
-      if (!cache.has(resolution)) {
-        cache.set(resolution, createPlane(resolution));
+      if (!cache.has(input.tileResolution)) {
+        cache.set(
+          input.tileResolution,
+          createPlane(input.tileResolution, input.wired)
+        );
       }
 
-      return cache.get(resolution);
+      return cache.get(input.tileResolution);
     });
 
     this.settings$
       .pipe(
         debounceTime(10),
         distinctUntilChanged(isEqual),
-        switchMap((e: QuadTreeOceanRendererSettings) =>
-          this.worker.process(e.tileResolution)
-        )
+        switchMap((e: QuadTreeOceanRendererSettings) => this.worker.process(e))
       )
       .subscribe((mesh: Mesh) => {
         if (this.geometry) {
           this.gpu.destroyGeometry(this.geometry);
         }
+        const { wired } = this.getSettings();
         this.geometry = this.gpu.createGeometry(
           mesh,
-          WebGL2RenderingContext.LINES
+          wired
+            ? WebGL2RenderingContext.LINES
+            : WebGL2RenderingContext.TRIANGLES
         );
-      });
-
-    fromEvent(document, 'mousedown')
-      .pipe(filter((e: MouseEvent) => e.button === 0))
-      .subscribe(() => {
-        this.frustum.transform(this.camera.transform);
       });
   }
 
   public render(camera: Camera, oceanField: OceanField) {
-    this.camera = camera;
     if (!this.frustum) {
       this.frustum = new Frustum(camera);
     } else {
@@ -157,7 +157,6 @@ export class QuadTreeOceanRenderer {
     if (this.geometry) {
       const tiles = this.generateTiles(this.frustum);
       const settings = this.getSettings();
-      console.log(tiles.length);
 
       for (const tile of tiles) {
         this.renderTile(tile, this.geometry, settings);
@@ -186,14 +185,31 @@ export class QuadTreeOceanRenderer {
   }
 
   private generateTiles(frustum: Frustum) {
-    const { size, minWaterLevel, maxWaterLevel, distanceFactor, maxTiers } =
-      this.getSettings();
+    const {
+      size,
+      minWaterLevel,
+      maxWaterLevel,
+      distanceFactor,
+      maxTiers,
+      fixed,
+    } = this.getSettings();
+
+    const offsetX = fixed ? frustum.origin[0] : 0.0;
+    const offsetZ = fixed ? frustum.origin[2] : 0.0;
 
     const queue: Tile[] = [
       {
         aabb: new AABB(
-          vec3.fromValues(-size * 0.5, minWaterLevel, -size * 0.5),
-          vec3.fromValues(size * 0.5, maxWaterLevel, size * 0.5)
+          vec3.fromValues(
+            -size * 0.5 + offsetX,
+            minWaterLevel,
+            -size * 0.5 + offsetZ
+          ),
+          vec3.fromValues(
+            size * 0.5 + offsetX,
+            maxWaterLevel,
+            size * 0.5 + offsetZ
+          )
         ),
         level: 0,
       },

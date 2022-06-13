@@ -65,7 +65,7 @@ export class Frustum {
 
     // Update planes
     const triples = [
-      [this._corners[1], this._corners[4], this._corners[0]],
+      [this._corners[7], this._corners[4], this._corners[0]],
       [this._corners[4], this._corners[5], this._corners[1]],
       [this._corners[5], this._corners[6], this._corners[2]],
       [this._corners[6], this._corners[7], this._corners[3]],
@@ -78,17 +78,11 @@ export class Frustum {
     const n = vec3.create();
     let i = 0;
     for (const triple of triples) {
-      vec3.sub(b, triple[1], triple[0]);
-      vec3.sub(a, triple[2], triple[0]);
+      vec3.sub(a, triple[1], triple[0]);
+      vec3.sub(b, triple[2], triple[0]);
       vec3.cross(n, a, b);
       vec3.normalize(n, n);
-      return vec4.set(
-        this.planes[i++],
-        n[0],
-        n[1],
-        n[2],
-        -vec3.dot(n, triple[0])
-      );
+      vec4.set(this._planes[i++], n[0], n[1], n[2], -vec3.dot(n, triple[0]));
     }
   }
 
@@ -113,9 +107,30 @@ export class Frustum {
     ];
 
     for (const plane of this.planes) {
-      if (corners.every((corner) => vec4.dot(corner, plane)  0)) {
+      if (corners.every((corner) => vec4.dot(corner, plane) > 0)) {
         return false;
       }
+    }
+
+    if (this._corners.every((c) => c[0] < aabb.min[0])) {
+      return false;
+    }
+    if (this._corners.every((c) => c[0] > aabb.max[0])) {
+      return false;
+    }
+
+    if (this._corners.every((c) => c[1] < aabb.min[1])) {
+      return false;
+    }
+    if (this._corners.every((c) => c[1] > aabb.max[1])) {
+      return false;
+    }
+
+    if (this._corners.every((c) => c[2] < aabb.min[2])) {
+      return false;
+    }
+    if (this._corners.every((c) => c[2] > aabb.max[2])) {
+      return false;
     }
 
     return true;
@@ -129,14 +144,10 @@ export class Frustum {
     const left = -right;
     const bottom = -top;
 
-    console.log(near, far, top, bottom, right, left);
-
     const left_f = (left * far) / near;
     const right_f = (right * far) / near;
     const bottom_f = (bottom * far) / near;
     const top_f = (top * far) / near;
-
-      console.log(top_f, bottom_f, right_f, left_f);
 
     // Get points on near plane
     this.cornersLocal[0][0] = left;
