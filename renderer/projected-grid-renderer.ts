@@ -5,7 +5,7 @@ import { isEqual } from 'lodash-es';
 
 import { Geometry, Gpu, Mesh, ShaderProgram, Camera } from '../graphics';
 import { OceanField } from '../ocean';
-import { ThreadWorker } from '../thread';
+import { ThreadWorker } from '../utils';
 
 import vs from './programs/grid-vertex.glsl';
 import fs from './programs/fragment.glsl';

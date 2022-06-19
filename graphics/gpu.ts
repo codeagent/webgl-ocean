@@ -1,12 +1,14 @@
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
 import { animationFrames, lastValueFrom, takeWhile } from 'rxjs';
 import { finalize, tap } from 'rxjs/operators';
+import { KtxInfo } from '../utils';
 
 export type Texture2d = WebGLTexture;
 export type VertexBuffer = WebGLBuffer;
 export type IndexBuffer = WebGLBuffer;
 export type RenderTarget = WebGLFramebuffer;
 export type Sync = WebGLSync;
+export type Cubemap = WebGLTexture;
 
 export interface VertexAttribute {
   semantics: string;
@@ -518,6 +520,100 @@ export class Gpu {
       type,
       data
     );
+  }
+
+  createCubeMap(ktx: KtxInfo): Cubemap {
+    const texture = this._gl.createTexture();
+    this._gl.bindTexture(this._gl.TEXTURE_CUBE_MAP, texture);
+
+    let level = 0;
+    for (let mip of ktx.mipmaps) {
+      const faces = [
+        {
+          target: WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X,
+          bytes: mip.cubemap[0],
+        },
+        {
+          target: WebGL2RenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X,
+          bytes: mip.cubemap[1],
+        },
+        {
+          target: WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y,
+          bytes: mip.cubemap[2],
+        },
+        {
+          target: WebGL2RenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+          bytes: mip.cubemap[3],
+        },
+        {
+          target: WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z,
+          bytes: mip.cubemap[4],
+        },
+        {
+          target: WebGL2RenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+          bytes: mip.cubemap[5],
+        },
+      ];
+
+      for (const face of faces) {
+        this._gl.texImage2D(
+          face.target,
+          level,
+          ktx.glInternalFormat,
+          mip.width,
+          mip.height,
+          0,
+          ktx.glInternalFormat === WebGL2RenderingContext.R11F_G11F_B10F
+            ? WebGL2RenderingContext.RGB
+            : ktx.glFormat,
+          ktx.glInternalFormat === WebGL2RenderingContext.R11F_G11F_B10F
+            ? WebGL2RenderingContext.UNSIGNED_INT_10F_11F_11F_REV
+            : ktx.glType,
+          ktx.glInternalFormat === WebGL2RenderingContext.R11F_G11F_B10F
+            ? new Uint32Array(
+                face.bytes.buffer,
+                face.bytes.byteOffset,
+                face.bytes.byteLength / 4
+              )
+            : face.bytes
+        );
+      }
+
+      level++;
+    }
+
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+      WebGL2RenderingContext.TEXTURE_MAG_FILTER,
+      WebGL2RenderingContext.LINEAR
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+      WebGL2RenderingContext.TEXTURE_MIN_FILTER,
+      WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+      WebGL2RenderingContext.TEXTURE_BASE_LEVEL,
+      0
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+      WebGL2RenderingContext.TEXTURE_MAX_LEVEL,
+      ktx.numberOfMipmapLevels - 1
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+      WebGL2RenderingContext.TEXTURE_WRAP_S,
+      WebGL2RenderingContext.CLAMP_TO_EDGE
+    );
+    this._gl.texParameteri(
+      WebGL2RenderingContext.TEXTURE_CUBE_MAP,
+      WebGL2RenderingContext.TEXTURE_WRAP_T,
+      WebGL2RenderingContext.CLAMP_TO_EDGE
+    );
+
+    return texture;
   }
 
   updateGeometry(geometry: Geometry, vertexData: ArrayBufferView) {

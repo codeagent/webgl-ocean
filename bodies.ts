@@ -4,7 +4,7 @@ import { Geometry } from './graphics';
 import { FloatingBody, OceanFieldBuoyancy } from './ocean';
 import { Box, World, Cylinder, Sphere } from './physics';
 import OBJ from './objects/shapes';
-import { loadObj } from './loader';
+import { loadObj } from './utils';
 
 const obj = loadObj(OBJ);
 

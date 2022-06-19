@@ -6,7 +6,7 @@ import { Viewport } from './viewport';
 import { Camera, Gpu } from './graphics';
 import { OceanFieldBuilder, OceanFieldBuoyancy } from './ocean';
 import { Gui } from './gui';
-import { registerWorkerGlobals } from './thread';
+import { registerWorkerGlobals } from './utils';
 import { FpsCameraController } from './controller';
 
 import {
@@ -42,7 +42,7 @@ if (!context) {
   throw new Error('Failed to create webgl2 drawing context');
 }
 const gpu = new Gpu(context);
-const camera = new Camera(45.0, canvas.width / canvas.height, 1.0, 1.0e4 );
+const camera = new Camera(45.0, canvas.width / canvas.height, 1.0, 1.0e4);
 camera.lookAt(vec3.fromValues(-10, 2.5, -10), vec3.create());
 
 const cameraController = new FpsCameraController(canvas, camera);
