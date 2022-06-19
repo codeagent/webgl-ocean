@@ -128,7 +128,11 @@ export class Viewport {
     } else if (type === 'grid') {
       this.projectedGridRenderer.render(this.cameraController.camera, field);
     } else if (type === 'quad-tree') {
-      this.quadTreeRenderer.render(this.cameraController.camera, field);
+      this.quadTreeRenderer.render(
+        this.cameraController.camera,
+        field,
+        this.skybox
+      );
     } else {
       this.plateRenderer.render(this.cameraController.camera, field);
     }

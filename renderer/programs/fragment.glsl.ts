@@ -11,6 +11,7 @@ uniform float foamSpreading;
 uniform float foamContrast;
 uniform float sizes[3];   
 uniform float croppinesses[3];   
+uniform samplerCube env;
 
 uniform sampler2D dx_hy_dz_dxdz0;
 uniform sampler2D sx_sz_dxdx_dzdz0;
@@ -66,15 +67,39 @@ float getFoam(in vec2 xz) {
   float dxdz = dxdz0 * croppinesses[0] + dxdz1 * croppinesses[1] + dxdz2 * croppinesses[2];
 
   float val = det(jacobian(dxdx_dzdz.x, dxdz, dxdx_dzdz.y));
-  return pow(-min(0.0f, val - foamSpreading), foamContrast);
+  return abs(pow(-min(0.0f, val - foamSpreading), foamContrast));
+}
+
+
+vec3 gammaCorrection(const vec3 color) {
+  return pow(color, vec3(1.0f / 2.2f));
+}
+
+vec3 ACESFilm(vec3 x){
+    return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
+}
+
+float fresnelSchlick(vec3 view, vec3 normal){
+    float cosTheta = dot(normal, normalize(view));
+	float F0 = 0.02;
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 vec3 surface(in vec3 normal, in vec3 view) {
   const vec3 upwelling = vec3(0.0, 0.2, 0.3);
-  const vec3 sky = vec3(0.69, 0.84, 1.0);
   const vec3 mist = vec3(0.34, 0.42, 0.5);
   const float nShell = 1.34f;
-  const float kDiffuse = 0.91f;
+  const float kDiffuse = 1.0f;
+  const vec3 sunIndensity = vec3(0.42f, 0.39f, 0.19f) * 1.0e2;
+  vec3 sunDir = normalize(vec3(1.0f, 1.0f, 10.0f));
+
+  vec3 ref = reflect(-view, normal);
+  ref.y = max(ref.y, 1.0e-0);
+  ref = normalize(ref);
+  
+  vec3 sky = ACESFilm(textureLod(env, ref, 0.0f).rgb) + pow(max(dot(ref, sunDir), 0.0f), 500.0f) * sunIndensity;
+  sky = gammaCorrection(sky);
+  //sky = vec3(0.69, 0.84, 1.0);
 
   float reflectivity;
   float costhetai = abs(dot(normal, normalize(view)));
@@ -94,14 +119,16 @@ vec3 surface(in vec3 normal, in vec3 view) {
     reflectivity = 0.5 * (fs * fs + ts * ts );
   }
 
-  float falloff = exp(-length(view) * 1.0e-3) * kDiffuse;
+  // reflectivity = fresnelSchlick(view,normal);
+
+  float falloff = 1.0f; // min(exp(-(length(view) - 1000.0f) * 1.0e-2), 1.0f) * kDiffuse;
   vec3 surf =  reflectivity * sky + (1.0f - reflectivity) * upwelling;
   return falloff * surf  + (1.0f - falloff) * mist;
 }
 
 void main()
 {
-  float f = getFoam(_xz);
+  float f = getFoam(_xz) ;
   vec3 n = getNormal(_xz);
   const vec3 foam = vec3(1.0f);
   vec3 water = surface(n, pos - _position);

@@ -14,6 +14,7 @@ import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createPlane } from './mesh';
+import { Cubemap } from '../graphics/gpu';
 
 declare const createPlane: (resolution: number, wired: boolean) => Mesh;
 
@@ -93,7 +94,7 @@ export class QuadTreeOceanRenderer {
       });
   }
 
-  public render(camera: Camera, oceanField: OceanField) {
+  public render(camera: Camera, oceanField: OceanField, env: Cubemap) {
     if (!this.frustum) {
       this.frustum = new Frustum(camera);
     } else {
@@ -119,6 +120,7 @@ export class QuadTreeOceanRenderer {
       ],
       oceanField.dataMaps
     );
+    this.gpu.setProgramCubemap(this.shader, 'env', env, 6);
     for (let i = 0; i < oceanField.params.cascades.length; i++) {
       this.gpu.setProgramVariable(
         this.shader,

@@ -24,7 +24,7 @@ export class SkyboxRenderer {
     );
     this.gpu.setProgram(this.shader);
     this.gpu.setProgramCubemap(this.shader, 'env', skybox, 0);
-    this.gpu.setProgramVariable(this.shader, 'exposure', 'float', 3.0);
+    // this.gpu.setProgramVariable(this.shader, 'exposure', 'float', 3.0);
     this.gpu.setProgramVariable(this.shader, 'gamma', 'float', 2.2);
     this.gpu.setProgramVariable(this.shader, 'viewMat', 'mat4', camera.view);
     this.gpu.setProgramVariable(
