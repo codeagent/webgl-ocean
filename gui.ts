@@ -49,7 +49,7 @@ export const defaultParams: GuiParams = {
       maxWave: 7,
     },
   ],
-  resolution: 2,
+  resolution: 256,
   wind: vec2.fromValues(2, 2),
   alignment: 1.0e-2,
   foamSpreading: 1.2,
