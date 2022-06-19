@@ -27,7 +27,6 @@ export const loadObj = (content: string) => {
   const collection: MeshCollection = {};
   let name: string = '';
   let vertexFormat: VertexAttribute[] = null;
-  let verticesCount = 0;
 
   const lines = content.split(/\r\n|\n/);
   const objectRegExp = /^o\s+(.+)/;
@@ -53,7 +52,6 @@ export const loadObj = (content: string) => {
 
         lookup.clear();
         vertexData.length = 0;
-        verticesCount = 0;
         indexData = [];
       }
       name = matches[1].trim();
@@ -93,7 +91,6 @@ export const loadObj = (content: string) => {
           if (!lookup.has(f[i].key)) {
             lookup.set(f[i].key, vertexData.length / 3);
             vertexData.push(...positions[f[i].position - 1]);
-            verticesCount++;
           }
           indexData.push(lookup.get(f[i].key));
         }
@@ -132,7 +129,6 @@ export const loadObj = (content: string) => {
             lookup.set(f[i].key, vertexData.length / 6);
             vertexData.push(...positions[f[i].position - 1]);
             vertexData.push(...normals[f[i].normal - 1]);
-            verticesCount++;
           }
           indexData.push(lookup.get(f[i].key));
         }
@@ -183,7 +179,6 @@ export const loadObj = (content: string) => {
             vertexData.push(...positions[f[i].position - 1]);
             vertexData.push(...normals[f[i].normal - 1]);
             vertexData.push(...uvs[f[i].uv - 1]);
-            verticesCount++;
           }
           indexData.push(lookup.get(f[i].key));
         }

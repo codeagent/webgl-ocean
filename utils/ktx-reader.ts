@@ -65,18 +65,18 @@ export class KtxReader {
 
     const props = {} as any;
     for (let prop of [
-      "glType",
-      "glTypeSize",
-      "glFormat",
-      "glInternalFormat",
-      "glBaseInternalFormat",
-      "pixelWidth",
-      "pixelHeight",
-      "pixelDepth",
-      "numberOfArrayElements",
-      "numberOfFaces",
-      "numberOfMipmapLevels",
-      "bytesOfKeyValueData"
+      'glType',
+      'glTypeSize',
+      'glFormat',
+      'glInternalFormat',
+      'glBaseInternalFormat',
+      'pixelWidth',
+      'pixelHeight',
+      'pixelDepth',
+      'numberOfArrayElements',
+      'numberOfFaces',
+      'numberOfMipmapLevels',
+      'bytesOfKeyValueData',
     ]) {
       props[prop] = view.getUint32(offset, littleEndian);
       offset += 4;
@@ -94,7 +94,7 @@ export class KtxReader {
       numberOfArrayElements,
       numberOfFaces,
       numberOfMipmapLevels,
-      bytesOfKeyValueData
+      bytesOfKeyValueData,
     } = props;
 
     numberOfMipmapLevels = numberOfMipmapLevels || 1;
@@ -171,7 +171,7 @@ export class KtxReader {
       numberOfFaces,
       numberOfMipmapLevels,
       keyValueData,
-      mipmaps
+      mipmaps,
     };
   }
 
@@ -187,3 +187,15 @@ export class KtxReader {
     return [key, value];
   }
 }
+
+export const parseSH = (ktx: KtxInfo): number[] => {
+  const meta = ktx.keyValueData.find(([key]) => /sh/.test(key));
+  if (!meta) {
+    return [];
+  }
+  const [, sh] = meta;
+  return sh
+    .split(/[\s]+/g)
+    .map(parseFloat)
+    .filter((v) => !isNaN(v));
+};

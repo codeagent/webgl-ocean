@@ -61,8 +61,9 @@ export class Gpu {
 
   constructor(private readonly _gl: WebGL2RenderingContext) {
     _gl.enable(WebGL2RenderingContext.DEPTH_TEST);
-    // _gl.enable(WebGL2RenderingContext.CULL_FACE);
-    // _gl.frontFace(WebGL2RenderingContext.CCW)
+    _gl.enable(WebGL2RenderingContext.CULL_FACE);
+    _gl.depthFunc(WebGL2RenderingContext.LEQUAL);
+    _gl.frontFace(WebGL2RenderingContext.CCW);
     _gl.clearDepth(1.0);
     _gl.lineWidth(2);
     _gl.disable(WebGL2RenderingContext.BLEND);
@@ -286,6 +287,26 @@ export class Gpu {
     this._gl.uniform1i(loc, slot);
     this._gl.activeTexture(WebGL2RenderingContext.TEXTURE0 + slot);
     this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_2D, texture);
+  }
+
+  setProgramCubemap(
+    program: ShaderProgram,
+    name: string,
+    texture: Cubemap,
+    slot: number
+  ) {
+    const loc: WebGLUniformLocation = this._gl.getUniformLocation(
+      program.program,
+      name
+    );
+    if (!loc) {
+      console.warn('Failed to find loc: ', name);
+      return;
+    }
+
+    this._gl.uniform1i(loc, slot);
+    this._gl.activeTexture(WebGL2RenderingContext.TEXTURE0 + slot);
+    this._gl.bindTexture(WebGL2RenderingContext.TEXTURE_CUBE_MAP, texture);
   }
 
   setProgramTextures(
@@ -758,6 +779,14 @@ export class Gpu {
 
   setRenderTarget(target: RenderTarget) {
     this._gl.bindFramebuffer(WebGL2RenderingContext.FRAMEBUFFER, target);
+  }
+
+  setCullFace(face: GLenum) {
+    this._gl.frontFace(face);
+  }
+
+  enableDepthWrite(flag: boolean) {
+    this._gl.depthMask(flag);
   }
 
   clearRenderTarget() {

@@ -5,6 +5,7 @@ import { exhaustMap, retry } from 'rxjs/operators';
 import { createCube, createCylinder, createDonut, createDuck } from './bodies';
 import { CameraControllerInterface } from './controller';
 import { Gpu, Gizmos, Geometry } from './graphics';
+import { Cubemap } from './graphics/gpu';
 import {
   OceanField,
   OceanFieldBuoyancy,
@@ -17,6 +18,7 @@ import {
   PlateOceanRenderer,
   ProjectedGridRenderer,
   QuadTreeOceanRenderer,
+  SkyboxRenderer,
   TileOceanRenderer,
 } from './renderer';
 
@@ -25,12 +27,12 @@ export class Viewport {
   public readonly plateRenderer: PlateOceanRenderer;
   public readonly projectedGridRenderer: ProjectedGridRenderer;
   public readonly quadTreeRenderer: QuadTreeOceanRenderer;
+  public readonly skyboxRenderer: SkyboxRenderer;
   private readonly gizmos: Gizmos;
   private readonly pointSampler: PointsSampler;
   private readonly patchSampler: PatchSampler;
   private pointSamples: vec3[] = [];
   private patchSample: vec3[] = [];
-
   private readonly floaters: [FloatingBody, Geometry][] = [];
 
   constructor(
@@ -38,12 +40,14 @@ export class Viewport {
     private readonly oceanField: OceanField,
     private readonly world: World,
     private readonly buoyancy: OceanFieldBuoyancy,
-    private readonly cameraController: CameraControllerInterface
+    private readonly cameraController: CameraControllerInterface,
+    private readonly skybox: Cubemap
   ) {
     this.tileRenderer = new TileOceanRenderer(this.gpu);
     this.plateRenderer = new PlateOceanRenderer(this.gpu);
     this.projectedGridRenderer = new ProjectedGridRenderer(this.gpu);
     this.quadTreeRenderer = new QuadTreeOceanRenderer(this.gpu);
+    this.skyboxRenderer = new SkyboxRenderer(this.gpu);
     this.gizmos = new Gizmos(this.gpu);
 
     this.floaters = [
@@ -86,9 +90,14 @@ export class Viewport {
     this.gpu.setRenderTarget(null);
     this.gpu.clearRenderTarget();
 
+    this.renderSkybox();
     this.renderGrid();
     this.renderOcean(this.oceanField, type);
     this.renderFloatings();
+  }
+
+  private renderSkybox() {
+    this.skyboxRenderer.render(this.cameraController.camera, this.skybox);
   }
 
   private renderGrid() {
