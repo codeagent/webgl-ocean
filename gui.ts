@@ -5,32 +5,24 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import { OceanFieldBuildParams } from './ocean';
+import {
+  TileOceanRendererSettings,
+  PlateOceanRendererSettings,
+  ProjectedGridRendererSettings,
+  QuadTreeOceanRendererSettings,
+} from './renderer';
 
-export interface GuiTileRendererParams {
-  resolution: number;
-  size: number;
-  tiles: number;
-}
-
-export interface GuiPlateRendererParams {
-  steep: number;
-  offset: number;
-  delta: number;
-  rings: number;
-  segments: number;
-}
-
-export interface GuiProjectedGridRendererParams {
-  resolution: number;
-  aspect: number;
-  margin: number;
-}
+export type GuiTileRendererParams = TileOceanRendererSettings;
+export type GuiPlateRendererParams = PlateOceanRendererSettings;
+export type GuiProjectedGridRendererParams = ProjectedGridRendererSettings;
+export type GuiQuadTreeRendererParams = QuadTreeOceanRendererSettings;
 
 export interface GuiParams extends OceanFieldBuildParams {
-  renderer: 'tile' | 'plate' | 'grid';
+  renderer: 'tile' | 'plate' | 'grid' | 'quad-tree';
   tileRenderer: GuiTileRendererParams;
   plateRenderer: GuiPlateRendererParams;
   gridRenderer: GuiProjectedGridRendererParams;
+  quadTreeRenderer: GuiQuadTreeRendererParams;
 }
 
 export const defaultParams: GuiParams = {
@@ -80,7 +72,17 @@ export const defaultParams: GuiParams = {
     aspect: 1.2,
     margin: 1.0,
   },
-  renderer: 'plate',
+  quadTreeRenderer: {
+    size: 1e4,
+    maxTiers: 10,
+    minWaterLevel: -10.0,
+    maxWaterLevel: 10.0,
+    tileResolution: 128,
+    distanceFactor: 2.5,
+    fixed: true,
+    wired: false,
+  },
+  renderer: 'quad-tree',
 };
 
 export class Gui {
@@ -107,7 +109,7 @@ export class Gui {
     const tiles = [1, 2, 3, 4, 5];
     const resolutions = [...Array(6).keys()].map((r) => 1 << (r + 5));
     const colors = ['#c74440', '#388c46', '#2d70b3'];
-    const renderers = ['tile', 'plate', 'grid'];
+    const renderers = ['tile', 'plate', 'grid', 'quad-tree'];
 
     gui.add(this, 'reset').name('Reset');
     gui.add(this.params, 'resolution', resolutions).name('Map Resolution');
@@ -119,14 +121,22 @@ export class Gui {
           tileGroup.show();
           plateGroup.hide();
           gridGroup.hide();
+          treeGroup.hide();
         } else if (e === 'plate') {
           plateGroup.show();
+          tileGroup.hide();
+          gridGroup.hide();
+          treeGroup.hide();
+        } else if (e === 'quad-tree') {
+          treeGroup.show();
+          plateGroup.hide();
           tileGroup.hide();
           gridGroup.hide();
         } else {
           gridGroup.show();
           plateGroup.hide();
           tileGroup.hide();
+          treeGroup.hide();
         }
       });
 
@@ -140,7 +150,7 @@ export class Gui {
       .name('Geometry size');
     tileGroup.add(this.params.tileRenderer, 'tiles', tiles).name('Tiles');
 
-    const plateGroup = gui.addFolder('Renderer options');
+    const plateGroup = gui.addFolder('Renderer options').hide();
     plateGroup
       .add(this.params.plateRenderer, 'rings', 1, 512)
       .step(1)
@@ -174,6 +184,28 @@ export class Gui {
       .add(this.params.gridRenderer, 'margin', 0.0, 6.0)
       .step(0.1)
       .name('NDC margin');
+
+    const treeGroup = gui.addFolder('Renderer options').show();
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'tileResolution', resolutions)
+      .name('Geometry resolution');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'size', 0, 1000)
+      .step(1)
+      .name('Geometry size');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'maxTiers', 1, 8)
+      .name('Max tier')
+      .step(1);
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'minWaterLevel', -100, 0)
+      .name('Min water level');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'maxWaterLevel', 0, 100)
+      .name('Max water level');
+    treeGroup
+      .add(this.params.quadTreeRenderer, 'distanceFactor', 1e-2, 10)
+      .name('Distance factor');
 
     const wind = gui.addFolder('Wind');
     wind.add(this.params.wind, '0', 0, 31).step(1).name('X');

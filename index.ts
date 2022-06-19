@@ -42,7 +42,7 @@ if (!context) {
   throw new Error('Failed to create webgl2 drawing context');
 }
 const gpu = new Gpu(context);
-const camera = new Camera(45.0, canvas.width / canvas.height, 1.0e-1, 1.0e6);
+const camera = new Camera(45.0, canvas.width / canvas.height, 1.0, 1.0e4 );
 camera.lookAt(vec3.fromValues(-10, 2.5, -10), vec3.create());
 
 const cameraController = new FpsCameraController(canvas, camera);
@@ -64,6 +64,7 @@ gui.onChange$.subscribe((params) => {
   viewport.tileRenderer.setSettings(params.tileRenderer);
   viewport.plateRenderer.setSettings(params.plateRenderer);
   viewport.projectedGridRenderer.setSettings(params.gridRenderer);
+  viewport.quadTreeRenderer.setSettings(params.quadTreeRenderer);
 });
 
 animationFrames().subscribe(({ elapsed }) => {

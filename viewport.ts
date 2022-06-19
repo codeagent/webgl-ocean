@@ -16,6 +16,7 @@ import { World } from './physics';
 import {
   PlateOceanRenderer,
   ProjectedGridRenderer,
+  QuadTreeOceanRenderer,
   TileOceanRenderer,
 } from './renderer';
 
@@ -23,6 +24,7 @@ export class Viewport {
   public readonly tileRenderer: TileOceanRenderer;
   public readonly plateRenderer: PlateOceanRenderer;
   public readonly projectedGridRenderer: ProjectedGridRenderer;
+  public readonly quadTreeRenderer: QuadTreeOceanRenderer;
   private readonly gizmos: Gizmos;
   private readonly pointSampler: PointsSampler;
   private readonly patchSampler: PatchSampler;
@@ -41,6 +43,7 @@ export class Viewport {
     this.tileRenderer = new TileOceanRenderer(this.gpu);
     this.plateRenderer = new PlateOceanRenderer(this.gpu);
     this.projectedGridRenderer = new ProjectedGridRenderer(this.gpu);
+    this.quadTreeRenderer = new QuadTreeOceanRenderer(this.gpu);
     this.gizmos = new Gizmos(this.gpu);
 
     this.floaters = [
@@ -76,7 +79,7 @@ export class Viewport {
       .subscribe((e) => (this.patchSample = e));
   }
 
-  render(type: 'tile' | 'plate' | 'grid') {
+  render(type: 'tile' | 'plate' | 'grid' | 'quad-tree') {
     const { width, height } = this.gpu.context.canvas;
 
     this.gpu.setViewport(0, 0, width, height);
@@ -107,11 +110,16 @@ export class Viewport {
     this.gizmos.drawPatch(this.cameraController.camera, this.patchSample);
   }
 
-  private renderOcean(field: OceanField, type: 'tile' | 'plate' | 'grid') {
+  private renderOcean(
+    field: OceanField,
+    type: 'tile' | 'plate' | 'grid' | 'quad-tree'
+  ) {
     if (type === 'tile') {
       this.tileRenderer.render(this.cameraController.camera, field);
     } else if (type === 'grid') {
       this.projectedGridRenderer.render(this.cameraController.camera, field);
+    } else if (type === 'quad-tree') {
+      this.quadTreeRenderer.render(this.cameraController.camera, field);
     } else {
       this.plateRenderer.render(this.cameraController.camera, field);
     }
