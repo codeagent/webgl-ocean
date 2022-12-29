@@ -53,7 +53,7 @@ registerWorkerGlobals();
   const buoyancy = new OceanFieldBuoyancy(oceanField);
   const world = new World();
   const skybox = await fetch(
-    'https://raw.githubusercontent.com/codeagent/webgl-ocean/skybox/assets/cubemaps/sky_skybox.ktx'
+    'https://raw.githubusercontent.com/codeagent/webgl-ocean/master/assets/cubemaps/sky_skybox.ktx'
   )
     .then((r) => r.arrayBuffer())
     .then((skybox) => readKtx(skybox))
