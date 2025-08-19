@@ -13,6 +13,7 @@ import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createDisc } from './mesh';
+import { Cubemap } from '../graphics/gpu';
 
 declare const createDisc: (...args: number[]) => Mesh;
 
@@ -70,7 +71,7 @@ export class PlateOceanRenderer
       });
   }
 
-  public render(camera: Camera, oceanField: OceanField) {
+  public render(camera: Camera, oceanField: OceanField, env: Cubemap) {
     this.gpu.setViewport(
       0,
       0,
@@ -91,6 +92,8 @@ export class PlateOceanRenderer
       ],
       oceanField.dataMaps
     );
+    this.gpu.setProgramCubemap(this.shader, 'env', env, 6);
+
     for (let i = 0; i < oceanField.params.cascades.length; i++) {
       this.gpu.setProgramVariable(
         this.shader,

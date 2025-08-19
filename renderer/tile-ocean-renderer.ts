@@ -12,6 +12,7 @@ import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createPlane } from './mesh';
+import { Cubemap } from '../graphics/gpu';
 
 declare const createPlane: (resolution: number) => Mesh;
 
@@ -65,7 +66,7 @@ export class TileOceanRenderer {
       });
   }
 
-  public render(camera: Camera, oceanField: OceanField) {
+  public render(camera: Camera, oceanField: OceanField, env: Cubemap) {
     const settings = this.getSettings();
     this.gpu.setViewport(
       0,
@@ -86,6 +87,8 @@ export class TileOceanRenderer {
       ],
       oceanField.dataMaps
     );
+    this.gpu.setProgramCubemap(this.shader, 'env', env, 6);
+    
     for (let i = 0; i < oceanField.params.cascades.length; i++) {
       this.gpu.setProgramVariable(
         this.shader,

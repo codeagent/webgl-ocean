@@ -124,9 +124,17 @@ export class Viewport {
     type: 'tile' | 'plate' | 'grid' | 'quad-tree'
   ) {
     if (type === 'tile') {
-      this.tileRenderer.render(this.cameraController.camera, field);
+      this.tileRenderer.render(
+        this.cameraController.camera,
+        field,
+        this.skybox
+      );
     } else if (type === 'grid') {
-      this.projectedGridRenderer.render(this.cameraController.camera, field);
+      this.projectedGridRenderer.render(
+        this.cameraController.camera,
+        field,
+        this.skybox
+      );
     } else if (type === 'quad-tree') {
       this.quadTreeRenderer.render(
         this.cameraController.camera,
@@ -134,7 +142,11 @@ export class Viewport {
         this.skybox
       );
     } else {
-      this.plateRenderer.render(this.cameraController.camera, field);
+      this.plateRenderer.render(
+        this.cameraController.camera,
+        field,
+        this.skybox
+      );
     }
   }
 }

@@ -12,6 +12,7 @@ import fs from './programs/fragment.glsl';
 
 // @ts-ignore:
 import { createNDCGrid } from './mesh';
+import { Cubemap } from '../graphics/gpu';
 
 declare const createNDCGrid: (...args: number[]) => Mesh;
 
@@ -61,7 +62,7 @@ export class ProjectedGridRenderer {
       });
   }
 
-  public render(camera: Camera, oceanField: OceanField) {
+  public render(camera: Camera, oceanField: OceanField, env: Cubemap) {
     this.gpu.setViewport(
       0,
       0,
@@ -104,6 +105,7 @@ export class ProjectedGridRenderer {
       ],
       oceanField.dataMaps
     );
+    this.gpu.setProgramCubemap(this.shader, 'env', env, 6);
     for (let i = 0; i < oceanField.params.cascades.length; i++) {
       this.gpu.setProgramVariable(
         this.shader,

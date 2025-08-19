@@ -82,7 +82,7 @@ export const defaultParams: GuiParams = {
     fixed: true,
     wired: false,
   },
-  renderer: 'quad-tree',
+  renderer: 'grid',
 };
 
 export class Gui {
