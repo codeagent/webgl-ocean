@@ -1,0 +1,19 @@
+* {
+  font-family: Calibri;
+  margin: 0;
+  padding: 0;
+  /* background-color: #333 */
+}
+
+canvas {
+  box-sizing: content-box;
+  min-width: var(--viewport-width);
+  background-color: black;
+  margin: 0 auto;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
